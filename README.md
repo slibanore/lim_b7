@@ -6,22 +6,20 @@ LIM code used by the cosmology group at the [Ben Gurion University of the Negev]
 ## Branches
 
 - **main:** use the VID to probe small scales  
-[[Libanore et al.](https://arxiv.org/abs/2208.01658)]
+[Libanore et al.](https://arxiv.org/abs/2208.01658)
 
 - **PMF:** constrain primordial magnetic fields through the VID  
-[Adi, Libanore, Kovetz](in prep.)  
-*Important note: the code for PMF here is not complete, ask Tal Adi for full version*
+*Important note: the code for PMF here is not complete, ask Tal Adi for full version*  
+[Adi, Libanore, Kovetz: in prep.]
 
 - **ULTRASAT:** LIM analysis of the full sky reference map of the Israeli satellite [ULTRASAT](https://www.weizmann.ac.il/ultrasat/)  
-[Libanore, Kovetz](ULTRASAT White paper)
+[Libanore, Kovetz: ULTRASAT White paper]
 
-- **nu_mass:** contrain neutrino mass through LIM   
+- **nu_mass:** contrain neutrino mass through LIM (*Work in progress*)  
 [Shmueli, Libanore, Kovetz](in prep.)  
-*Work in progress*
 
-- **fnl:** constrain inflation parameters through LIM  
-[Unal, Libanore, et al.](in prep.)  
-*Work in progress*
+- **fnl:** constrain inflation parameters through LIM (*Work in progress*)  
+[Unal, Libanore, et al.: in prep.]
 
 
 ## Credits 
