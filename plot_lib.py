@@ -1,10 +1,10 @@
 # SL: last update 01/20/2023
 
 from LIM_b7 import *
-from LIM_b7.fiducial_pars_pmf import astrocosmo_dict
+from LIM_b7.fiducial_pars import astrocosmo_dict
 
 
-save_fig_dir = '../'#'./results_ns/' 
+save_fig_dir = '../results/nu_mass/' 
 
 ###########################################
 # MODEL PARAMETERS
