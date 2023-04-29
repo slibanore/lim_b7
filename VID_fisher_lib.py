@@ -3,10 +3,7 @@
 from LIM_b7 import *
 from LIM_b7.fiducial_pars import astrocosmo_dict
 
-save_fig_dir = './results/'
-
-if hmf_fid == 'NG_Riotto':
-    save_fig_dir = './results_fNL' + str(fNL_fid) + '/wide/'
+save_fig_dir = './results/nu_mass/'
     
 
 create_dir(save_fig_dir)

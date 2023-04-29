@@ -14,8 +14,8 @@ rest_nu = 115.271
 light = 2.998e8 # m / s 
 
 # kmin and kmax for Pk computation
-kmin_fid = 1e-3*u.Mpc**-1 #1e-3*u.Mpc**-1
-kmax_fid = 500*u.Mpc**-1 #100.*u.Mpc**-1
+kmin_fid = 1e-3*u.Mpc**-1
+kmax_fid = 100.*u.Mpc**-1
 
 #developer = 'CDS' 
 CDS_alpha_1_fid = 1.
@@ -52,7 +52,7 @@ do_Jysr_fid = False
 # DEFAULT HALO MODEL
 ###########################################
 
-hmf_fid = 'NG_Riotto'
+hmf_fid = 'Tinker'
 delta_tinker = 200.
 alpha_tinker_fid=10**(-(0.75/np.log10(delta_tinker/75.0))**1.2)
 A_tinker_fid= lambda z: 0.186*(1.0+z)**(-0.14)
@@ -60,9 +60,9 @@ a_tinker_fid = lambda z: 1.47*(1.0+z)**(-0.06)
 b_tinker_fid = lambda z: 2.57*(1.0+z)**(-alpha_tinker_fid)
 c_tinker_fid = lambda z: 1.19
 
-fNL_fid = 1.0
+fNL_fid = 0.0
 
-hmf_pars_fid = lambda z: dict(A_tinker = A_tinker_fid(z),a_tinker = a_tinker_fid(z),b_tinker = b_tinker_fid(z),c_tinker = c_tinker_fid(z),fNL = fNL_fid)
+hmf_pars_fid = lambda z: dict(A_tinker = A_tinker_fid(z),a_tinker = a_tinker_fid(z),b_tinker = b_tinker_fid(z),c_tinker = c_tinker_fid(z))#,fNL = fNL_fid)
 
 ###########################################
 # DEFAULT ASTRO MODEL
