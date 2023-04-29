@@ -403,7 +403,7 @@ def compare_multi_vals(mod_par, mod_list, save_figure, get_SNR = False):
 				theta_H0_range=[10, 100], w=-1.0, wa=0., cs2=1.0, 
 				dark_energy_model='ppf',As=2.105e-09, 
 				# !!! Planck 2018 eq. 16/17/18 arXiv:1807.06211 
-				ns=ns_fid, nrun=mod_val, nrunrun=nrunrun_fid, 
+				#ns=ns_fid, nrun=mod_val, nrunrun=nrunrun_fid, 
 				r=0.0, nt=None, ntrun=0.0, 
 				pivot_scalar=0.05, pivot_tensor=0.05,
 				parameterization=2,halofit_version='mead')
@@ -421,7 +421,7 @@ def compare_multi_vals(mod_par, mod_list, save_figure, get_SNR = False):
 				theta_H0_range=[10, 100], w=-1.0, wa=0., cs2=1.0, 
 				dark_energy_model='ppf',As=2.105e-09, 
 				# !!! Planck 2018 eq. 16/17/18 arXiv:1807.06211 
-				ns=ns_fid, nrun=nrun_fid, nrunrun=mod_val, 
+				#ns=ns_fid, nrun=nrun_fid, nrunrun=mod_val, 
 				r=0.0, nt=None, ntrun=0.0, 
 				pivot_scalar=0.05, pivot_tensor=0.05,
 				parameterization=2,halofit_version='mead')
