@@ -14,7 +14,7 @@ rest_nu = 115.271
 light = 2.998e8 # m / s 
 
 # kmin and kmax for Pk computation
-kmin_fid = 1e-2*u.Mpc**-1
+kmin_fid = 1e-3*u.Mpc**-1
 kmax_fid = 100.*u.Mpc**-1
 
 #developer = 'CDS' 
@@ -52,7 +52,7 @@ do_Jysr_fid = False
 # DEFAULT HALO MODEL
 ###########################################
 
-hmf_fid = 'Tinker'
+hmf_fid = 'NG_Riotto'
 delta_tinker = 200.
 alpha_tinker_fid=10**(-(0.75/np.log10(delta_tinker/75.0))**1.2)
 A_tinker_fid= lambda z: 0.186*(1.0+z)**(-0.14)
@@ -60,9 +60,9 @@ a_tinker_fid = lambda z: 1.47*(1.0+z)**(-0.06)
 b_tinker_fid = lambda z: 2.57*(1.0+z)**(-alpha_tinker_fid)
 c_tinker_fid = lambda z: 1.19
 
-fNL_fid = 0.0
+fNL_fid = 1.0
 
-hmf_pars_fid = lambda z: dict(A_tinker = A_tinker_fid(z),a_tinker = a_tinker_fid(z),b_tinker = b_tinker_fid(z),c_tinker = c_tinker_fid(z))
+hmf_pars_fid = lambda z: dict(A_tinker = A_tinker_fid(z),a_tinker = a_tinker_fid(z),b_tinker = b_tinker_fid(z),c_tinker = c_tinker_fid(z),fNL = fNL_fid)
 
 ###########################################
 # DEFAULT ASTRO MODEL
@@ -95,10 +95,6 @@ Lmax_fid = 1e10*u.Lsun
 # cosmo_astro prescriptions, here you only
 # have the ones we need to change for 
 
-ns_fid = 0.9587
-nrun_fid = 0.013
-nrunrun_fid = 0.022
-
 astrocosmo_dict = lambda developer, z: \
 	dict(\
 
@@ -109,10 +105,7 @@ astrocosmo_dict = lambda developer, z: \
 	YHe=None, meffsterile=0.0, standard_neutrino_neff=3.046, 
 	TCMB=2.7255, tau=None, deltazrei=None, bbn_predictor=None, 
 	theta_H0_range=[10, 100], w=-1.0, wa=0., cs2=1.0, 
-	dark_energy_model='ppf',As=2.105e-09, 
-    # !!! Planck 2018 eq. 16/17/18 arXiv:1807.06211 
-    ns=ns_fid, nrun=nrun_fid, nrunrun=nrunrun_fid, 
-    r=0.0, nt=None, ntrun=0.0, 
+	dark_energy_model='ppf',As=2.105e-09, ns=0.967, nrun=0., nrunrun=0.0, r=0.0, nt=None, ntrun=0.0, 
 	pivot_scalar=0.05, pivot_tensor=0.05,
 	parameterization=2,halofit_version='mead'),
 

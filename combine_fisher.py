@@ -1,6 +1,6 @@
 # !!!
-import ns_VID_fisher_lib as vid
-import ns_Pkline_fisher as pk
+import VID_fisher_lib as vid
+import Pkline_fisher as pk
 
 def sum_fisher(model_id, par_comm = ['fNL','a1','a2','a3'], par_vid = ['astro_alpha','astro_beta','astro_sig_SFR', 'astro_sig_scatter','astro_Lcut'], par_pk = ['Tfs8','Tbs8','Pshot','sNL','alpha_par','alpha_perp'],plot_sigma = True):
 

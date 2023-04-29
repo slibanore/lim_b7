@@ -1,10 +1,13 @@
 # SL: last update 01/23/2023
 
 from LIM_b7 import *
-from LIM_b7.ns_fiducial_pars import astrocosmo_dict
+from LIM_b7.fiducial_pars import astrocosmo_dict
 
-save_fig_dir = './results/inflation/results_ns/'#deep/' 
- 
+save_fig_dir = './results/inflation/' 
+
+if hmf_fid == 'NG_Riotto':
+    save_fig_dir = './results/inflation/results_fNL' + str(fNL_fid) + '/'
+
 create_dir(save_fig_dir)
 create_dir(save_fig_dir + 'Pkline/')
 create_dir(save_fig_dir + 'fisher_Pkline/')
@@ -145,26 +148,54 @@ def analytical_derivatives(derive_pars, model,z,Pkclus,get_multipole):
 def set_der_par(derive_par,z,developer,obs_pars):
 
     print('\nDoing derivative wrt: ' + str(derive_par))
-    if derive_par == 'ns': 	
-        ns_low = ns_fid*(1. - delta)
-        ns_up = ns_fid*(1. + delta)
+    if derive_par == 'a1': 	
+        use_CDS_alpha_1_low = CDS_alpha_1_fid*(1. - delta)
+        use_CDS_alpha_1_up = CDS_alpha_1_fid*(1. + delta)
     else:
-        ns_low = ns_fid
-        ns_up = ns_fid
+        use_CDS_alpha_1_low = CDS_alpha_1_fid
+        use_CDS_alpha_1_up = CDS_alpha_1_fid
 
-    if derive_par == 'nrun': 	
-        nrun_low = nrun_fid*(1. - delta)
-        nrun_up = nrun_fid*(1. + delta)
+    if derive_par == 'a2': 	
+        use_CDS_alpha_2_low = CDS_alpha_2_fid*(1. - delta)
+        use_CDS_alpha_2_up = CDS_alpha_2_fid*(1. + delta)
     else:
-        nrun_low = nrun_fid
-        nrun_up = nrun_fid
+        use_CDS_alpha_2_low = CDS_alpha_2_fid 
+        use_CDS_alpha_2_up = CDS_alpha_2_fid
 
-    if derive_par == 'nrunrun': 	
-        nrunrun_low = nrunrun_fid*(1. - delta)
-        nrunrun_up = nrunrun_fid*(1. + delta)
+    if derive_par == 'a3': 	
+        use_CDS_alpha_3_low = CDS_alpha_3_fid*(1. - delta)
+        use_CDS_alpha_3_up = CDS_alpha_3_fid*(1. + delta)
     else:
-        nrunrun_low = nrunrun_fid
-        nrunrun_up = nrunrun_fid
+        use_CDS_alpha_3_low = CDS_alpha_3_fid 
+        use_CDS_alpha_3_up = CDS_alpha_3_fid
+
+    if derive_par == 'a4': 	
+        use_CDS_alpha_4_low = CDS_alpha_4_fid*(1. - delta)
+        use_CDS_alpha_4_up = CDS_alpha_4_fid*(1. + delta)
+    else:
+        use_CDS_alpha_4_low = CDS_alpha_4_fid 
+        use_CDS_alpha_4_up = CDS_alpha_4_fid
+
+    if derive_par == 'f_FDM': 	
+        use_f_axion_low = f_axion_fid*(1. - delta)
+        use_f_axion_up = f_axion_fid*(1. + delta)
+    else:
+        use_f_axion_low = f_axion_fid 
+        use_f_axion_up = f_axion_fid
+
+    if derive_par == 'n_B': 	
+        use_n_B_low = n_B_fid*(1. - delta)
+        use_n_B_up = n_B_fid*(1. + delta)
+    else:
+        use_n_B_low = n_B_fid 
+        use_n_B_up = n_B_fid
+    
+    if derive_par == 'sigma_B_0': 	
+        use_sigma_B_0_low = sigma_B_0_fid*(1. - delta)
+        use_sigma_B_0_up = sigma_B_0_fid*(1. + delta)
+    else:
+        use_sigma_B_0_low = sigma_B_0_fid 
+        use_sigma_B_0_up = sigma_B_0_fid
 
     if derive_par == 'astro_alpha': 	
         use_astro_alpha_low = astro_alpha_fid*(1. - delta)
@@ -229,57 +260,61 @@ def set_der_par(derive_par,z,developer,obs_pars):
         use_ctink_low = c_tinker_fid(z)
         use_ctink_up = c_tinker_fid(z)
 
-    low_cosmo = dict(
-	f_NL=0, H0=67.67, cosmomc_theta=None,
-	ombh2=0.0224, omch2=0.1193, omk=0.0, neutrino_hierarchy='degenerate', 
-	num_massive_neutrinos=3, mnu=0.06, nnu=3.046, 
-	YHe=None, meffsterile=0.0, standard_neutrino_neff=3.046, 
-	TCMB=2.7255, tau=None, deltazrei=None, bbn_predictor=None, 
-	theta_H0_range=[10, 100], w=-1.0, wa=0., cs2=1.0, 
-	dark_energy_model='ppf',As=2.105e-09, 
-    # !!! Planck 2018 eq. 16/17/18 arXiv:1807.06211 
-    ns=ns_low, nrun=nrun_low, nrunrun=nrunrun_low, 
-    r=0.0, nt=None, ntrun=0.0, 
-	pivot_scalar=0.05, pivot_tensor=0.05,
-	parameterization=2,halofit_version='mead')
+    if derive_par == 'fNL':
+        use_fNL_low = fNL_fid*(1. - delta)
+        use_fNL_up = fNL_fid*(1. + delta)
+    else:
+        use_fNL_low = fNL_fid
+        use_fNL_up = fNL_fid
+
 
     low_model_par = {**astrocosmo_dict(developer,z), **dict(alpha=use_astro_alpha_low, \
             beta=use_astro_beta_low, dMF = astro_dMF_fid, \
             sig_SFR=use_astro_sig_SFR_low,SFR_file=SFR_file_fid)}
 
-    low_hmf = dict(A_tinker = use_Atink_low, a_tinker = use_atink_low, b_tinker = use_btink_low, c_tinker = use_ctink_low)
+    if hmf_fid == 'Tinker':
+        low_hmf = dict(A_tinker = use_Atink_low, a_tinker = use_atink_low, b_tinker = use_btink_low, c_tinker = use_ctink_low)
 
-    low_data = {**astrocosmo_dict(developer,z), **dict(developer = developer, cosmo_input_camb = low_cosmo,
+    elif hmf_fid == 'NG_Riotto':
+        low_hmf = dict(A_tinker = use_Atink_low, a_tinker = use_atink_low, b_tinker = use_btink_low, c_tinker = use_ctink_low,
+        fNL = use_fNL_low)
+
+    low_data = {**astrocosmo_dict(developer,z), **dict(developer = developer, 
+        CDS_alpha_1 = use_CDS_alpha_1_low, \
+        CDS_alpha_2 = use_CDS_alpha_2_low, 
+        CDS_alpha_3 = use_CDS_alpha_3_low, 
+        CDS_alpha_4 = use_CDS_alpha_4_low, 
         hmf_pars = low_hmf,
+        f_axion = use_f_axion_low ,
         model_par = low_model_par,
         sigma_scatter = use_astro_sig_scatter_low,
-        dndL_Lcut=use_astro_Lcut_low,)}
-
-    up_cosmo = dict(
-	f_NL=0, H0=67.67, cosmomc_theta=None,
-	ombh2=0.0224, omch2=0.1193, omk=0.0, neutrino_hierarchy='degenerate', 
-	num_massive_neutrinos=3, mnu=0.06, nnu=3.046, 
-	YHe=None, meffsterile=0.0, standard_neutrino_neff=3.046, 
-	TCMB=2.7255, tau=None, deltazrei=None, bbn_predictor=None, 
-	theta_H0_range=[10, 100], w=-1.0, wa=0., cs2=1.0, 
-	dark_energy_model='ppf',As=2.105e-09, 
-    # !!! Planck 2018 eq. 16/17/18 arXiv:1807.06211 
-    ns=ns_up, nrun=nrun_up, nrunrun=nrunrun_up, 
-    r=0.0, nt=None, ntrun=0.0, 
-	pivot_scalar=0.05, pivot_tensor=0.05,
-	parameterization=2,halofit_version='mead')
+        dndL_Lcut=use_astro_Lcut_low,
+        n_B = use_n_B_low,
+        sigma_B_0 = use_sigma_B_0_low)}
 
     up_model_par = {**astrocosmo_dict(developer,z), **dict(alpha=use_astro_alpha_up, \
             beta=use_astro_beta_up, dMF = astro_dMF_fid,\
             sig_SFR=use_astro_sig_SFR_up,SFR_file=SFR_file_fid)}
 
-    up_hmf = dict(A_tinker = use_Atink_up, a_tinker = use_atink_up, b_tinker = use_btink_up, c_tinker = use_ctink_up)
+    if hmf_fid == 'Tinker':
+        up_hmf = dict(A_tinker = use_Atink_up, a_tinker = use_atink_up, b_tinker = use_btink_up, c_tinker = use_ctink_up)
 
-    up_data = {**astrocosmo_dict(developer,z), **dict(developer = developer, cosmo_input_camb = up_cosmo,
+    elif hmf_fid == 'NG_Riotto':
+        up_hmf = dict(A_tinker = use_Atink_up, a_tinker = use_atink_up, b_tinker = use_btink_up, c_tinker = use_ctink_up,
+        fNL = use_fNL_up)
+
+    up_data = {**astrocosmo_dict(developer,z), **dict(developer = developer, 
+        CDS_alpha_1 = use_CDS_alpha_1_up, \
+        CDS_alpha_2 = use_CDS_alpha_2_up, 
+        CDS_alpha_3 = use_CDS_alpha_3_up, 
+        CDS_alpha_4 = use_CDS_alpha_4_up, 
         hmf_pars = up_hmf,
+        f_axion = use_f_axion_up ,
         model_par = up_model_par,
         sigma_scatter = use_astro_sig_scatter_up,
-        dndL_Lcut=use_astro_Lcut_up,)}
+        dndL_Lcut=use_astro_Lcut_up,
+        n_B = use_n_B_up,
+        sigma_B_0 = use_sigma_B_0_up)}
 
     low = update_Pkline(obs_pars(z),low_data)[0]
     up = update_Pkline(obs_pars(z),up_data)[0]
@@ -288,13 +323,13 @@ def set_der_par(derive_par,z,developer,obs_pars):
 
 
 def fisher_Pkline(model_id, developer, \
-        derive_model = ['ns','nrun','nrunrun'],\
+        derive_model = ['a1','a2','a3','a4','astro_alpha','astro_beta','astro_sig_SFR', 'astro_sig_scatter','a_tinker'],\
         derive_Pkline = ['Tfs8','Tbs8','Pshot','sNL','alpha_par','alpha_perp'],	multipole = [0,2],\
     	save_Pkline_flag = False, \
         save_fisher_flag = False, \
 	    plot_sigma_flag = False, \
         import_allowed = True, \
-	    ns_prior = 0.0056, \
+	    a1_prior = 0.03, \
         a_t_prior = 0.2):
 
     create_dir(save_fig_dir + 'Pkline/' + developer + '/')
@@ -464,10 +499,10 @@ def fisher_Pkline(model_id, developer, \
         save_fisher(filename, derive_pars,Fisher)
 
     prior_matrix = np.zeros((len(derive_pars),len(derive_pars)))
-    if ns_prior: 
+    if a1_prior: 
         for i in range(len(derive_pars)):
-            if 'ns' in derive_pars[i]:
-                prior_matrix[i,i] = ns_prior**-2
+            if 'a1' in derive_pars[i]:
+                prior_matrix[i,i] = a1_prior**-2
 
         Fisher += prior_matrix
 
@@ -509,12 +544,12 @@ def fisher_Pkline(model_id, developer, \
         g.settings.title_limit_fontsize = 14
 
         g.triangle_plot([plot_dist], names, filled=True,\
-            legend_labels=[r'$PS$'],legend_loc='upper right',\
+            legend_labels=[r'$PS\, wide$'],legend_loc='upper right',\
             contour_colors=['green'], line_args=[{'ls':'--', 'color':'green'}],
             #title_limit=1,
             markers={'x2':0})
 
-        plt.savefig(save_fig_dir + 'ellipse_' + model_id + '_pk_prior.pdf')
+        plt.savefig(save_fig_dir + 'ellipse_' + model_id + '_pk.pdf')
 
         plt.suptitle(survey_name,fontsize=25)
         plt.show()
