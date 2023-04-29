@@ -60,7 +60,7 @@ a_tinker_fid = lambda z: 1.47*(1.0+z)**(-0.06)
 b_tinker_fid = lambda z: 2.57*(1.0+z)**(-alpha_tinker_fid)
 c_tinker_fid = lambda z: 1.19
 
-fNL_fid = 1.0
+fNL_fid = 0.0
 
 hmf_pars_fid = lambda z: dict(A_tinker = A_tinker_fid(z),a_tinker = a_tinker_fid(z),b_tinker = b_tinker_fid(z),c_tinker = c_tinker_fid(z))#,fNL = fNL_fid)
 
