@@ -24,5 +24,13 @@ LIM code used by the cosmology group at the [Ben Gurion University of the Negev]
 *Work in progress*
 
 
+## Credits 
+
+Main developer of this version of the code: 
+Sarah Libanore 
+
+Other contributors:
+Tal Adi, Tal Kadosh
+
 
 The code is based on the orginal work by [Bernal et al.]( https://github.com/jl-bernal/lim).
