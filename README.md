@@ -26,8 +26,8 @@ LIM code used by the cosmology group at the [Ben Gurion University of the Negev]
 
 ## Credits 
 
-`#0969DA` Main developer of this code distribution: 
-*Sarah Libanore* `#0969DA`
+Main developer of this code distribution: 
+*Sarah Libanore*
 
 Other contributors:
 *Tal Adi*, *Tal Kadosh*
