@@ -1,13 +1,10 @@
 # SL: last update 01/22/2023 
 
 from LIM_b7 import *
-from LIM_b7.fiducial_pars import astrocosmo_dict
+from LIM_b7.fiducial_pars_pmf import astrocosmo_dict
 
-save_fig_dir = './results/'
+save_fig_dir = './results/PMF/'
 
-if hmf_fid == 'NG_Riotto':
-    save_fig_dir = './results_fNL' + str(fNL_fid) + '/wide/'
-    
 
 create_dir(save_fig_dir)
 create_dir(save_fig_dir + 'VID/')

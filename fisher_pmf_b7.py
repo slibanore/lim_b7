@@ -2,7 +2,7 @@ from LIM_b7 import *
 from LIM_b7.fiducial_pars_pmf import astrocosmo_dict
 from datetime import datetime
  
-save_fig_dir = './results_PMF/' 
+save_fig_dir = './results/PMF/' 
 
 create_dir(save_fig_dir)
 
