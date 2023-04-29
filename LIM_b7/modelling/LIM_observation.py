@@ -1,6 +1,6 @@
 # SL: last update 01/17/2023
 
-from .cosmo_astro_prescriptions_pmf import *
+from .cosmo_astro_prescriptions import *
 
 # initialize line model + experimental observation
 class LineObs(LineModel):
