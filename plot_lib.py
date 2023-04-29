@@ -4,7 +4,7 @@ from LIM_b7 import *
 from LIM_b7.ns_fiducial_pars import astrocosmo_dict
 
 
-save_fig_dir = './results/standard_code/' 
+save_fig_dir = './results/inflation/' 
 
 ###########################################
 # MODEL PARAMETERS
