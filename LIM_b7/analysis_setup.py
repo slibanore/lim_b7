@@ -1,6 +1,6 @@
 # SL: last update 01/18/2023
 
-from .fiducial_pars_pmf import *
+from .fiducial_pars import *
 from .modelling.limlam_setup import lim
 from .VID_setup import lim_VID
 from .Pkline_setup import lim_Pkline

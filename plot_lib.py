@@ -1,10 +1,10 @@
 # SL: last update 01/20/2023
 
 from LIM_b7 import *
-from LIM_b7.fiducial_pars_pmf import astrocosmo_dict
+from LIM_b7.fiducial_pars import astrocosmo_dict
 
 
-save_fig_dir = '../'#'./results_ns/' 
+save_fig_dir = './results/standard_code/' 
 
 ###########################################
 # MODEL PARAMETERS
@@ -385,7 +385,7 @@ def compare_multi_vals(mod_par, mod_list, save_figure, get_SNR = False):
 				theta_H0_range=[10, 100], w=-1.0, wa=0., cs2=1.0, 
 				dark_energy_model='ppf',As=2.105e-09, 
 				# !!! Planck 2018 eq. 16/17/18 arXiv:1807.06211 
-				ns=mod_val, nrun=nrun_fid, nrunrun=nrunrun_fid, 
+				#ns=mod_val, nrun=nrun_fid, nrunrun=nrunrun_fid, 
 				r=0.0, nt=None, ntrun=0.0, 
 				pivot_scalar=0.05, pivot_tensor=0.05,
 				parameterization=2,halofit_version='mead')
@@ -403,7 +403,7 @@ def compare_multi_vals(mod_par, mod_list, save_figure, get_SNR = False):
 				theta_H0_range=[10, 100], w=-1.0, wa=0., cs2=1.0, 
 				dark_energy_model='ppf',As=2.105e-09, 
 				# !!! Planck 2018 eq. 16/17/18 arXiv:1807.06211 
-				ns=ns_fid, nrun=mod_val, nrunrun=nrunrun_fid, 
+				#ns=ns_fid, nrun=mod_val, nrunrun=nrunrun_fid, 
 				r=0.0, nt=None, ntrun=0.0, 
 				pivot_scalar=0.05, pivot_tensor=0.05,
 				parameterization=2,halofit_version='mead')
