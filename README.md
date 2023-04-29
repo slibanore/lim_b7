@@ -15,17 +15,19 @@ LIM code used by the cosmology group at the [Ben Gurion University of the Negev]
 - **ULTRASAT:** LIM analysis of the full sky reference map of the Israeli satellite [ULTRASAT](https://www.weizmann.ac.il/ultrasat/)  
 [Libanore, Kovetz: ULTRASAT White paper]
 
-- **nu_mass:** contrain neutrino mass through LIM (*Work in progress*)  
+- **nu_mass:** contrain neutrino mass through LIM  
+*Work in progress*   
 [Shmueli, Libanore, Kovetz](in prep.)  
 
-- **fnl:** constrain inflation parameters through LIM (*Work in progress*)  
+- **fnl:** constrain inflation parameters through LIM  
+*Work in progress*  
 [Unal, Libanore, et al.: in prep.]
 
 
 ## Credits 
 
-Main developer of this code distribution: 
-*Sarah Libanore*
+`#0969DA` Main developer of this code distribution: 
+*Sarah Libanore* `#0969DA`
 
 Other contributors:
 *Tal Adi*, *Tal Kadosh*
