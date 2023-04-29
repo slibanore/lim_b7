@@ -52,7 +52,7 @@ do_Jysr_fid = False
 # DEFAULT HALO MODEL
 ###########################################
 
-hmf_fid = 'Tinker'
+hmf_fid = 'NG_Riotto'
 delta_tinker = 200.
 alpha_tinker_fid=10**(-(0.75/np.log10(delta_tinker/75.0))**1.2)
 A_tinker_fid= lambda z: 0.186*(1.0+z)**(-0.14)
@@ -60,9 +60,9 @@ a_tinker_fid = lambda z: 1.47*(1.0+z)**(-0.06)
 b_tinker_fid = lambda z: 2.57*(1.0+z)**(-alpha_tinker_fid)
 c_tinker_fid = lambda z: 1.19
 
-fNL_fid = 0.0
+fNL_fid = 1.0
 
-hmf_pars_fid = lambda z: dict(A_tinker = A_tinker_fid(z),a_tinker = a_tinker_fid(z),b_tinker = b_tinker_fid(z),c_tinker = c_tinker_fid(z))
+hmf_pars_fid = lambda z: dict(A_tinker = A_tinker_fid(z),a_tinker = a_tinker_fid(z),b_tinker = b_tinker_fid(z),c_tinker = c_tinker_fid(z),fNL = fNL_fid)
 
 ###########################################
 # DEFAULT ASTRO MODEL
