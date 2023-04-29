@@ -3,7 +3,7 @@
 from LIM_b7 import *
 from LIM_b7.ultrasat_fiducial_pars import astrocosmo_dict
 
-save_fig_dir = './results_ultrasat/new/'#spherex/' 
+save_fig_dir = './results/ultrasat/'#spherex/' 
 
 if hmf_fid == 'NG_Riotto':
     save_fig_dir += 'fNL' + str(fNL_fid) + '/'
