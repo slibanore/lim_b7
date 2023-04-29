@@ -1,10 +1,9 @@
-#LIM_b7
+# LIM_b7
 
 LIM code used by the cosmology group at the [Ben Gurion University of the Negev](https://physics.bgu.ac.il/~kovetz/group.html) (Be'er Sheva, Israel).
 
-The code is based on the orginal work by [Bernal et al.]( https://github.com/jl-bernal/lim) and updated in the branches to deal with different projects.
 
-##Branches
+## Branches
 
 - **main:** use the VID to probe small scales 
 [Libanore et al.](https://arxiv.org/abs/2208.01658)
@@ -17,9 +16,13 @@ The code is based on the orginal work by [Bernal et al.]( https://github.com/jl-
 [Libanore, Kovetz](ULTRASAT White paper)
 
 - **nu_mass:** contrain neutrino mass through LIM 
-[Shmueli, Libanore, Kovetz](in prep.) 
+[Shmueli, Libanore, Kovetz](in prep.)
 *Work in progress*
 
 - **fnl:** constrain inflation parameters through LIM  
 [Unal, Libanore, et al.](in prep.)
 *Work in progress*
+
+
+
+The code is based on the orginal work by [Bernal et al.]( https://github.com/jl-bernal/lim).
