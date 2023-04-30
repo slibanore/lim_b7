@@ -1,10 +1,10 @@
-# LIM_b7
+# LIM_b7: nu_masses
 
-## Goal of this project:
+### Goal of this project
 
-Reconstruct the velocity field (radial and transverse) of large scale structures using cross correlations with LIM, so to constrain neutrino masses.
+Reconstruct the radial and transverse velocity field of large scale structures using cross correlations with LIM, in order to to constrain neutrino masses.
 
-## Developers:
+### Developers
 
 *Sarah Libanore*, *Gali Shmueli*
 
