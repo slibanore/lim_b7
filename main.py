@@ -1,96 +1,93 @@
 # SL: last update 01/28/2023
 
-import plot_lib as vp 
-import VID_fisher_lib as vf
+import get_Pk as pk 
 import Pkline_fisher as pf
 from LIM_b7.fiducial_pars import *
 
 
+
+###########################################
+# CHOOSE MODULE
+###########################################
+
+get_matter_pk = True
+get_line_pk = True
+
+do_RSD = True
+smooth = True
+do_conv_Wkmin = False
+nonlinear = False
+
+save_flag = True
+plot_flag = True
+
+Pk_fisher = False
+
+###########################################
+# SETUP ANALYSIS
+###########################################
+
+model_data = dict(\
+    developer = 'CDS',               
+
+    cosmo_input_camb = dict(
+    f_NL=0, H0=67.67, cosmomc_theta=None,
+    ombh2=0.0224, omch2=0.1193, omk=0.0, neutrino_hierarchy='degenerate', 
+    num_massive_neutrinos=3, mnu=0.06, nnu=3.046, 
+    YHe=None, meffsterile=0.0, standard_neutrino_neff=3.046, 
+    TCMB=2.7255, tau=None, deltazrei=None, bbn_predictor=None, 
+    theta_H0_range=[10, 100], w=-1.0, wa=0., cs2=1.0, 
+    dark_energy_model='ppf',As=2.105e-09, ns=0.967, nrun=0., nrunrun=0.0, r=0.0, nt=None, ntrun=0.0, 
+    pivot_scalar=0.05, pivot_tensor=0.05,
+    parameterization=2,halofit_version='mead'),
+
+    # HALO PROPERTIES
+    Mmin = Mmin_fid,
+    Mmax = Mmax_fid,
+    hmf_model = 'Tinker',
+    bias_model = 'Tinker10',
+
+    # POWER SPECTRUM - RELATED QUANTITIES
+    kmin = kmin_fid,
+    kmax = kmax_fid,
+    do_onehalo=True,
+    do_RSD=do_RSD,
+    smooth= smooth,
+    do_conv_Wkmin = do_conv_Wkmin,
+    nonlinear=nonlinear,
+    nk = 500,
+    fduty=1.,
+    nmu=1000,
+
+    )
+
+survey = 'COS3' # EOR, deep, wide
+redshift = 6.25 # 2.6, 3, 5.3, 6.25, 7.25
+
 def main():
 
     ###########################################
-    # FIDUCIALS
+    # COMPUTE AND PLOT POWER SPECTRUM
     ###########################################
 
-    # 1) set up the fiducial parameters you want to change wrt the default file
-    # NOTE: before changing the hmf or astro models check the syntax in fiducial_pars.py / default_pars.py
-
-    # !!! To fix : if this function updates the fiducial pars list but then the following ones are run with the previous version - how to reload it?? 
-
-    from LIM_b7 import update_fiducials
-
-    par_list = []
-    par_value = []
-
-    file_pars = 'LIM_b7/fiducial_pars.py'
-
-    if len(par_list) > 0:
-        update_fiducials(file_pars,par_list,par_value)
-
+    pk.run_pk(get_matter_pk,
+           get_line_pk,
+           model_data,
+           survey,
+           redshift,
+           save_flag,
+           plot_flag)
 
     ###########################################
-    # CHOOSE MODULE
+    # COMPUTE FISHER
     ###########################################
-
-    # 2) choose which module to run 
-
-    check_plots = False
-    VID_fisher = True
-    Pk_fisher = True
-
-    ###########################################
-    # SETUP ANALYSIS
-    ###########################################
-
-    # 3) set up specific analysis parameters
-    # NOTE that each module has inside more setting that can be tuned 
-
-    if check_plots:
-
-        mod_par = 'hmf_pars'
-        mod_val = [lambda z: dict(A_tinker = A_tinker_fid(z),a_tinker = a_tinker_fid(z),b_tinker = b_tinker_fid(z),c_tinker = c_tinker_fid(z),fNL = 100.),
-                   lambda z: dict(A_tinker = A_tinker_fid(z),a_tinker = a_tinker_fid(z),b_tinker = b_tinker_fid(z),c_tinker = c_tinker_fid(z),fNL = 10.),
-                   lambda z: dict(A_tinker = A_tinker_fid(z),a_tinker = a_tinker_fid(z),b_tinker = b_tinker_fid(z),c_tinker = c_tinker_fid(z),fNL = 5.)]#,
-                   #lambda z: dict(A_tinker = A_tinker_fid(z),a_tinker = a_tinker_fid(z),b_tinker = b_tinker_fid(z),c_tinker = c_tinker_fid(z),fNL = 1.)]
-        save_figure = True
-        if type(mod_val) == list:
-            get_SNR = True
-            vp.compare_multi_vals(mod_par, mod_val, save_figure, get_SNR)
-        else:
-            vp.compare_models(mod_par, mod_val, save_figure)
-
-
-    if VID_fisher:
-
-        model_id = 'COS3_lz_wide'
-        developer = 'CDS'
-#        derive_pars = ['a1','a2','a3','a4','astro_alpha','astro_beta','astro_sig_SFR', 'astro_sig_scatter','astro_Lcut','a_tinker']
-        derive_pars = ['fNL','astro_alpha','astro_beta','astro_sig_SFR', 'astro_sig_scatter','astro_Lcut']
-        save_VID_flag = True
-        save_fisher_flag = True
-        plot_sigma_flag = True
-        import_allowed = True
-        a1_prior = 0.03
-        a_t_prior = 0.2
-
-        vf.fisher_VID(model_id, 
-            developer, 
-            derive_pars,
-            save_VID_flag, 
-            save_fisher_flag, 
-            plot_sigma_flag, 
-            import_allowed, 
-            a1_prior, 
-            a_t_prior)
-
 
     if Pk_fisher:
 
-        model_id = 'COS3_lz_wide'
+        model_id = 'COS3_hz'
         developer = 'CDS'
-        #derive_model = ['a1','a2','a3','a4','astro_alpha','astro_beta','astro_sig_SFR', 'astro_sig_scatter','a_tinker']
-        derive_model = ['fNL']
-        derive_Pkline = ['Tfs8','Tbs8','Pshot','sNL','alpha_par','alpha_perp'] #,'Tfs8','Tbs8','Pshot','sNL','alpha_par','alpha_perp'
+        derive_model = []
+        derive_Pkline = ['Tfs8','Tbs8','Pshot','sNL','alpha_par','alpha_perp'] 
         multipole = [0,2]
         save_Pkline_flag = True
         save_fisher_flag = True

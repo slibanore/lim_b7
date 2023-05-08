@@ -2,3 +2,4 @@ results*
 .vscode
 PLOTS
 .gitignore
+*__pycache__*

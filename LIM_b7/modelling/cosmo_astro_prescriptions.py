@@ -55,6 +55,10 @@ class LineModel(object):
         fduty=1.,
         nonlinear=False,
         nmu=1000,
+        do_onehalo=True,
+        do_RSD=True,
+        smooth= True,
+        do_conv_Wkmin = False,
 
         # VID - RELATED QUANTITIES
         Tmin_VID=1e-5*u.uK,
