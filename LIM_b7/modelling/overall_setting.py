@@ -24,7 +24,6 @@ import importlib
 from scipy.interpolate import interp1d, interp2d,RegularGridInterpolator
 from scipy.special import sici,erf,legendre,j1
 from scipy.stats import poisson
-from scipy.fft import fft,ifft
 from scipy.integrate import quad
 from getdist.gaussian_mixtures import GaussianND
 
