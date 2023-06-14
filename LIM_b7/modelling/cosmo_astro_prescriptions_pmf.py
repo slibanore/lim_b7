@@ -427,6 +427,7 @@ class LineModel(object):
                 else self.CDS_alpha_3 if self.k_23 <= k < self.k_34 \
                 else self.CDS_alpha_4
 
+            #output =  np.genfromtxt('pk_fid.txt')[:2000,1]
             output = Pk0 * np.vectorize(alpha)(k) * self.Dgrowth(z)**2
 
         elif self.developer == 'axions':
@@ -453,6 +454,7 @@ class LineModel(object):
         elif self.developer == 'PMF':
             # TalAdi: use kmax from dictionary
             # (should set the value in fiducial_pars accordingly)
+            
             kmax = self.kmax.value
             zmax = self.zcosmo[-1]
             nz_step = 64
@@ -496,7 +498,8 @@ class LineModel(object):
     @cached_property
     def Pm(self):
 
-        return self.PKint(self.z,self.ki_grid.value)*u.Mpc**3
+        #return self.PKint(self.z,self.ki_grid.value)*u.Mpc**3
+        return self.PKint(self.z,self.ki_grid)*u.Mpc**3
 
 
     # interpolate effective f depending on k,z + include tiling to multply by mu 
@@ -594,8 +597,11 @@ class LineModel(object):
     @cached_property
     def k(self):
 
+        #k_val = np.genfromtxt('pk_fid.txt')[:2000,0]
+        
         Nedge = self.k_edge.size
         
+        #return k_val 
         return (self.k_edge[0:Nedge-1]+self.k_edge[1:Nedge])/2.
     
     # width of k bins

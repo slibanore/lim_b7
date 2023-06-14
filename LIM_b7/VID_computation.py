@@ -7,7 +7,7 @@ class VID(LineObs):
         
             # VID - RELATED QUANTITES
             nT=2**22,
-            Ngal_max=500,
+            Ngal_max=100,
             subtract_VID_mean=True,
             linear_VID_bin=False,
             do_sigma_G = True,
@@ -113,7 +113,7 @@ class VID(LineObs):
             kpar = ki*mui
             kperp = ki*np.sqrt(1.-mui**2.)
             
-            #Gaussian window for voxel -> FT
+            #Gaussian window for voxel -> FT    
             Wkpar2 = np.exp(-((kpar*self.sigma_par)**2).decompose())
             Wkperp2 = np.exp(-((kperp*self.sigma_perp)**2).decompose())
             Wk2 = Wkpar2*Wkperp2

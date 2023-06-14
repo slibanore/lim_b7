@@ -58,7 +58,7 @@ default_par = dict(
     do_conv_Wkmin = False,
 
     # VID - RELATED QUANTITES
-    Tmin_VID=1e-5*u.uK,
+    Tmin_VID=1e-3*u.uK,
     Tmax_VID=80.*u.uK,
     nT=2**22,
     do_fast_VID=True,
