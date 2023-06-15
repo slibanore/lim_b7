@@ -16,9 +16,9 @@ light = 2.998e8 # m / s
 # kmax for Pk computation
 # TalAdi
 # kmax_fid = 100.*u.Mpc**-1
-kmax_fid = 1000.*u.Mpc**-1
+kmax_fid = 1500.*u.Mpc**-1
 # kmax_fid = 75.*u.Mpc**-1
-nk_fid = 2000
+nk_fid = 2500
 
 #developer = 'CDS' 
 CDS_alpha_1_fid = 1.
