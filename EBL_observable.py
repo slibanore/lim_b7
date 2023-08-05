@@ -13,7 +13,7 @@ def Jnu_monopole(detector):
 
     use_z = z_small if detector == 'GALEX_NUV' or detector == 'GALEX_FUV' or detector == 'ULTRASAT' else z_small_castor if detector == 'CASTOR_UV' or detector == 'CASTOR_U' or detector == 'CASTOR_G' else -1
 
-    filename = 'dat/dJdz_' + detector + '.dat'
+    filename = 'results/map_EBL/dJdz_' + detector + '.dat'
     
     J = np.zeros(len(use_z))
     for i in range(len(use_z)):
@@ -427,9 +427,9 @@ def run_wm():
 
     wm = np.zeros(len(z_small))
     if scale_physical_max == 300*u.Mpc:
-        filename = 'dat/wmz_thetamax.dat'
+        filename = 'results/map_EBL/wmz_thetamax.dat'
     else:
-        filename = 'dat/wmz.dat'
+        filename = 'results/map_EBL/wmz.dat'
 
     for i in (range(len(z_small))):
         print('\nDoing z = ' + str(z_small[i]))
@@ -442,9 +442,9 @@ def run_wm():
 #    for i in (range(len(z_small_castor))):
 #        print('\nDoing z = ' + str(z_small_castor[i]))
 #        print('DM')
-#        wm[i] = wz_m(z_small_castor[i],run = True,filename = 'dat/wmz_castor.dat')
+#        wm[i] = wz_m(z_small_castor[i],run = True,filename = 'results/map_EBL/wmz_castor.dat')
 #
-#    np.savetxt('dat/wmz_castor.dat',(z_small_castor, wm))
+#    np.savetxt('results/map_EBL/wmz_castor.dat',(z_small_castor, wm))
 
     return 
 
@@ -458,34 +458,34 @@ def run_wJg():
     wcg = np.zeros(len(z_small_castor))
 
     if scale_physical_max == 300*u.Mpc:
-        filename_dm = 'dat/wmz_thetamax.dat'
+        filename_dm = 'results/map_EBL/wmz_thetamax.dat'
     else:
-        filename_dm = 'dat/wmz.dat'
+        filename_dm = 'results/map_EBL/wmz.dat'
 
     for i in (range(len(z_small))):
         print('\nDoing z = ' + str(z_small[i]))
         print('NUV')
         wn[i] = wJgz(z_small[i],'GALEX_NUV','SDSS',True,
-            filename_wm = 'dat/wmz.dat',
-            filename_dJ = 'dat/dJdz_GALEX_NUV.dat',
-            filename_bJ = 'dat/bJ_GALEX_NUV.dat')
+            filename_wm = 'results/map_EBL/wmz.dat',
+            filename_dJ = 'results/map_EBL/dJdz_GALEX_NUV.dat',
+            filename_bJ = 'results/map_EBL/bJ_GALEX_NUV.dat')
         print('FUV')
         wf[i] = wJgz(z_small[i],'GALEX_FUV','SDSS',True,
-            filename_wm = 'dat/wmz.dat',
-            filename_dJ = 'dat/dJdz_GALEX_FUV.dat',
-            filename_bJ = 'dat/bJ_GALEX_FUV.dat')
+            filename_wm = 'results/map_EBL/wmz.dat',
+            filename_dJ = 'results/map_EBL/dJdz_GALEX_FUV.dat',
+            filename_bJ = 'results/map_EBL/bJ_GALEX_FUV.dat')
         print('ULTRASAT')
         wu[i] = wJgz(z_small[i],'ULTRASAT','SPHEREx',True,
             filename_wm = filename_dm,
-            filename_dJ = 'dat/dJdz_ULTRASAT.dat',
-            filename_bJ = 'dat/bJ_ULTRASAT.dat')
+            filename_dJ = 'results/map_EBL/dJdz_ULTRASAT.dat',
+            filename_bJ = 'results/map_EBL/bJ_ULTRASAT.dat')
         
-    np.savetxt('dat/wJg_GALEX_NUV,SDSS.dat',(z_small, wn))
-    np.savetxt('dat/wJg_GALEX_FUV,SDSS.dat',(z_small, wf))
+    np.savetxt('results/map_EBL/wJg_GALEX_NUV,SDSS.dat',(z_small, wn))
+    np.savetxt('results/map_EBL/wJg_GALEX_FUV,SDSS.dat',(z_small, wf))
     if scale_physical_max == 300*u.Mpc:
-        filename_ULT = 'dat/wJg_ULTRASAT,SPHEREx_thetamax.dat'
+        filename_ULT = 'results/map_EBL/wJg_ULTRASAT,SPHEREx_thetamax.dat'
     else:
-        filename_ULT = 'dat/wJg_ULTRASAT,SPHEREx.dat'
+        filename_ULT = 'results/map_EBL/wJg_ULTRASAT,SPHEREx.dat'
 
     np.savetxt(filename_ULT,(z_small, wu))
     
@@ -493,23 +493,23 @@ def run_wJg():
         print('\nDoing z = ' + str(z_small_castor[i]))
         print('CASTOR UV')
         wcuv[i] = wJgz(z_small_castor[i],'CASTOR_UV','SDSS',True,
-            filename_wm = 'dat/wmz_castor.dat',
-            filename_dJ = 'dat/dJdz_CASTOR_UV.dat',
-            filename_bJ = 'dat/bJ_CASTOR_UV.dat')
+            filename_wm = 'results/map_EBL/wmz_castor.dat',
+            filename_dJ = 'results/map_EBL/dJdz_CASTOR_UV.dat',
+            filename_bJ = 'results/map_EBL/bJ_CASTOR_UV.dat')
         print('CASTOR U')
         wcu[i] = wJgz(z_small_castor[i],'CASTOR_U','SDSS',True,
-            filename_wm = 'dat/wmz_castor.dat',
-            filename_dJ = 'dat/dJdz_CASTOR_U.dat',
-            filename_bJ = 'dat/bJ_CASTOR_U.dat')
+            filename_wm = 'results/map_EBL/wmz_castor.dat',
+            filename_dJ = 'results/map_EBL/dJdz_CASTOR_U.dat',
+            filename_bJ = 'results/map_EBL/bJ_CASTOR_U.dat')
         print('CASTOR G')
         wcg[i] = wJgz(z_small_castor[i],'CASTOR_G','SDSS',True,
-            filename_wm = 'dat/wmz_castor.dat',
-            filename_dJ = 'dat/dJdz_CASTOR_G.dat',
-            filename_bJ = 'dat/bJ_CASTOR_G.dat')
+            filename_wm = 'results/map_EBL/wmz_castor.dat',
+            filename_dJ = 'results/map_EBL/dJdz_CASTOR_G.dat',
+            filename_bJ = 'results/map_EBL/bJ_CASTOR_G.dat')
         
-    np.savetxt('dat/wJg_CASTOR_UV,SDSS.dat',(z_small_castor, wcuv))
-    np.savetxt('dat/wJg_CASTOR_U,SDSS.dat',(z_small_castor, wcu))
-    np.savetxt('dat/wJg_CASTOR_G,SDSS.dat',(z_small_castor, wcg))
+    np.savetxt('results/map_EBL/wJg_CASTOR_UV,SDSS.dat',(z_small_castor, wcuv))
+    np.savetxt('results/map_EBL/wJg_CASTOR_U,SDSS.dat',(z_small_castor, wcu))
+    np.savetxt('results/map_EBL/wJg_CASTOR_G,SDSS.dat',(z_small_castor, wcg))
 
     return 
 
@@ -528,20 +528,20 @@ def plot_wz():
     for i in (range(len(z_small))):
         print('\nDoing z = ' + str(z_small[i]))
         print('DM')
-        wm[i] = wz_m(z_small[i],run = False,filename = 'dat/wmz.dat')
+        wm[i] = wz_m(z_small[i],run = False,filename = 'results/map_EBL/wmz.dat')
 
     if scale_physical_max == 300*u.Mpc:
-        filename_ULT = 'dat/wJg_ULTRASAT,SPHEREx_thetamax.dat'
+        filename_ULT = 'results/map_EBL/wJg_ULTRASAT,SPHEREx_thetamax.dat'
     else:
-        filename_ULT = 'dat/wJg_ULTRASAT,SPHEREx.dat'
+        filename_ULT = 'results/map_EBL/wJg_ULTRASAT,SPHEREx.dat'
 
     for i in (range(len(z_small))):
         print('\nDoing z = ' + str(z_small[i]))
         print('NUV')
-        wn[i] = wJgz(z_small[i],'GALEX_NUV','SDSS',False,filename='dat/wJg_GALEX_NUV,SDSS.dat')
+        wn[i] = wJgz(z_small[i],'GALEX_NUV','SDSS',False,filename='results/map_EBL/wJg_GALEX_NUV,SDSS.dat')
         print('FUV')
         wf[i] = wJgz(z_small[i],'GALEX_FUV','SDSS',False,
-            filename='dat/wJg_GALEX_FUV,SDSS.dat')
+            filename='results/map_EBL/wJg_GALEX_FUV,SDSS.dat')
         print('ULTRASAT')
         wu[i] = wJgz(z_small[i],'ULTRASAT','SPHEREx',False,
             filename=filename_ULT)
@@ -549,13 +549,13 @@ def plot_wz():
     for i in (range(len(z_small_castor))):
         print('\nDoing z = ' + str(z_small_castor[i]))
         print('CASTOR UV')
-        wcuv[i] = wJgz(z_small_castor[i],'CASTOR_UV','SDSS',False,filename='dat/wJg_CASTOR_UV,SDSS.dat')
+        wcuv[i] = wJgz(z_small_castor[i],'CASTOR_UV','SDSS',False,filename='results/map_EBL/wJg_CASTOR_UV,SDSS.dat')
         print('CASTOR U')
         wcu[i] = wJgz(z_small_castor[i],'CASTOR_U','SDSS',False,
-            filename='dat/wJg_CASTOR_U,SDSS.dat')
+            filename='results/map_EBL/wJg_CASTOR_U,SDSS.dat')
         print('CASTOR G')
         wcg[i] = wJgz(z_small_castor[i],'CASTOR_G','SDSS',False,
-            filename='dat/wJg_CASTOR_G,SDSS.dat')
+            filename='results/map_EBL/wJg_CASTOR_G,SDSS.dat')
         
     plt.figure()
     plt.plot(z_small,(wu),color_ULTRASAT,label=r'$\rm ULTRASAT\times SPHEREx$')

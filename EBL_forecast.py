@@ -164,9 +164,9 @@ def plot_signal_and_noise(detector,gal_survey):
     signal = np.zeros(len(use_z))
 
     if scale_physical_max == 300*u.Mpc and detector == 'ULTRASAT': 
-        filename = 'dat/wJg_' + detector +',' + gal_survey + '_thetamax.dat'
+        filename = 'results/map_EBL/wJg_' + detector +',' + gal_survey + '_thetamax.dat'
     else:
-        filename = 'dat/wJg_' + detector +',' + gal_survey + '.dat'
+        filename = 'results/map_EBL/wJg_' + detector +',' + gal_survey + '.dat'
 
     for i in tqdm(range(len(use_z))):
         signal[i] = abs(wJgz(use_z[i],detector,gal_survey,False,filename=filename))
@@ -226,22 +226,22 @@ def plot_noise():
 
 
     if scale_physical_max == 300*u.Mpc:
-        filename_ULT = 'dat/wJg_ULTRASAT,SPHEREx_thetamax.dat'
+        filename_ULT = 'results/map_EBL/wJg_ULTRASAT,SPHEREx_thetamax.dat'
     else:
-        filename_ULT = 'dat/wJg_ULTRASAT,SPHEREx.dat'
+        filename_ULT = 'results/map_EBL/wJg_ULTRASAT,SPHEREx.dat'
     
     for i in tqdm(range(len(z_small))):
-        sn[i] = abs(wJgz(z_small[i],'GALEX_NUV','SDSS',False,filename='dat/wJg_GALEX_NUV,SDSS.dat'))
-        sf[i] = abs(wJgz(z_small[i],'GALEX_FUV','SDSS',False,filename='dat/wJg_GALEX_FUV,SDSS.dat'))
+        sn[i] = abs(wJgz(z_small[i],'GALEX_NUV','SDSS',False,filename='results/map_EBL/wJg_GALEX_NUV,SDSS.dat'))
+        sf[i] = abs(wJgz(z_small[i],'GALEX_FUV','SDSS',False,filename='results/map_EBL/wJg_GALEX_FUV,SDSS.dat'))
         sU[i] = abs(wJgz(z_small[i],'ULTRASAT','SPHEREx',False,filename=filename_ULT))
 #
         nG[i] = sigma_wz(z_small[i],'GALEX_NUV','SDSS',True).value
         nU[i] = sigma_wz(z_small[i],'ULTRASAT','SPHEREx',True).value
 
     for i in tqdm(range(len(z_small_castor))):
-        sCUV[i] = abs(wJgz(z_small_castor[i],'CASTOR_UV','SDSS',False,filename='dat/wJg_CASTOR_UV,SDSS.dat'))
-        sCU[i] = abs(wJgz(z_small_castor[i],'CASTOR_U','SDSS',False,filename='dat/wJg_CASTOR_U,SDSS.dat'))
-        sCG[i] = abs(wJgz(z_small_castor[i],'CASTOR_G','SDSS',False,filename='dat/wJg_CASTOR_G,SDSS.dat'))
+        sCUV[i] = abs(wJgz(z_small_castor[i],'CASTOR_UV','SDSS',False,filename='results/map_EBL/wJg_CASTOR_UV,SDSS.dat'))
+        sCU[i] = abs(wJgz(z_small_castor[i],'CASTOR_U','SDSS',False,filename='results/map_EBL/wJg_CASTOR_U,SDSS.dat'))
+        sCG[i] = abs(wJgz(z_small_castor[i],'CASTOR_G','SDSS',False,filename='results/map_EBL/wJg_CASTOR_G,SDSS.dat'))
 
         nCUVU[i] = sigma_wz(z_small_castor[i],'CASTOR_UV','SDSS',True).value
         nCG[i] = sigma_wz(z_small_castor[i],'CASTOR_G','SDSS',True).value
@@ -311,23 +311,23 @@ def ders(parameter,detector,gal_survey):
     print('Doing der: ' + str(parameter))
 
     if scale_physical_max == 300*u.Mpc and detector == 'ULTRASAT': 
-        filename = 'dat/der/d' + parameter + '_' + detector + ',' + gal_survey + '_thetamax.dat'
-        filename_wm = 'dat/wmz_thetamax.dat'
+        filename = 'results/map_EBL/der/d' + parameter + '_' + detector + ',' + gal_survey + '_thetamax.dat'
+        filename_wm = 'results/map_EBL/wmz_thetamax.dat'
     else:
-        filename = 'dat/der/d' + parameter + '_' + detector + ',' + gal_survey + '.dat'
+        filename = 'results/map_EBL/der/d' + parameter + '_' + detector + ',' + gal_survey + '.dat'
     
         if detector == 'GALEX_NUV' or detector == 'GALEX_FUV' or detector == 'ULTRASAT':
-            filename_wm = 'dat/wmz.dat'
+            filename_wm = 'results/map_EBL/wmz.dat'
         elif detector == 'CASTOR_UV' or detector == 'CASTOR_U' or detector == 'CASTOR_G':
-            filename_wm = 'dat/wmz_castor.dat'
+            filename_wm = 'results/map_EBL/wmz_castor.dat'
         else:
             filename_wm = -1
 
-    filename_dJ = 'dat/der/dJ_d' + parameter + '_' + detector + ',' + gal_survey + '.dat'
-    filename_bJ = 'dat/der/bJ_d' + parameter + '_' + detector + ',' + gal_survey + '.dat'
+    filename_dJ = 'results/map_EBL/der/dJ_d' + parameter + '_' + detector + ',' + gal_survey + '.dat'
+    filename_bJ = 'results/map_EBL/der/bJ_d' + parameter + '_' + detector + ',' + gal_survey + '.dat'
 
-    filename_dJ_fid = 'dat/dJdz_' + detector + '.dat'
-    filename_bJ_fid = 'dat/bJ_' + detector + '.dat' 
+    filename_dJ_fid = 'results/map_EBL/dJdz_' + detector + '.dat'
+    filename_bJ_fid = 'results/map_EBL/bJ_' + detector + '.dat' 
 
     if os.path.exists(filename):
         z, der_wz = np.genfromtxt(filename)
@@ -384,9 +384,9 @@ def ders(parameter,detector,gal_survey):
 
 
         if scale_physical_max == 300*u.Mpc and detector == 'ULTRASAT': 
-            filename_fid = 'dat/wJg_' + detector + ',' + gal_survey + '_thetamax.dat'
+            filename_fid = 'results/map_EBL/wJg_' + detector + ',' + gal_survey + '_thetamax.dat'
         else:
-            filename_fid = 'dat/wJg_' + detector + ',' + gal_survey + '.dat'
+            filename_fid = 'results/map_EBL/wJg_' + detector + ',' + gal_survey + '.dat'
        
         if os.path.exists(filename_fid):
                 run_fid = False 
@@ -439,14 +439,14 @@ def fisher_matrix(pars,detector,gal_survey,group_vox,run = False):
 
     if group_vox: 
         if scale_physical_max == 300*u.Mpc and detector == 'ULTRASAT': 
-            filename = 'dat/FISHER_' + detector + ',' + gal_survey + '_thetamax.dat'
+            filename = 'results/map_EBL/FISHER_' + detector + ',' + gal_survey + '_thetamax.dat'
         else:
-            filename = 'dat/FISHER_' + detector + ',' + gal_survey + '.dat'
+            filename = 'results/map_EBL/FISHER_' + detector + ',' + gal_survey + '.dat'
     else:
         if scale_physical_max == 300*u.Mpc and detector == 'ULTRASAT': 
-            filename = 'dat/FISHER_' + detector + ',' + gal_survey + '_singleVOX_thetamax.dat'
+            filename = 'results/map_EBL/FISHER_' + detector + ',' + gal_survey + '_singleVOX_thetamax.dat'
         else:
-            filename = 'dat/FISHER_' + detector + ',' + gal_survey + '_singleVOX.dat'
+            filename = 'results/map_EBL/FISHER_' + detector + ',' + gal_survey + '_singleVOX.dat'
 
     if not run and os.path.exists(filename):
         Fisher_start = np.genfromtxt(filename)
@@ -1279,15 +1279,15 @@ def error_dJ_biasfix(group_vox,run = False):
 
         unit = (dlambda_dnu(1*u.Hz)* (u.nm)**-1 * sigma_eps_nu_use(lambda_from_nu(1*u.Hz)) /(1*u.Hz)).unit
 
-        sigma_dJ_FN[z_val.index(use_z)] = (((cu.c.to(u.km/u.s) / (4*np.pi*H(use_z)*(1+use_z)) * np.trapz(intg_FN,nu_obs_val))*unit*u.Hz/u.steradian).to(u.Jy/u.steradian)).value * bJ_z(use_z,'GALEX_FUV',run=False,vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = False,filename='dat/bJ_' + 'GALEX_FUV' + '.dat')
+        sigma_dJ_FN[z_val.index(use_z)] = (((cu.c.to(u.km/u.s) / (4*np.pi*H(use_z)*(1+use_z)) * np.trapz(intg_FN,nu_obs_val))*unit*u.Hz/u.steradian).to(u.Jy/u.steradian)).value * bJ_z(use_z,'GALEX_FUV',run=False,vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = False,filename='results/map_EBL/bJ_' + 'GALEX_FUV' + '.dat')
 
-        sigma_dJ_FU[z_val.index(use_z)] = (((cu.c.to(u.km/u.s) / (4*np.pi*H(use_z)*(1+use_z)) * np.trapz(intg_FU,nu_obs_val))*unit*u.Hz/u.steradian).to(u.Jy/u.steradian)).value * bJ_z(use_z,'GALEX_FUV',run=False,vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = False,filename='dat/bJ_' + 'GALEX_FUV' + '.dat')
+        sigma_dJ_FU[z_val.index(use_z)] = (((cu.c.to(u.km/u.s) / (4*np.pi*H(use_z)*(1+use_z)) * np.trapz(intg_FU,nu_obs_val))*unit*u.Hz/u.steradian).to(u.Jy/u.steradian)).value * bJ_z(use_z,'GALEX_FUV',run=False,vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = False,filename='results/map_EBL/bJ_' + 'GALEX_FUV' + '.dat')
 
-        dJ_F[z_val.index(use_z)] = dJdz(use_z,'GALEX_FUV',False,False,False,False,False,False,False,filename='dat/dJdz_' + 'GALEX_FUV' + '.dat') * bJ_z(use_z,'GALEX_FUV',run=False,vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = False,filename='dat/bJ_' + 'GALEX_FUV' + '.dat')
+        dJ_F[z_val.index(use_z)] = dJdz(use_z,'GALEX_FUV',False,False,False,False,False,False,False,filename='results/map_EBL/dJdz_' + 'GALEX_FUV' + '.dat') * bJ_z(use_z,'GALEX_FUV',run=False,vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = False,filename='results/map_EBL/bJ_' + 'GALEX_FUV' + '.dat')
                 
-        sigma_dJ_U[z_val.index(use_z)] = (((cu.c.to(u.km/u.s) / (4*np.pi*H(use_z)*(1+use_z)) * np.trapz(intg_U,nu_obs_val))*unit*u.Hz/u.steradian).to(u.Jy/u.steradian)).value * bJ_z(use_z,'ULTRASAT',run=False,vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = False,filename='dat/bJ_' + 'ULTRASAT' + '.dat')
+        sigma_dJ_U[z_val.index(use_z)] = (((cu.c.to(u.km/u.s) / (4*np.pi*H(use_z)*(1+use_z)) * np.trapz(intg_U,nu_obs_val))*unit*u.Hz/u.steradian).to(u.Jy/u.steradian)).value * bJ_z(use_z,'ULTRASAT',run=False,vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = False,filename='results/map_EBL/bJ_' + 'ULTRASAT' + '.dat')
 
-        dJ_U[z_val.index(use_z)] = dJdz(use_z,'ULTRASAT',False,False,False,False,False,False,False,filename='dat/dJdz_' + 'ULTRASAT' + '.dat') * bJ_z(use_z,'ULTRASAT',run=False,vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = False,filename='dat/bJ_' + 'ULTRASAT' + '.dat')
+        dJ_U[z_val.index(use_z)] = dJdz(use_z,'ULTRASAT',False,False,False,False,False,False,False,filename='results/map_EBL/dJdz_' + 'ULTRASAT' + '.dat') * bJ_z(use_z,'ULTRASAT',run=False,vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = False,filename='results/map_EBL/bJ_' + 'ULTRASAT' + '.dat')
         
     #detector_name = r'$GALEX\, NUV$' if detector == 'GALEX_NUV' else r'$GALEX\, FUV$' if detector == 'GALEX_FUV' else r'$ULTRASAT$' if detector == 'ULTRASAT' else -1
     plt.plot(z_val,dJ_F,label=r'$\rm GALEX\,FUV\,signal$',color=color_FUV)
@@ -1455,26 +1455,26 @@ def error_dJ_ULTRASAT(group_vox,run = False):
 
             if detector == 'ULTRASAT':
             
-                sigma_dJ[z_val.index(use_z)] = (((cu.c.to(u.km/u.s) / (4*np.pi*H(use_z)*(1+use_z)) * np.trapz(intg,nu_obs_val))*unit*u.Hz/u.steradian).to(u.Jy/u.steradian)).value * bJ_z(use_z,detector,run=False,vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = False,filename='dat/bJ_' + detector + '.dat')
+                sigma_dJ[z_val.index(use_z)] = (((cu.c.to(u.km/u.s) / (4*np.pi*H(use_z)*(1+use_z)) * np.trapz(intg,nu_obs_val))*unit*u.Hz/u.steradian).to(u.Jy/u.steradian)).value * bJ_z(use_z,detector,run=False,vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = False,filename='results/map_EBL/bJ_' + detector + '.dat')
 
-                sigma_dJ_det[z_val.index(use_z)] = (((cu.c.to(u.km/u.s) / (4*np.pi*H(use_z)*(1+use_z)) * np.trapz(intg_det,nu_obs_val))*unit*u.Hz/u.steradian).to(u.Jy/u.steradian)).value * bJ_z(use_z,detector,run=False,vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = False,filename='dat/bJ_' + detector + '.dat')
+                sigma_dJ_det[z_val.index(use_z)] = (((cu.c.to(u.km/u.s) / (4*np.pi*H(use_z)*(1+use_z)) * np.trapz(intg_det,nu_obs_val))*unit*u.Hz/u.steradian).to(u.Jy/u.steradian)).value * bJ_z(use_z,detector,run=False,vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = False,filename='results/map_EBL/bJ_' + detector + '.dat')
 
-                dJ[z_val.index(use_z)] = dJdz(use_z,detector,False,False,False,False,False,False,False,filename='dat/dJdz_' + detector + '.dat') * bJ_z(use_z,detector,run=False,vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = False,filename='dat/bJ_' + detector + '.dat')
+                dJ[z_val.index(use_z)] = dJdz(use_z,detector,False,False,False,False,False,False,False,filename='results/map_EBL/dJdz_' + detector + '.dat') * bJ_z(use_z,detector,run=False,vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = False,filename='results/map_EBL/bJ_' + detector + '.dat')
             
-                dJ_eps[z_val.index(use_z)] = dJdz(use_z,detector,True,eps_large,False,False,False,False,False,filename='dat/dJdz_' + detector + '_eps150_0_large.dat') * bJ_z(use_z,detector,run=True,vals_eps150=eps_large,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = False,filename='dat/bJ_' + detector + '_eps150_0_large.dat')
+                dJ_eps[z_val.index(use_z)] = dJdz(use_z,detector,True,eps_large,False,False,False,False,False,filename='results/map_EBL/dJdz_' + detector + '_eps150_0_large.dat') * bJ_z(use_z,detector,run=True,vals_eps150=eps_large,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = False,filename='results/map_EBL/bJ_' + detector + '_eps150_0_large.dat')
             
-                dJ_bias[z_val.index(use_z)] = dJdz(use_z,detector,False,False,False,False,False,False,False,filename='dat/dJdz_' + detector + '.dat') * bJ_z(use_z,detector,run=True,vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = bias_large,filename='dat/bJ_' + detector + '_b150_0_large.dat')
+                dJ_bias[z_val.index(use_z)] = dJdz(use_z,detector,False,False,False,False,False,False,False,filename='results/map_EBL/dJdz_' + detector + '.dat') * bJ_z(use_z,detector,run=True,vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = bias_large,filename='results/map_EBL/bJ_' + detector + '_b150_0_large.dat')
             
             else:
-                sigma_dJ[z_val.index(use_z)] = (((cu.c.to(u.km/u.s) / (4*np.pi*H(use_z)*(1+use_z)) * np.trapz(intg,nu_obs_val))*unit*u.Hz/u.steradian).to(u.Jy/u.steradian)).value * bJ_z(use_z,detector,run=False,vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = False,filename='dat/bJ_' + detector + '.dat')
+                sigma_dJ[z_val.index(use_z)] = (((cu.c.to(u.km/u.s) / (4*np.pi*H(use_z)*(1+use_z)) * np.trapz(intg,nu_obs_val))*unit*u.Hz/u.steradian).to(u.Jy/u.steradian)).value * bJ_z(use_z,detector,run=False,vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = False,filename='results/map_EBL/bJ_' + detector + '.dat')
 
-                sigma_dJ_det[z_val.index(use_z)] = (((cu.c.to(u.km/u.s) / (4*np.pi*H(use_z)*(1+use_z)) * np.trapz(intg_det,nu_obs_val))*unit*u.Hz/u.steradian).to(u.Jy/u.steradian)).value * bJ_z(use_z,detector,run=False,vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = False,filename='dat/bJ_' + detector + '.dat')
+                sigma_dJ_det[z_val.index(use_z)] = (((cu.c.to(u.km/u.s) / (4*np.pi*H(use_z)*(1+use_z)) * np.trapz(intg_det,nu_obs_val))*unit*u.Hz/u.steradian).to(u.Jy/u.steradian)).value * bJ_z(use_z,detector,run=False,vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = False,filename='results/map_EBL/bJ_' + detector + '.dat')
 
-                dJ[z_val.index(use_z)] = dJdz(use_z,detector,False,False,False,False,False,False,False,filename='dat/dJdz_' + detector + '.dat') * bJ_z(use_z,detector,run=False,vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = False,filename='dat/bJ_' + detector + '.dat')
+                dJ[z_val.index(use_z)] = dJdz(use_z,detector,False,False,False,False,False,False,False,filename='results/map_EBL/dJdz_' + detector + '.dat') * bJ_z(use_z,detector,run=False,vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = False,filename='results/map_EBL/bJ_' + detector + '.dat')
 
-                dJ_eps[z_val.index(use_z)] = dJdz(use_z,detector,True,eps_large,False,False,False,False,False,filename='dat/dJdz_' + detector + '_eps150_0_large.dat') * bJ_z(use_z,detector,run=True,vals_eps150=eps_large,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = False,filename='dat/bJ_' + detector + '_eps150_0_large.dat')
+                dJ_eps[z_val.index(use_z)] = dJdz(use_z,detector,True,eps_large,False,False,False,False,False,filename='results/map_EBL/dJdz_' + detector + '_eps150_0_large.dat') * bJ_z(use_z,detector,run=True,vals_eps150=eps_large,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = False,filename='results/map_EBL/bJ_' + detector + '_eps150_0_large.dat')
             
-                dJ_bias[z_val.index(use_z)] = dJdz(use_z,detector,False,False,False,False,False,False,False,filename='dat/dJdz_' + detector + '.dat') * bJ_z(use_z,detector,run=True,vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = bias_large,filename='dat/bJ_' + detector + '_b150_0_large.dat')
+                dJ_bias[z_val.index(use_z)] = dJdz(use_z,detector,False,False,False,False,False,False,False,filename='results/map_EBL/dJdz_' + detector + '.dat') * bJ_z(use_z,detector,run=True,vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias = bias_large,filename='results/map_EBL/bJ_' + detector + '_b150_0_large.dat')
 
         plt.subplot(subplot[detector_all.index(detector)])
 

@@ -976,11 +976,11 @@ def compute_vals(vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_E
         #dJ_fuv = pool.map(dJdz_FUV, z_small)
  
        # print('Doing b NUV')
-       # bJ_nuv_f =  partial(bJ_z,detector='GALEX_NUV',run=True,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = False,filename='dat/dJdz_GALEX_NUV.dat')
+       # bJ_nuv_f =  partial(bJ_z,detector='GALEX_NUV',run=True,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = False,filename='results/map_EBL/dJdz_GALEX_NUV.dat')
        # bJ_nuv = pool.map(bJ_nuv_f, z_small)
  #
        # print('Doing b FUV')
-       # bJ_fuv_f =  partial(bJ_z,detector='GALEX_FUV',run=True,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = False,filename='dat/dJdz_GALEX_FUV.dat')
+       # bJ_fuv_f =  partial(bJ_z,detector='GALEX_FUV',run=True,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = False,filename='results/map_EBL/dJdz_GALEX_FUV.dat')
        # bJ_fuv = pool.map(bJ_fuv_f, z_small)
 
 
@@ -1017,23 +1017,23 @@ def compute_vals(vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_E
       #  bJ_CG = pool.map(bJ_f, z_small_castor)
     #
 #
-#    np.savetxt('dat/dJdz_GALEX_NUV.dat',(z_small,np.asarray(dJ_nuv)))
-#    np.savetxt('dat/bJ_GALEX_NUV.dat',(z_small,np.asarray(bJ_nuv)))
+#    np.savetxt('results/map_EBL/dJdz_GALEX_NUV.dat',(z_small,np.asarray(dJ_nuv)))
+#    np.savetxt('results/map_EBL/bJ_GALEX_NUV.dat',(z_small,np.asarray(bJ_nuv)))
 #
-#    np.savetxt('dat/dJdz_GALEX_FUV.dat',(z_small,np.asarray(dJ_fuv)))
-  #  np.savetxt('dat/bJ_GALEX_FUV.dat',(z_small,np.asarray(bJ_fuv)))
+#    np.savetxt('results/map_EBL/dJdz_GALEX_FUV.dat',(z_small,np.asarray(dJ_fuv)))
+  #  np.savetxt('results/map_EBL/bJ_GALEX_FUV.dat',(z_small,np.asarray(bJ_fuv)))
 
-    np.savetxt('dat/dJdz_ULTRASAT_TESTGAUS.dat',(z_small,np.asarray(dJ_U)))
-    np.savetxt('dat/bJ_ULTRASAT_TESTGAUS.dat',(z_small,np.asarray(bJ_U)))
+    np.savetxt('results/map_EBL/dJdz_ULTRASAT_TESTGAUS.dat',(z_small,np.asarray(dJ_U)))
+    np.savetxt('results/map_EBL/bJ_ULTRASAT_TESTGAUS.dat',(z_small,np.asarray(bJ_U)))
 
- #   np.savetxt('dat/dJdz_CASTOR_UV.dat',(z_small_castor,np.asarray(dJ_CUV)))
- #   np.savetxt('dat/bJ_CASTOR_UV.dat',(z_small_castor,np.asarray(bJ_CUV)))
+ #   np.savetxt('results/map_EBL/dJdz_CASTOR_UV.dat',(z_small_castor,np.asarray(dJ_CUV)))
+ #   np.savetxt('results/map_EBL/bJ_CASTOR_UV.dat',(z_small_castor,np.asarray(bJ_CUV)))
 #
- #   np.savetxt('dat/dJdz_CASTOR_U.dat',(z_small_castor,np.asarray(dJ_CU)))
- #   np.savetxt('dat/bJ_CASTOR_U.dat',(z_small_castor,np.asarray(bJ_CU)))
+ #   np.savetxt('results/map_EBL/dJdz_CASTOR_U.dat',(z_small_castor,np.asarray(dJ_CU)))
+ #   np.savetxt('results/map_EBL/bJ_CASTOR_U.dat',(z_small_castor,np.asarray(bJ_CU)))
 #
- #   np.savetxt('dat/dJdz_CASTOR_G.dat',(z_small_castor,np.asarray(dJ_CG)))
- #   np.savetxt('dat/bJ_CASTOR_G.dat',(z_small_castor,np.asarray(bJ_CG)))
+ #   np.savetxt('results/map_EBL/dJdz_CASTOR_G.dat',(z_small_castor,np.asarray(dJ_CG)))
+ #   np.savetxt('results/map_EBL/bJ_CASTOR_G.dat',(z_small_castor,np.asarray(bJ_CG)))
 #
     return
 
@@ -1041,30 +1041,30 @@ def compute_vals(vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_E
 
 def plot_signal(vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias=False):
 
-    dJ_U =  dJdz(z_small,detector='ULTRASAT',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,filename='dat/dJdz_ULTRASAT.dat')
+    dJ_U =  dJdz(z_small,detector='ULTRASAT',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,filename='results/map_EBL/dJdz_ULTRASAT.dat')
 
-    dJ_N =  dJdz(z_small,detector='GALEX_NUV',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,filename='dat/dJdz_GALEX_NUV.dat')
+    dJ_N =  dJdz(z_small,detector='GALEX_NUV',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,filename='results/map_EBL/dJdz_GALEX_NUV.dat')
 
-    dJ_F =  dJdz(z_small,detector='GALEX_FUV',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,filename='dat/dJdz_GALEX_FUV.dat')
+    dJ_F =  dJdz(z_small,detector='GALEX_FUV',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,filename='results/map_EBL/dJdz_GALEX_FUV.dat')
 
-    dJ_CUV =  dJdz(z_small_castor,detector='CASTOR_UV',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,filename='dat/dJdz_CASTOR_UV.dat')
+    dJ_CUV =  dJdz(z_small_castor,detector='CASTOR_UV',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,filename='results/map_EBL/dJdz_CASTOR_UV.dat')
 
-    dJ_CU =  dJdz(z_small_castor,detector='CASTOR_U',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,filename='dat/dJdz_CASTOR_U.dat')
+    dJ_CU =  dJdz(z_small_castor,detector='CASTOR_U',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,filename='results/map_EBL/dJdz_CASTOR_U.dat')
 
-    dJ_CG =  dJdz(z_small_castor,detector='CASTOR_G',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,filename='dat/dJdz_CASTOR_G.dat')
+    dJ_CG =  dJdz(z_small_castor,detector='CASTOR_G',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,filename='results/map_EBL/dJdz_CASTOR_G.dat')
 
 
-    bJ_U = bJ_z(z_small,detector='ULTRASAT',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = val_bias,filename='dat/bJ_ULTRASAT.dat')
+    bJ_U = bJ_z(z_small,detector='ULTRASAT',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = val_bias,filename='results/map_EBL/bJ_ULTRASAT.dat')
 
-    bJ_N = bJ_z(z_small,detector='GALEX_NUV',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = val_bias,filename='dat/bJ_GALEX_NUV.dat')
+    bJ_N = bJ_z(z_small,detector='GALEX_NUV',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = val_bias,filename='results/map_EBL/bJ_GALEX_NUV.dat')
 
-    bJ_F = bJ_z(z_small,detector='GALEX_FUV',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = val_bias,filename='dat/bJ_GALEX_FUV.dat')
+    bJ_F = bJ_z(z_small,detector='GALEX_FUV',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = val_bias,filename='results/map_EBL/bJ_GALEX_FUV.dat')
 
-    bJ_CUV = bJ_z(z_small_castor,detector='CASTOR_UV',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = val_bias,filename='dat/bJ_CASTOR_UV.dat')
+    bJ_CUV = bJ_z(z_small_castor,detector='CASTOR_UV',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = val_bias,filename='results/map_EBL/bJ_CASTOR_UV.dat')
 
-    bJ_CU = bJ_z(z_small_castor,detector='CASTOR_U',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = val_bias,filename='dat/bJ_CASTOR_U.dat')
+    bJ_CU = bJ_z(z_small_castor,detector='CASTOR_U',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = val_bias,filename='results/map_EBL/bJ_CASTOR_U.dat')
 
-    bJ_CG = bJ_z(z_small_castor,detector='CASTOR_G',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = val_bias,filename='dat/bJ_CASTOR_G.dat')
+    bJ_CG = bJ_z(z_small_castor,detector='CASTOR_G',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = val_bias,filename='results/map_EBL/bJ_CASTOR_G.dat')
 
     # figure 10 
     plt.figure()
@@ -1155,11 +1155,11 @@ def plot_bdJdz_multi():
             dJdz_FUV = partial(dJdz,detector='GALEX_FUV',run=True,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,)
             dJ_fuv = pool.map(dJdz_FUV, z_small)
     
-            bJ_nuv_f =  partial(bJ_z,detector='GALEX_NUV',run=True,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = False,filename='dat/dJdz_GALEX_NUV.dat')
+            bJ_nuv_f =  partial(bJ_z,detector='GALEX_NUV',run=True,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = False,filename='results/map_EBL/dJdz_GALEX_NUV.dat')
             bJ_nuv = pool.map(bJ_nuv_f, z_small)
  
             print('Doing b FUV')
-            bJ_fuv_f =  partial(bJ_z,detector='GALEX_FUV',run=True,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = False,filename='dat/dJdz_GALEX_FUV.dat')
+            bJ_fuv_f =  partial(bJ_z,detector='GALEX_FUV',run=True,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = False,filename='results/map_EBL/dJdz_GALEX_FUV.dat')
             bJ_fuv = pool.map(bJ_fuv_f, z_small)
 
             bdJ_nuv = np.asarray(dJ_nuv) * np.asarray(bJ_nuv)
@@ -1213,11 +1213,11 @@ def plot_bdJdz_multi():
             dJdz_FUV = partial(dJdz,detector='GALEX_FUV',run=True,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,)
             dJ_fuv = pool.map(dJdz_FUV, z_small)
     
-            bJ_nuv_f =  partial(bJ_z,detector='GALEX_NUV',run=True,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = False,filename='dat/dJdz_GALEX_NUV.dat')
+            bJ_nuv_f =  partial(bJ_z,detector='GALEX_NUV',run=True,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = False,filename='results/map_EBL/dJdz_GALEX_NUV.dat')
             bJ_nuv = pool.map(bJ_nuv_f, z_small)
  
             print('Doing b FUV')
-            bJ_fuv_f =  partial(bJ_z,detector='GALEX_FUV',run=True,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = False,filename='dat/dJdz_GALEX_FUV.dat')
+            bJ_fuv_f =  partial(bJ_z,detector='GALEX_FUV',run=True,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = False,filename='results/map_EBL/dJdz_GALEX_FUV.dat')
             bJ_fuv = pool.map(bJ_fuv_f, z_small)
 
             bdJ_nuv = np.asarray(dJ_nuv) * np.asarray(bJ_nuv)
@@ -1269,11 +1269,11 @@ def plot_bdJdz_multi():
             dJdz_FUV = partial(dJdz,detector='GALEX_FUV',run=True,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,)
             dJ_fuv = pool.map(dJdz_FUV, z_small)
     
-            bJ_nuv_f =  partial(bJ_z,detector='GALEX_NUV',run=True,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = False,filename='dat/dJdz_GALEX_NUV.dat')
+            bJ_nuv_f =  partial(bJ_z,detector='GALEX_NUV',run=True,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = False,filename='results/map_EBL/dJdz_GALEX_NUV.dat')
             bJ_nuv = pool.map(bJ_nuv_f, z_small)
  
             print('Doing b FUV')
-            bJ_fuv_f =  partial(bJ_z,detector='GALEX_FUV',run=True,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = False,filename='dat/dJdz_GALEX_FUV.dat')
+            bJ_fuv_f =  partial(bJ_z,detector='GALEX_FUV',run=True,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = False,filename='results/map_EBL/dJdz_GALEX_FUV.dat')
             bJ_fuv = pool.map(bJ_fuv_f, z_small)
 
             bdJ_nuv = np.asarray(dJ_nuv) * np.asarray(bJ_nuv)
@@ -1317,15 +1317,15 @@ def plot_bdJdz_multi():
 
 def plot_signal_withDM(vals_eps150=False,vals_alpha150=False,vals_alpha110=False,val_EW=False,val_flyc=False,val_alpha90=False,val_bias=False):
 
-    dJ_U =  dJdz(z_small,detector='ULTRASAT',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,filename='dat/dJdz_ULTRASAT_TESTGAUS.dat')
+    dJ_U =  dJdz(z_small,detector='ULTRASAT',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,filename='results/map_EBL/dJdz_ULTRASAT_TESTGAUS.dat')
 
     
-    dJ_U_DM =  dJdz(z_small,detector='ULTRASAT',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,filename='dat/dJdz_ULTRASAT_withDM.dat')
+    dJ_U_DM =  dJdz(z_small,detector='ULTRASAT',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,filename='results/map_EBL/dJdz_ULTRASAT_withDM.dat')
 
 
-    bJ_U = bJ_z(z_small,detector='ULTRASAT',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = val_bias,filename='dat/bJ_ULTRASAT_TESTGAUS.dat')
+    bJ_U = bJ_z(z_small,detector='ULTRASAT',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = val_bias,filename='results/map_EBL/bJ_ULTRASAT_TESTGAUS.dat')
 
-    bJ_U_DM = bJ_z(z_small,detector='ULTRASAT',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = val_bias,filename='dat/bJ_ULTRASAT_withDM.dat')
+    bJ_U_DM = bJ_z(z_small,detector='ULTRASAT',run=False,vals_eps150=vals_eps150,vals_alpha150=vals_alpha150,vals_alpha110=vals_alpha110,val_EW=val_EW,val_flyc=val_flyc,val_alpha90=val_alpha90,val_bias = val_bias,filename='results/map_EBL/bJ_ULTRASAT_withDM.dat')
 
     # figure 10 
     plt.figure()
