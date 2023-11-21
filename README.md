@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # LIM_b7
 
 LIM code used by the cosmology group at the [Ben Gurion University of the Negev](https://physics.bgu.ac.il/~kovetz/group.html) (Be'er Sheva, Israel).
@@ -34,3 +35,14 @@ Other contributors:
 
 
 The code is based on the orginal work by [Bernal et al.]( https://github.com/jl-bernal/lim).
+=======
+# LIM_b7: ULTRASAT
+
+### Goal of this project
+
+LIM forecasts on the full sky reference map the future Israeli sattellite ULTRASAT will observe.
+
+### Developers
+
+*Sarah Libanore*
+>>>>>>> 70891331c2c6f7e48c0c0a26dde436e033f0a853

@@ -24,7 +24,6 @@ import importlib
 from scipy.interpolate import interp1d, interp2d,RegularGridInterpolator
 from scipy.special import sici,erf,legendre,j1
 from scipy.stats import poisson
-from scipy.fft import fft,ifft
 from scipy.integrate import quad
 from getdist.gaussian_mixtures import GaussianND
 
@@ -65,5 +64,5 @@ plt.rcParams['xtick.labelsize'] = 17
 plt.rcParams['ytick.labelsize'] = 17 
 plt.rcParams['xtick.direction'] = 'in'
 plt.rcParams['ytick.direction'] = 'in'
-plt.rcParams['text.usetex'] = True
-plt.rcParams['font.family'] = 'Helvetica'
+plt.rcParams['text.usetex'] = False #True
+#plt.rcParams['font.family'] = 'Helvetica'
