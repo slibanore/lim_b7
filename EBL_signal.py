@@ -4,19 +4,19 @@ from multiprocessing import Pool
 from functools import partial
 
 
-#plt.rcParams.update({
-#   "text.usetex": True,
-#   "font.family": "Helvetica"
-#})
+plt.rcParams.update({
+  "text.usetex": True,
+  "font.family": "Helvetica"
+})
 
-figsize = (12, 8)
-fontsize = 30
+figsize = (10, 9)
+fontsize = 33
 linewidth = 2.5
 
 plt.rcParams['lines.linewidth'] = linewidth
 plt.rcParams['font.size'] = fontsize
-plt.rcParams['xtick.labelsize'] = fontsize*.8
-plt.rcParams['ytick.labelsize'] = fontsize*.8
+plt.rcParams['xtick.labelsize'] = fontsize*.9
+plt.rcParams['ytick.labelsize'] = fontsize*.9
 plt.rcParams['legend.fontsize'] = fontsize*.9
 plt.rcParams['figure.figsize'] = figsize
 plt.rcParams['legend.columnspacing'] = 0.8
@@ -338,13 +338,13 @@ def fLyC(z, vals):
     if vals is False:
         logf_LyC1, logf_LyC2 = fiducials['fescape']
         CLyC = (logf_LyC2 - logf_LyC1) / (np.log10((1+2.)/(1+1.)))
-        f_LyC = pow(10,CLyC * np.log10((1.+z)/(1.+1)) + logf_LyC2)
+        f_LyC = pow(10,CLyC * np.log10((1.+z)/(1.+1)) + logf_LyC1)
     elif type(vals) == float or type(vals) == int:
         f_LyC = vals
     else:
         logf_LyC1, logf_LyC2 = vals
         CLyC = (logf_LyC2 - logf_LyC1) / (np.log10((1+2.)/(1+1.)))
-        f_LyC = pow(10,CLyC * np.log10((1.+z)/(1.+1)) + logf_LyC2)
+        f_LyC = pow(10,CLyC * np.log10((1.+z)/(1.+1)) + logf_LyC1)
 
     return f_LyC
 
@@ -531,13 +531,13 @@ def plot_z_signal(vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,v
 
         plt.plot(wave, s, color= colors[zv], label=r'$z = %g$'%z[zv])
 
-    plt.xscale('log')
+    #plt.xscale('log')
     plt.yscale('log')
     plt.xlabel(r'$\lambda_{\rm obs}\,[{\rm \AA}]$',fontsize=fontsize)
     plt.ylabel(r'$\epsilon_\nu\,[{\rm erg\,s^{-1}Hz^{-1}Mpc^{-3}}]$',fontsize=fontsize)
-    plt.legend(loc=2,ncol=2)
-    plt.xlim(912,10000)
-    plt.ylim(3e24,1e30)
+    plt.legend(loc=4,ncol=2)
+    plt.xlim(700,8000)
+    plt.ylim(3e24,2e28)
 
     plt.tight_layout()
     plt.savefig('results/PLOTS/EBL/emissivity.png',bbox_inches='tight')
@@ -617,8 +617,8 @@ def plot_response():
 
     plt.figure()
     plt.plot(wavelenght,R-min(R),label=r'$\rm ULTRASAT$',color=color_ULTRASAT)
-    plt.plot(wavelenght_N,RN-min(RN),label=r'$\rm NUV$',color=color_NUV)
-    plt.plot(wavelenght_F,RF-min(RF),label=r'$\rm FUV$',color=color_FUV)
+    plt.plot(wavelenght_N,RN-min(RN),label=r'$\rm GALEX\, NUV$',color=color_NUV)
+    plt.plot(wavelenght_F,RF-min(RF),label=r'$\rm GALEX\, FUV$',color=color_FUV)
 
     plt.yticks([])
 
@@ -965,71 +965,6 @@ def compute_vals(reduced_z = False, vals_eps1500=False,vals_alpha1500=False,vals
     return
 
 
-
-def plot_signal(vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias=False):
-
-    dJ_U =  dJdz(z_gals('DESI'),detector='ULTRASAT',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,filename='results/EBL/dJdz_ULTRASAT_reduced.dat')
-
-    dJ_N =  dJdz(z_gals('SDSS'),detector='GALEX_NUV',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,filename='results/EBL/dJdz_GALEX_NUV_reduced.dat')
-
-    dJ_F =  dJdz(z_gals('SDSS'),detector='GALEX_FUV',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,filename='results/EBL/dJdz_GALEX_FUV_reduced.dat')
-
-
-
-    bJ_U = bJ_z(z_gals('DESI'),detector='ULTRASAT',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = val_bias,filename='results/EBL/bJ_ULTRASAT_reduced.dat')
-
-    bJ_N = bJ_z(z_gals('SDSS'),detector='GALEX_NUV',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = val_bias,filename='results/EBL/bJ_GALEX_NUV_reduced.dat')
-
-    bJ_F = bJ_z(z_gals('SDSS'),detector='GALEX_FUV',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = val_bias,filename='results/EBL/bJ_GALEX_FUV_reduced.dat')
-
-
-    # figure 10 
-    plt.figure()
-    plt.plot(z_gals('DESI'),dJ_U,label=r'$\rm ULTRASAT$',color=color_ULTRASAT)
-    plt.plot(z_gals('SDSS'),dJ_N,label=r'$\rm NUV$',color=color_NUV)
-    plt.plot(z_gals('SDSS'),dJ_F,label=r'$\rm FUV$',color=color_FUV)
-    #plt.ylim(-10,200)
-    plt.xlabel(r'$z$',fontsize=fontsize)
-    plt.ylabel(r'$dJ/dz\,[{\rm Jy/sr}]$',fontsize=fontsize)
-    plt.legend(loc=4, ncol=2)
-    
-    plt.tight_layout()
-    plt.savefig('results/PLOTS/EBL/dJdz.png',bbox_inches='tight')
-
-    plt.figure()
-    plt.plot(z_gals('DESI'),bJ_U,label=r'$\rm ULTRASAT$',color=color_ULTRASAT)
-    plt.plot(z_gals('SDSS'),bJ_N,label=r'$\rm NUV$',color=color_NUV)
-    plt.plot(z_gals('SDSS'),bJ_F,label=r'$\rm FUV$',color=color_FUV)
-    plt.xlabel(r'$z$',fontsize=fontsize)
-    plt.ylabel(r'$b_J$',fontsize=fontsize)
-    plt.xlim(0,3)
-    plt.legend(loc=4, ncol=2)
-    
-    plt.tight_layout()
-    plt.savefig('results/PLOTS/EBL/bJz.png',bbox_inches='tight')
-
-    plt.figure()
-
-    window_size = 70  # Adjust this value based on your preference
-    bJU_smoothed = moving_average(dJ_U*bJ_U, window_size)
-    bJGN_smoothed = moving_average(dJ_N*bJ_N, window_size)
-    bJGF_smoothed = moving_average(dJ_F*bJ_F, window_size)
-
-    
-    plt.plot(z_gals('DESI')[:len(bJU_smoothed)],bJU_smoothed,label=r'$\rm ULTRASAT$',color=color_ULTRASAT)
-    plt.plot(z_gals('SDSS')[:len(bJGN_smoothed)],bJGN_smoothed,label=r'$\rm NUV$',color=color_NUV)
-    plt.plot(z_gals('SDSS')[:len(bJGF_smoothed)],bJGF_smoothed,label=r'$\rm FUV$',color=color_FUV)
-    #plt.ylim(-10,200)
-    plt.xlabel(r'$z$',fontsize=fontsize)
-    plt.ylabel(r'$b_JdJ/dz\,[{\rm Jy/sr}]$',fontsize=fontsize)
-    plt.legend(loc=1, ncol=1)
-    
-    plt.tight_layout()
-    plt.savefig('results/PLOTS/EBL/bJdJdz.png',bbox_inches='tight')
-
-
-    plt.show()
-    return 
 
 
 def plot_bdJdz_multi():

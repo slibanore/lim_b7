@@ -87,27 +87,39 @@ def plot_noise_grouped():
     groups = np.concatenate((np.linspace(0.001,1,50),np.linspace(1,50,50)))
     sigma_GAL_NUV = np.zeros(len(groups))
     sigma_GAL_FUV = np.zeros(len(groups))
+    sigma_GAL_NUV_D = np.zeros(len(groups))
+    sigma_GAL_FUV_D = np.zeros(len(groups))
     sigma_ULT = np.zeros(len(groups))
     
     for i in tqdm(range(len(groups))):
         sigma_GAL_NUV[i] = sigma_wz(0.5,'GALEX_NUV','SDSS',groups[i]).value
         sigma_GAL_FUV[i] = sigma_wz(0.5,'GALEX_FUV','SDSS',groups[i]).value
+        sigma_GAL_NUV_D[i] = sigma_wz(0.5,'GALEX_NUV','DESI',groups[i]).value
+        sigma_GAL_FUV_D[i] = sigma_wz(0.5,'GALEX_FUV','DESI',groups[i]).value
         sigma_ULT[i] = sigma_wz(1,'ULTRASAT','DESI',groups[i]).value
+
+    plt.plot(groups,sigma_GAL_FUV,color_FUV,label=r'${\rm GALEX\, FUV}\times{\rm SDSS}$',linestyle='--')
+    plt.plot([5],[sigma_wz(0.5,'GALEX_FUV','SDSS',False).value],color_FUV,marker='o',markersize=10)
+    plt.plot([50],[sigma_wz(0.5,'GALEX_FUV','SDSS',True).value],color_FUV,marker='x',markersize=20)
+    plt.plot(groups,sigma_GAL_FUV_D,color_FUV,label=r'${\rm GALEX\, FUV}\times{\rm DESI}$')
+    plt.plot([5],[sigma_wz(0.5,'GALEX_FUV','DESI',False).value],color_FUV,marker='o',markersize=10)
+    plt.plot([50],[sigma_wz(0.5,'GALEX_FUV','DESI',True).value],color_FUV,marker='x',markersize=20)
+
+    plt.plot(groups,sigma_GAL_NUV,color_NUV,label=r'${\rm GALEX\, NUV}\times{\rm SDSS}$',linestyle='--')
+    plt.plot(groups,sigma_GAL_NUV_D,color_NUV,label=r'${\rm GALEX\, NUV}\times{\rm DESI}$')
+    plt.plot([5],[sigma_wz(0.5,'GALEX_NUV','SDSS',False).value],color_NUV,marker='o',markersize=10)
+    plt.plot([50],[sigma_wz(0.5,'GALEX_NUV','SDSS',True).value],color_NUV,marker='x',markersize=20)
+    plt.plot([5],[sigma_wz(0.5,'GALEX_NUV','DESI',False).value],color_NUV,marker='o',markersize=10)
+    plt.plot([50],[sigma_wz(0.5,'GALEX_NUV','DESI',True).value],color_NUV,marker='x',markersize=20)
 
     plt.plot(groups,sigma_ULT,color_ULTRASAT,label=r'${\rm ULTRASAT}\times{\rm DESI}$')
     plt.plot([5.4],[sigma_wz(1,'ULTRASAT','DESI',False).value],color_ULTRASAT,marker='o',markersize=10)
     plt.plot([5.4],[sigma_wz(1,'ULTRASAT','DESI',True).value],color_ULTRASAT,marker='x',markersize=20)
-    plt.plot(groups,sigma_GAL_NUV,color_NUV,label=r'${\rm GALEX\, NUV}\times{\rm SDSS}$')
-    plt.plot(groups,sigma_GAL_FUV,color_FUV,label=r'${\rm GALEX\, FUV}\times{\rm SDSS}$')
-    plt.plot([5],[sigma_wz(0.5,'GALEX_NUV','SDSS',False).value],color_NUV,marker='o',markersize=10)
-    plt.plot([50],[sigma_wz(0.5,'GALEX_NUV','SDSS',True).value],color_NUV,marker='x',markersize=20)
-    plt.plot([5],[sigma_wz(0.5,'GALEX_FUV','SDSS',False).value],color_FUV,marker='o',markersize=10)
-    plt.plot([50],[sigma_wz(0.5,'GALEX_FUV','SDSS',True).value],color_FUV,marker='x',markersize=20)
 
     plt.yscale('log')
-    plt.xlabel(r'$\rm L_{\rm pix}\,[\"/{\rm pix}]$',fontsize=fontsize)
+    plt.xlabel(r'$L_{\rm pix}\,[{\rm arcsec/pix}]$',fontsize=fontsize)
     plt.ylabel(r'$\mathcal{N}_{\rm CBR}$',fontsize=fontsize)
-    plt.legend(loc=1)
+    plt.legend(loc=1,ncol=1)
 
     plt.tight_layout()
 
@@ -162,7 +174,7 @@ def plot_signal_and_noise(detector,gal_survey,reduced_z = False):
     #    plt.plot(use_z,ngrouped50,'k--',label= r'$\rm Noise:\, 50\,arcsec\, voxels$')
 
     plt.xlabel(r'$z$')
-    plt.ylabel(r'$|\sigma_{w_{J_\nu{\rm g}}(z)}|$')
+    plt.ylabel(r'$|\sigma_{w_{\tilde{J}_\nu{\rm g}}(z)}|$')
     plt.yscale('log')
     plt.legend(loc=1)
 
@@ -190,20 +202,26 @@ def plot_noise(reduced_z = False):
 
     sn = np.zeros(len(use_z))
     sf = np.zeros(len(use_z))
+    snD = np.zeros(len(use_z))
+    sfD = np.zeros(len(use_z))
     #sU = np.zeros(len(use_z_ultrasat))
     sUD = np.zeros(len(use_z_ultrasat_desi))
     nG = np.zeros(len(use_z))
+    nGD = np.zeros(len(use_z))
     #nU = np.zeros(len(use_z_ultrasat))
     nUD = np.zeros(len(use_z_ultrasat_desi))
 
     #filename_ULT = 'results/EBL/wJg_ULTRASAT,SPHEREx' + reduced_label + '.dat'
-        
+    plt.figure()    
     filename_ULTDESI = 'results/EBL/wJg_ULTRASAT,DESI' + reduced_label + '.dat'
         
     for i in tqdm(range(len(use_z))):
         sn[i] = abs(wJgz(use_z[i],'GALEX_NUV','SDSS',False,filename='results/EBL/wJg_GALEX_NUV,SDSS' + reduced_label + '.dat'))
         sf[i] = abs(wJgz(use_z[i],'GALEX_FUV','SDSS',False,filename='results/EBL/wJg_GALEX_FUV,SDSS'+ reduced_label+'.dat'))
         nG[i] = sigma_wz(use_z[i],'GALEX_NUV','SDSS',True).value
+        snD[i] = abs(wJgz(use_z[i],'GALEX_NUV','DESI',False,filename='results/EBL/wJg_GALEX_NUV,DESI' + reduced_label + '.dat'))
+        sfD[i] = abs(wJgz(use_z[i],'GALEX_FUV','DESI',False,filename='results/EBL/wJg_GALEX_FUV,DESI'+ reduced_label+'.dat'))
+        nGD[i] = sigma_wz(use_z[i],'GALEX_NUV','DESI',True).value
     #for i in tqdm(range(len(use_z_ultrasat))):
     #    sU[i] = abs(wJgz(use_z_ultrasat[i],'ULTRASAT','SPHEREx',False,filename=filename_ULT))
     #    nU[i] = sigma_wz(use_z[i],'ULTRASAT','SPHEREx',True).value
@@ -215,15 +233,19 @@ def plot_noise(reduced_z = False):
     U_smoothed = moving_average(sUD/nUD, window_size)
     GN_smoothed = moving_average(sn/nG, window_size)
     GF_smoothed = moving_average(sf/nG ,window_size)
+    GND_smoothed = moving_average(snD/nGD, window_size)
+    GFD_smoothed = moving_average(sfD/nGD ,window_size)
     #
-    plt.plot(use_z_ultrasat_desi[:len(U_smoothed)],U_smoothed,label=r'$\rm ULTRASAT\times DESI$',color=color_ULTRASAT)
-    plt.plot(use_z[:len(GN_smoothed)],GN_smoothed,label=r'$\rm GALEX\,NUV\times SDSS$',color=color_NUV)
-    plt.plot(use_z[:len(GF_smoothed)],GF_smoothed,label=r'$\rm GALEX\,FUV\times SDSS$',color=color_FUV)
+    plt.plot(use_z[:len(GF_smoothed)],GF_smoothed,label=r'$\rm GALEX\,FUV\times SDSS$',color=color_FUV,linestyle='--')
+    plt.plot(use_z[:len(GFD_smoothed)],GFD_smoothed,label=r'$\rm GALEX\,FUV\times DESI$',color=color_FUV)
+    plt.plot(use_z[:len(GN_smoothed)],GN_smoothed,label=r'$\rm GALEX\,NUV\times SDSS$',color=color_NUV,linestyle='--')
+    plt.plot(use_z[:len(GND_smoothed)],GND_smoothed,label=r'$\rm GALEX\,NUV\times DESI$',color=color_NUV)
     #plt.plot(use_z_ultrasat,sU/nU,label=r'$ULTRASAT\times SPHEREx$',color=color_ULTRASAT)
+    plt.plot(use_z_ultrasat_desi[:len(U_smoothed)],U_smoothed,label=r'$\rm ULTRASAT\times DESI$',color=color_ULTRASAT)
     plt.yscale('log')
-    plt.xlabel(r'$z$')
-    plt.ylabel(r'${\bar{\omega}_{\tilde{J}{\rm g}}(z)}/\mathcal{N}_{\rm CBR}$')
-    plt.legend(loc=1,ncol=1,fontsize=fontsize)
+    plt.xlabel(r'$z$',fontsize=fontsize)
+    plt.ylabel(r'${\bar{\omega}_{\tilde{J}{\rm g}}(z)}/\mathcal{N}_{\rm CBR}$',fontsize=fontsize)
+    plt.legend(loc=1,ncol=1,fontsize=fontsize*.8)
 
     plt.ylim(1,5e5)
 #    plt.hlines(1,use_z[0],use_z[-1],linewidth=1.,color='k')
@@ -259,7 +281,7 @@ fid_vals_det = lambda detector: [fiducials['eps1500'][0],
       ]
 
 
-delta_der = 0.05
+delta_der = 0.01
 
 def ders(parameter,detector,gal_survey,reduced_z = False):
 
@@ -689,6 +711,12 @@ def compare_surveys(detector = 'GALEX_ULTRASAT', pars =pars_original_c18, prior 
         F_F = Fisher_change_var(pars,'GALEX_FUV','SDSS',group_vox,False)
         temp = F_N + F_F
 
+    elif detector == 'GALEX_DESI':
+
+        F_N = Fisher_change_var(pars,'GALEX_NUV','DESI',group_vox,False)
+        F_F = Fisher_change_var(pars,'GALEX_FUV','DESI',group_vox,False)
+        temp = F_N + F_F
+
     elif detector == 'GALEX_NUV':
 
         F_N = Fisher_change_var(pars,'GALEX_NUV','SDSS',group_vox,False)
@@ -788,6 +816,45 @@ def compare_surveys(detector = 'GALEX_ULTRASAT', pars =pars_original_c18, prior 
 
         temp = F_both
 
+    elif detector == 'GALEX_ULTRASAT_DESIDESI':
+
+        F_N = Fisher_change_var(pars,'GALEX_NUV','DESI',group_vox,False)
+        F_F = Fisher_change_var(pars,'GALEX_FUV','DESI',group_vox,False)
+        F_GALEX = F_N + F_F
+        F_ULTRASAT = Fisher_change_var(pars,'ULTRASAT','DESI',group_vox,False)
+
+        F_both = np.zeros((len(pars)+1,len(pars)+1))
+        for i in range(len(pars)):
+            if pars[i] != 'EW_z1' and pars[i] != 'EW_z2':
+                for j in range(len(pars)):
+                    if pars[j] != 'EW_z1' and pars[j] != 'EW_z2':
+                        F_both[i,j] = F_ULTRASAT[i,j] + F_GALEX[i,j]
+                    elif pars[j] == 'EW_z1':
+                        F_both[i,j] = F_GALEX[i,pars.index('EW_z1')]                    
+                    elif pars[j] == 'EW_z2':
+                        F_both[i,j] = F_GALEX[i,pars.index('EW_z2')]  +  F_ULTRASAT[i,pars.index('EW_z1')]
+                F_both[i,-1] = F_ULTRASAT[i,pars.index('EW_z2')]
+            elif pars[i] == 'EW_z1':
+                for j in range(len(pars)):
+                    F_both[i,j] = F_GALEX[pars.index('EW_z1'),j]
+            elif pars[i] == 'EW_z2':
+                for j in range(len(pars)):
+                    if pars[j] != 'EW_z1' and pars[j] != 'EW_z2':
+                        F_both[i,j] = F_ULTRASAT[pars.index('EW_z1'),j] + F_GALEX[pars.index('EW_z2'),j]
+                    elif pars[j] == 'EW_z1':
+                        F_both[i,j] = F_GALEX[pars.index('EW_z2'),pars.index('EW_z1')]                    
+                    elif pars[j] == 'EW_z2':
+                        F_both[i,j] = F_GALEX[pars.index('EW_z2'),pars.index('EW_z2')]  +  F_ULTRASAT[pars.index('EW_z1'),pars.index('EW_z1')]
+                F_both[i,-1] = F_ULTRASAT[pars.index('EW_z1'),pars.index('EW_z2')]
+        for j in range(len(pars)):
+            if pars[j] != 'EW_z1' and pars[j] != 'EW_z2':
+                F_both[-1,j] = F_ULTRASAT[pars.index('EW_z2'),j]
+            elif pars[j] == 'EW_z2':
+                F_both[-1,j] = F_ULTRASAT[pars.index('EW_z2'),pars.index('EW_z1')]
+        F_both[-1,-1] = F_ULTRASAT[pars.index('EW_z2'),pars.index('EW_z2')]
+
+        temp = F_both
+
     if prior: 
         for j in range(len(pars)):
             if pars[j] == 'gamma_1500':
@@ -803,7 +870,7 @@ def compare_surveys(detector = 'GALEX_ULTRASAT', pars =pars_original_c18, prior 
     names = []
     fiducials_pars = []    
 
-    if detector == 'GALEX_ULTRASAT' or detector=='GALEX_ULTRASAT_DESI':
+    if detector == 'GALEX_ULTRASAT' or detector=='GALEX_ULTRASAT_DESI' or detector=='GALEX_ULTRASAT_DESIDESI':
         for i in pars:
             if i == 'log10_epsbias_1500_0':
                 fiducials_pars.append(np.log10(fid_vals_det('GALEX_NUV')[pars_fid.index('eps_1500_0')]*fid_vals_det('GALEX_NUV')[pars_fid.index('bias_1500_0')]))
@@ -847,7 +914,7 @@ def compare_surveys(detector = 'GALEX_ULTRASAT', pars =pars_original_c18, prior 
 
     print('DETECTOR: ' + detector)
     for i in range(len(names)):
-        print('--- ' + names[i] + ': ' + str(fiducials_pars[i]) + ' +- ' + str(round(np.sqrt(inv_F[i][i]),4)))            
+        print('--- ' + names[i] + ': ' + str(fiducials_pars[i]) + ' +- ' + str(round(np.sqrt(inv_F[i][i]),6)))            
 
     if plot_flag:
 
@@ -942,7 +1009,7 @@ def sum_galex_ultrasat_desi(pars, F_N, F_F, F_ULTRASAT):
 
 
 
-def plot_err_noninonizing_cont(z, lambda_val, use_pars_fid = pars_original_c18,group_vox=True,run=False,plot_flag = True, prior=False):
+def plot_err_noninonizing_cont(z, lambda_val, use_pars_fid = pars_original_c18,group_vox=True,run=False,plot_flag = True, prior=False,galex_detector='SDSS'):
 
     use_nu = nu_from_lambda(lambda_val*u.AA)
     nu_1500 = nu_from_lambda(1500*u.AA)
@@ -957,8 +1024,8 @@ def plot_err_noninonizing_cont(z, lambda_val, use_pars_fid = pars_original_c18,g
     fid_alpha1500_0 = fiducials['alpha1500'][0]
     fid_C1500 = fiducials['alpha1500'][1]
 
-    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV','SDSS',group_vox,run)
-    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV','SDSS',group_vox,run)
+    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV',galex_detector,group_vox,run)
+    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV',galex_detector,group_vox,run)
     F_U = Fisher_change_var(use_pars_fid,'ULTRASAT','DESI',group_vox,run)
     
     if prior: 
@@ -1052,7 +1119,7 @@ def plot_err_noninonizing_cont(z, lambda_val, use_pars_fid = pars_original_c18,g
 
 
 
-def plot_err_line(z, lambda_val, use_pars_fid = pars_original_c18,group_vox=True,run=False,plot_flag = True, prior=False):
+def plot_err_line(z, lambda_val, use_pars_fid = pars_original_c18,group_vox=True,run=False,plot_flag = True, prior=False,galex_detector='SDSS'):
 
     use_nu = nu_from_lambda(lambda_val*u.AA)
     nu_1500 = nu_from_lambda(1500*u.AA)
@@ -1068,8 +1135,8 @@ def plot_err_line(z, lambda_val, use_pars_fid = pars_original_c18,group_vox=True
     fid_alpha1100_0 = fiducials['alpha1100'][0]
     fid_C1100 = fiducials['alpha1100'][1]
 
-    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV','SDSS',group_vox,run)
-    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV','SDSS',group_vox,run)
+    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV',galex_detector,group_vox,run)
+    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV',galex_detector,group_vox,run)
     F_U = Fisher_change_var(use_pars_fid,'ULTRASAT','DESI',group_vox,run)
 
     if prior: 
@@ -1214,7 +1281,7 @@ def plot_err_line(z, lambda_val, use_pars_fid = pars_original_c18,group_vox=True
     return
 
 
-def plot_err_line_surrounding(z, lambda_val, use_pars_fid = pars_original_c18,group_vox=True,run=False,plot_flag = True,prior=False):
+def plot_err_line_surrounding(z, lambda_val, use_pars_fid = pars_original_c18,group_vox=True,run=False,plot_flag = True,prior=False,galex_detector='SDSS'):
 
     use_nu = nu_from_lambda(lambda_val*u.AA)
     nu_1500 = nu_from_lambda(1500*u.AA)
@@ -1230,8 +1297,8 @@ def plot_err_line_surrounding(z, lambda_val, use_pars_fid = pars_original_c18,gr
     fid_alpha1100_0 = fiducials['alpha1100'][0]
     fid_C1100 = fiducials['alpha1100'][1]
 
-    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV','SDSS',group_vox,run)
-    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV','SDSS',group_vox,run)
+    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV',galex_detector,group_vox,run)
+    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV',galex_detector,group_vox,run)
     F_U = Fisher_change_var(use_pars_fid,'ULTRASAT','DESI',group_vox,run)
 
     if prior: 
@@ -1369,7 +1436,7 @@ def plot_err_line_surrounding(z, lambda_val, use_pars_fid = pars_original_c18,gr
     return
 
 
-def plot_err_ioncont(z, lambda_val, use_pars_fid = pars_all,group_vox=True,run=False,plot_flag = True, prior=False):
+def plot_err_ioncont(z, lambda_val, use_pars_fid = pars_all,group_vox=True,run=False,plot_flag = True, prior=False,galex_detector='SDSS'):
 
     use_nu = nu_from_lambda(lambda_val*u.AA)
     nu_1500 = nu_from_lambda(1500*u.AA)
@@ -1390,8 +1457,8 @@ def plot_err_ioncont(z, lambda_val, use_pars_fid = pars_all,group_vox=True,run=F
     fid_C1100 = fiducials['alpha1100'][1]
     fid_alpha900 = fiducials['alpha900']
 
-    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV','SDSS',group_vox,run)
-    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV','SDSS',group_vox,run)
+    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV',galex_detector,group_vox,run)
+    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV',galex_detector,group_vox,run)
     F_U = Fisher_change_var(use_pars_fid,'ULTRASAT','DESI',group_vox,run)
 
     if prior: 
@@ -1498,41 +1565,40 @@ def plot_err_ioncont(z, lambda_val, use_pars_fid = pars_all,group_vox=True,run=F
 
 
 
-def plot_err_escape(use_pars_fid = pars_all,group_vox=True,run=False,plot_flag = True,prior=False):
+def plot_err_escape(group_vox=True,run=False,plot_flag = True):
 
     z = np.linspace(zmin_gal,zmax_gal,200)
 
     required_pars = ['log_fLyC_1','log_fLyC_2']
 
-    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV','SDSS',group_vox,run)
-    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV','SDSS',group_vox,run)
+    use_pars_fid = pars_all
+    F_N_c18 = Fisher_change_var(use_pars_fid,'GALEX_NUV','SDSS',group_vox,run)
+    F_F_c18 = Fisher_change_var(use_pars_fid,'GALEX_FUV','SDSS',group_vox,run)
+    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV','DESI',group_vox,run)
+    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV','DESI',group_vox,run)
     F_U = Fisher_change_var(use_pars_fid,'ULTRASAT','DESI',group_vox,run)
 
-    if prior: 
-        for j in range(len(use_pars_fid)):
-            if use_pars_fid[j] == 'gamma_1500':
-                F_N[j,j] += 1/.3**2
-                F_F[j,j] += 1/.3**2
-                F_U[j,j] += 1/.3**2
-            if use_pars_fid[j] == 'C_alpha_1500':
-                F_N[j,j] += 1/1.5**2
-                F_F[j,j] += 1/1.5**2
-                F_U[j,j] += 1/1.5**2
-            if use_pars_fid[j] == 'C_alpha_1100':
-                F_N[j,j] += 1/1.5**2
-                F_F[j,j] += 1/1.5**2
-                F_U[j,j] += 1/1.5**2
+    for j in range(len(use_pars_fid)):
+        if use_pars_fid[j] == 'gamma_1500':
+            F_N_c18[j,j] += 1/.3**2
+            F_F_c18[j,j] += 1/.3**2
+        if use_pars_fid[j] == 'C_alpha_1500':
+            F_N_c18[j,j] += 1/1.5**2
+            F_F_c18[j,j] += 1/1.5**2
+        if use_pars_fid[j] == 'C_alpha_1100':
+            F_N_c18[j,j] += 1/1.5**2
+            F_F_c18[j,j] += 1/1.5**2
 
 
-    F_galex = F_N + F_F
+    F_galex = F_N_c18 + F_F_c18
     F_both = sum_galex_ultrasat_desi(use_pars_fid, F_N, F_F, F_U)
 
     all_inv_F_G = np.linalg.inv(F_galex)
-    all_inv_F_U = np.linalg.inv(F_U)
+    #all_inv_F_U = np.linalg.inv(F_U)
     all_inv_F_b = np.linalg.inv(F_both)
 
     inv_F_G = np.zeros((len(required_pars),len(required_pars)))
-    inv_F_U = np.zeros((len(required_pars),len(required_pars)))
+    #inv_F_U = np.zeros((len(required_pars),len(required_pars)))
     inv_F_b = np.zeros((len(required_pars),len(required_pars)))
 
     for i in range(len(required_pars)):
@@ -1540,13 +1606,13 @@ def plot_err_escape(use_pars_fid = pars_all,group_vox=True,run=False,plot_flag =
        for j in range(len(required_pars)):
            id_j = use_pars_fid.index(required_pars[j])
            inv_F_G[i,j] = all_inv_F_G[id_i,id_j]
-           inv_F_U[i,j] = all_inv_F_U[id_i,id_j]
+           #inv_F_U[i,j] = all_inv_F_U[id_i,id_j]
            inv_F_b[i,j] = all_inv_F_b[id_i,id_j]
 #
     fid_fLy = np.zeros(len(z))
 
     sigma_eps_G = np.zeros(len(z))
-    sigma_eps_U = np.zeros(len(z))
+    #sigma_eps_U = np.zeros(len(z))
     sigma_eps_b = np.zeros(len(z))
 
     for i in range(len(z)):
@@ -1559,31 +1625,28 @@ def plot_err_escape(use_pars_fid = pars_all,group_vox=True,run=False,plot_flag =
         J = np.array((deps_dlogfLy1,deps_dlogfLy2))
 
         sigma_eps_G[i] = np.sqrt(np.linalg.multi_dot([J,inv_F_G,J]))
-        sigma_eps_U[i] = np.sqrt(np.linalg.multi_dot([J,inv_F_U,J]))
+        #sigma_eps_U[i] = np.sqrt(np.linalg.multi_dot([J,inv_F_U,J]))
         sigma_eps_b[i] = np.sqrt(np.linalg.multi_dot([J,inv_F_b,J]))
 
+
     plt.plot(z, fid_fLy,color='k')
-    plt.fill_between(z, fid_fLy - sigma_eps_b, fid_fLy + sigma_eps_b, color='k', alpha = 0.2, label=r'$\rm GALEX + ULTRASAT$')
-    #plt.fill_between(z, fid_fLy + sigma_eps_b, fid_fLy + sigma_eps_U, color=color_ULTRASAT, alpha = 0.2, label=r'$\rm ULTRASAT$')
-    #plt.fill_between(z, fid_fLy + sigma_eps_U, fid_fLy + sigma_eps_G, color=color_FUV, alpha = 0.2, label=r'$\rm GALEX$')
-    #plt.fill_between(z, fid_fLy - sigma_eps_U, fid_fLy - sigma_eps_b, color=color_ULTRASAT, alpha = 0.2,)
-    #plt.fill_between(z, fid_fLy - sigma_eps_G, fid_fLy - sigma_eps_U, color=color_FUV, alpha = 0.2, )
+    plt.fill_between(z, fid_fLy - sigma_eps_b, fid_fLy + sigma_eps_b, color=color_ULTRASAT, alpha = 0.5, label=r'$\rm This\,work,\,1\sigma$')
+    plt.fill_between(z, fid_fLy - 3*sigma_eps_b, fid_fLy + 3*sigma_eps_b, color=color_ULTRASAT, alpha = 0.1, label=r'$\rm This\,work,\,3\sigma$')
 
-    # !!! the bias now has to be frequency dependent !!!
+    plt.plot(z, fid_fLy - sigma_eps_G,color_FUV,alpha=0.6,label=r'$\rm GALEX\times SDSS,\,1\sigma\,with\,prior$')
+    plt.plot(z, fid_fLy + sigma_eps_G,color_FUV,alpha=0.6,)
 
-    #plt.ylim(1e25,1e27)
-    plt.ylabel(r'$f_{\rm LyC}$')#_{%g}$'%lambda_val)
-    #plt.yscale('log')
+    plt.ylabel(r'$f_{\rm LyC}$',fontsize=fontsize)#_{%g}$'%lambda_val)
     plt.legend(loc=1)
-    plt.xlabel(r'$z$')
-    #plt.ylim(-1,3)
+    plt.xlabel(r'$z$',fontsize=fontsize)
     plt.xlim(z[0],z[-1])
+    plt.ylim(0.1,0.9)
 
-    print(sigma_eps_b/fid_fLy)
+    print(max(3*sigma_eps_b/fid_fLy))
 
     filename = 'results/PLOTS/EBL/errfLyC.png'
 
-    plt.savefig(filename)
+    plt.savefig(filename,bbox_inches='tight')
     plt.show()
 
     return
@@ -1689,19 +1752,120 @@ def plot_err_bias(lambda_val, use_pars_fid = pars_all,group_vox=True,run=False,p
     return [sigma_bias_G, sigma_bias_U, sigma_bias_b], fid_bias
 
 
+def plot_multi_line_PAPER():
+
+    z = np.linspace(zmin_gal,zmax_gal+.5,200)
+
+    sigmas_nonion, fid_nonion = plot_err_noninonizing_cont(z, 1500, use_pars_fid = pars_original_c18,group_vox=True,run=False,plot_flag = False,galex_detector='SDSS',prior=True)
+
+    sigmas_nonion_nonp = plot_err_noninonizing_cont(z, 1500, use_pars_fid = pars_original_c18,group_vox=True,run=False,plot_flag = False,galex_detector='SDSS')[0]
+
+    sigmas_nonion_both = plot_err_noninonizing_cont(z, 1500, use_pars_fid = pars_all,group_vox=True,run=False,plot_flag = False,galex_detector='DESI')[0]
+
+    s_G = sigmas_nonion[0] / fiducials['bias'][0] #* (70/67.67)**3
+    s_G_np = sigmas_nonion_nonp[0] / fiducials['bias'][0]#* (70/67.67)**3
+    s_b = sigmas_nonion_both[2] / fiducials['bias'][0]#* (70/67.67)**3
+    s_3b = 3*sigmas_nonion_both[2] / fiducials['bias'][0]#* (70/67.67)**3
+
+    fid_nonion /= fiducials['bias'][0] 
+    #fid_nonion *= (70/67.67)**3
+
+    z_data = np.asarray([0.3,0.5,0.7,1,2,2.9,3]) # schimonovich 2005
+
+    logrho_1500_data = np.asarray([25.86,25.97,26.16,26.11,26.45,26.52,25.58])
+
+    log_error_up = np.asarray([0.05,0.15,0.31,0.31,0.25,0.17,0.31])
+
+    log_error_down = np.asarray([0.05,0.08,0.13,0.13,0.09,0.07,0.17])
+
+    eps_1500_data = pow(10,logrho_1500_data)
+
+    eps_err_up = pow(10,log_error_up)
+
+    eps_err_down = pow(10,log_error_down)
+
+
+    z_data_hst = (np.asarray([0.92,1.62,2.08]) + np.asarray([1.33,1.88,2.37]))/2.
+
+    log_rho_hst = np.asarray([26.19,26.46,36.34])
+
+    log_error_hst = np.asarray([0.08,0.12,0.09])
+
+    eps_hst = pow(10,log_rho_hst)
+
+    eps_err_hst = pow(10,log_error_hst)
+
+
+    z_d11, eps_d11 = np.genfromtxt('./dat/d11.dat').T
+    z_gil, eps_gil = np.genfromtxt('./dat/gilmore.dat').T
+    z_gil2, eps_gil2 = np.genfromtxt('./dat/gilmore_mod.dat').T
+
+    plt.figure(figsize=(19,10))
+
+    #plt.errorbar([0.055], [25.54], yerr=[[0.02],[0.09]], fmt='o', capsize=5, markersize=7, color='k', label=r'$\rm Wyder\, et\, al.,\,2005$',alpha=.5,markerfacecolor='none')
+    
+    plt.errorbar([(1.9+2.7)/2], [np.log10(3.63e26)], yerr=[0.4], fmt='*', capsize=5, markersize=7, color='g', label=r'$\rm Reddy\, et\, al.,\,2008$',alpha=.7,markerfacecolor='none')
+    
+    plt.errorbar(z_data, np.log10(eps_1500_data), yerr=[np.log10(eps_err_down), np.log10(eps_err_up)], fmt='o', capsize=5, markersize=15, color='indigo', label=r'$\rm Schiminovich\, et\, al.,\,2005$',alpha=.7,markerfacecolor='none')
+    
+    plt.errorbar(z_data_hst, np.log10(eps_hst), yerr=np.log10(eps_err_hst), fmt='D', capsize=5, markersize=15, color='b', label=r'$\rm Dahlen\, et\, al.,\,2006$',alpha=.7,markerfacecolor='none')
+
+    plt.fill_between(z, np.log10(fid_nonion - s_b), np.log10(fid_nonion + s_b), color=color_ULTRASAT, alpha = 0.5,label=r'$\rm This\,work,\,1\sigma$')
+
+    plt.fill_between(z, np.log10(fid_nonion - s_3b), np.log10(fid_nonion + s_3b), color=color_ULTRASAT, alpha = 0.1,label=r'$\rm This\,work,\,3\sigma$')
+
+    plt.plot(z_d11, np.log10(eps_d11), 'k-.', label=r'$\rm Dominguez\, et\, al.,\,2011$',alpha=.6,linewidth=1.9)
+    
+    plt.plot(z_gil, np.log10(eps_gil), 'k--', label=r'$\rm Gilmore\, et\, al.,\,2011$',alpha=.6,linewidth=1.9)
+    
+    plt.plot(z_gil2, np.log10(eps_gil2), 'k--',alpha=.6,linewidth=1.9)
+    
+    plt.plot(z, np.log10(fid_nonion),'k')
+
+    #plt.plot(z, np.log10(fid_nonion - s_G),color_FUV,alpha=0.6,label=r'$\rm C18\,results,\,(1\sigma)$',linewidth=2)
+    #plt.plot(z, np.log10(fid_nonion + s_G),color_FUV,alpha=0.6,linewidth=2)
+
+    # plt.plot(z, np.log10(fid_nonion - s_G_np),color_FUV,alpha=0.6,label=r'$\rm C18\,results,\,(1\sigma\,without\,priors)$',linewidth=2)
+    # plt.plot(z, np.log10(fid_nonion + s_G_np),color_FUV,alpha=0.6,linewidth=2)
+
+    print(np.max(s_b/fid_nonion))
+
+    plt.ylabel(r'$\log_{10}\epsilon_{1500}(z)$',fontsize=fontsize)
+    #plt.yscale('log')
+    plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    plt.ylim(25.5,27.)
+
+    plt.xlabel(r'$z$',fontsize=fontsize)
+    plt.xlim(z[0],z[-1])
+
+
+    filename = 'results/PLOTS/EBL/eps_err_multiwave_PAPER.png'
+ 
+    plt.tight_layout()
+    plt.savefig(filename,bbox_inches='tight')
+    plt.show()
+
+
+    return 
 
 
 
-def plot_multi_line(detector, use_pars_fid = pars_original_c18, line = True, nonion_cont = True, ion_cont = True):
+
+
+
+
+
+
+def plot_multi_line(detector, use_pars_fid = pars_original_c18, line = True, nonion_cont = True, ion_cont = True, DM_contr = False,galex_detector='DESI'):
 
     z = np.linspace(zmin_gal,zmax_gal,200)
 
     if line:
-        sigmas_line, fid_line = plot_err_line(z, 1216, use_pars_fid = use_pars_fid,group_vox=True,run=False,plot_flag = False)
+        sigmas_line, fid_line = plot_err_line(z, 1216, use_pars_fid = use_pars_fid,group_vox=True,run=False,plot_flag = False,galex_detector=galex_detector)
     if nonion_cont:
-        sigmas_nonion, fid_nonion = plot_err_noninonizing_cont(z, 1500, use_pars_fid = use_pars_fid,group_vox=True,run=False,plot_flag = False)
+        sigmas_nonion, fid_nonion = plot_err_noninonizing_cont(z, 1500, use_pars_fid = use_pars_fid,group_vox=True,run=False,plot_flag = False,galex_detector=galex_detector)
     if ion_cont and use_pars_fid == pars_all:
-        sigmas_ion, fid_ion = plot_err_ioncont(z, 912, use_pars_fid = use_pars_fid,group_vox=True,run=False,plot_flag = False)
+        sigmas_ion, fid_ion = plot_err_ioncont(z, 912, use_pars_fid = use_pars_fid,group_vox=True,run=False,plot_flag = False,galex_detector=galex_detector)
 
     if detector == 'GALEX':
         if line:
@@ -1743,20 +1907,20 @@ def plot_multi_line(detector, use_pars_fid = pars_original_c18, line = True, non
         if ion_cont and use_pars_fid == pars_all:
             use_sigma_ion = sigmas_ion[2]
         use_color = 'k'
-        label_detector = r'$\rm (G \times SDSS) + (U \times DESI)$'
+        label_detector = r'$\rm (GALEX + ULTRASAT) \times DESI)$'
 
     if ion_cont and use_pars_fid == pars_all:
         plt.figure(figsize=(20,10))
-        plt.plot(z, fid_ion,'k:',label=r'$\lambda = 912\AA$')
+        plt.plot(z, fid_ion,'k:',label=r'$\lambda = 912{\rm \AA}$')
     if line:
-        plt.plot(z, fid_line,color='k',label=r'$\lambda = 1216\AA$')
+        plt.plot(z, fid_line,color='k',label=r'$\lambda = 1216{\rm \AA}$')
     if nonion_cont:
-        plt.plot(z, fid_nonion,'k--',label=r'$\lambda = 1500\AA$')
+        plt.plot(z, fid_nonion,'k--',label=r'$\lambda = 1500{\rm \AA}$')
 
     if line:
-        plt.fill_between(z, fid_line - use_sigma_line, fid_line + use_sigma_line, color=use_color, alpha = 0.4, label=label_detector)
+        plt.fill_between(z, fid_line - use_sigma_line, fid_line + use_sigma_line, color=use_color, alpha = 0.4, )
     if nonion_cont:
-        plt.fill_between(z, fid_nonion - use_sigma_nonion, fid_nonion + use_sigma_nonion, color=use_color, alpha = 0.4)
+        plt.fill_between(z, fid_nonion - use_sigma_nonion, fid_nonion + use_sigma_nonion, color=use_color, alpha = 0.4,label=label_detector)
     if ion_cont and use_pars_fid == pars_all:
         plt.fill_between(z, fid_ion - use_sigma_ion, fid_ion + use_sigma_ion, color=use_color, alpha = 0.4)
     
@@ -1766,16 +1930,34 @@ def plot_multi_line(detector, use_pars_fid = pars_original_c18, line = True, non
     #plt.fill_between(z[0],min(z_line_detected_nuv),color_NUV,alpha=0.2)
     #plt.fill_between(max(z_line_detected_nuv),z[-1],color_NUV,alpha=0.2)
 
-    plt.ylabel(r'$b_{1500}^{z=0}\,\epsilon_\lambda$')
+    if DM_contr:
+        eps_DM = np.zeros(len(z))
+        Gamma = 7e-40*u.s**-1 #H(0.).to(u.s**-1)
+        rho_crit = (3*H(0.)**2 / (8*np.pi*cu.G)).to(u.Msun/u.Mpc**3)
+        Omega_c = (camb_pars.omch2 / (H(0.).value/100)**2)
+        conf_time = lambda zv: (cosmo.conformal_time(zv)*u.Mpc/cu.c).to(u.s)
+        proper_time = lambda zv: conf_time(zv) / (1+zv)
+        intrinsic_eps_DM = lambda zv: (Gamma * rho_crit * Omega_c * cu.c**2 * (1+zv)**3 *np.exp(-Gamma* (proper_time(zv)-proper_time(0.)))*u.Hz**-1).to(u.erg/u.s/u.Mpc**3/u.Hz)
+
+        for zi in range(len(z)):
+            eps_DM[zi] = intrinsic_eps_DM(z[zi]).value
+
+        print(eps_DM* fiducials['bias'][0],)
+        plt.plot(z,eps_DM * fiducials['bias'][0],'r',label=r'$\rm Decaying\, DM,\,\Theta_{\rm DM} = 7\times 10^{-40}\,s$')
+
+
+
+    plt.ylabel(r'$\varepsilon(\nu,z)$',fontsize=fontsize)
     plt.yscale('log')
     if ion_cont and use_pars_fid == pars_all:
         plt.legend(bbox_to_anchor=(1,0.7))
     else:
         plt.legend(loc=4)
-    plt.ylim(1e24,1e28)
+    plt.ylim(1e24,1e27)
 
-    plt.xlabel(r'$z$')
+    plt.xlabel(r'$z$',fontsize=fontsize)
     plt.xlim(z[0],z[-1])
+
 
     if use_pars_fid == pars_original_c18:
         filename = 'results/PLOTS/EBL/eps_err_multiwave' + detector + '.png'
@@ -1783,7 +1965,7 @@ def plot_multi_line(detector, use_pars_fid = pars_original_c18, line = True, non
         filename = 'results/PLOTS/EBL/eps_err_multiwave' + detector + '_allpars.png'
 
     plt.tight_layout()
-    plt.savefig(filename)
+    plt.savefig(filename,bbox_inches='tight')
     plt.show()
 
 
@@ -1808,7 +1990,7 @@ def plot_err_emissivity(z = [0.], use_pars_fid = pars_all, prior=False,plot_flag
     sigma_both = np.zeros(len(wave))
     for w in range(len(wave)):
 
-        signal_val[w] = (fiducials['bias'][0]) * signal(wave[w]*u.AA,z[0],'ULTRASAT',vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False).value
+        signal_val[w] =  signal(wave[w]*u.AA,z[0],'ULTRASAT',vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False).value
 
         if wave[w] <= 912:
             temp = plot_err_ioncont(z,wave[w], use_pars_fid = use_pars_fid,group_vox=True,run=False,plot_flag = False, prior=prior)[0]
@@ -1822,38 +2004,39 @@ def plot_err_emissivity(z = [0.], use_pars_fid = pars_all, prior=False,plot_flag
         else:
             temp = plot_err_noninonizing_cont(z,wave[w], use_pars_fid = use_pars_fid,group_vox=True,run=False,plot_flag = False,prior=prior)[0]
 
-        sigma_galex[w] = temp[0][0]
-        sigma_ultrasat[w] = temp[1][0]
-        sigma_both[w] = temp[2][0]
+        sigma_galex[w] = temp[0][0] / fiducials['bias'][0]
+        sigma_ultrasat[w] = temp[1][0]  / fiducials['bias'][0]
+        sigma_both[w] = temp[2][0]  / fiducials['bias'][0]
 
     if plot_flag:
-        plt.figure(figsize=(20,10))
-        plt.plot(wave, signal_val,'k')
 
-        #plt.fill_between(wave, signal_val - sigma_both, signal_val + sigma_both, color='k', alpha = 0.2, label=r'$\rm (G\times SDSS) + (U\times DESI)$')
-        #plt.fill_between(wave, signal_val + sigma_both, signal_val + sigma_ultrasat, color=color_ULTRASAT, alpha = 0.2, label=r'$\rm ULTRASAT\times DESI$')
-        #plt.fill_between(wave, signal_val + sigma_ultrasat, signal_val + sigma_galex, color=color_FUV, alpha = 0.2, label=r'$\rm GALEX   \times SDSS$')
-        #plt.fill_between(wave, signal_val - sigma_ultrasat, signal_val - sigma_both, color=color_ULTRASAT, alpha = 0.2,)
-        #plt.fill_between(wave, signal_val - sigma_galex, signal_val - sigma_ultrasat, color=color_FUV, alpha = 0.2, )
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8), sharex=True,gridspec_kw={'hspace': 0,'height_ratios': [2, 1]})
 
-        plt.fill_between(wave, signal_val - sigma_ultrasat, signal_val + sigma_ultrasat, color=color_ULTRASAT, alpha = 0.2, label=r'$\rm ULTRASAT\times DESI$')
-        plt.fill_between(wave, signal_val + sigma_ultrasat, signal_val + sigma_galex, color=color_FUV, alpha = 0.2, label=r'$\rm GALEX   \times SDSS$')
-        plt.fill_between(wave, signal_val - sigma_galex, signal_val - sigma_ultrasat, color=color_FUV, alpha = 0.2, )
+        ax1.plot(wave, signal_val,'k')
 
-        #plt.axvline(min(lambda_from_nu(nu_max_gFUV).value,lambda_from_nu(nu_max_gNUV).value)/(1+z[0]), color=color_FUV)
-        #plt.axvline(max(lambda_from_nu(nu_min_gFUV).value,lambda_from_nu(nu_min_gNUV).value)/(1+z[0]), color=color_FUV)
-        #plt.axvline(lambda_from_nu(nu_min_US).value/(1+z[0]), color=color_ULTRASAT)
-        #plt.axvline(lambda_from_nu(nu_max_US).value/(1+z[0]), color=color_ULTRASAT)
 
-        plt.ylabel(r'$\epsilon_\nu(z=0)\,[{\rm erg\,s^{-1}Hz^{-1}Mpc^{-3}}]$')
-        plt.yscale('log')
-        plt.xscale('log')
-        plt.legend(loc=1)
-        plt.xlim(wave[0],wave[-1])
-        plt.ylim(3e24,1e28)
+        ax1.fill_between(wave, signal_val - sigma_both, signal_val + sigma_both, color=color_ULTRASAT, alpha = 0.2, label=r'$\rm This\,work$')
+        ax1.fill_between(wave, signal_val + sigma_both, signal_val + sigma_galex, color=color_FUV, alpha = 0.2, label=r'$\rm Results\, from\,C18\,(reproduced)$')
+        ax1.fill_between(wave, signal_val - sigma_galex, signal_val - sigma_both, color=color_FUV, alpha = 0.2, )
 
-        plt.title(r'$z=%g$'%z[0])
-        plt.xlabel(r'$\lambda_{\rm obs}\,[{\rm A}]$')
+        ax1.set_ylabel(r'$\epsilon(\nu,z)$',fontsize=fontsize)
+        ax1.set_yscale('log')
+        # ax2.set_xscale('log')
+        ax1.legend(loc=1,)
+        ax2.set_xlim(wave[0],wave[-1])
+        ax1.set_ylim(3e24,3e28)
+
+        ax2.plot(wave, (sigma_ultrasat - sigma_galex)/sigma_ultrasat, color=color_ULTRASAT, label=r'$\sigma_{\rm ULTRASAT} - \sigma_{\rm GALEX}$')
+
+        ax2.axhline(y=0,color='k')
+
+        # Set labels and legend for the lower panel
+        ax2.set_ylabel(r'$1-\sigma_{\rm G\times S}/\sigma_{\rm U\times D}$')
+
+        ax1.set_title(r'$z=%g$'%z[0],)
+        ax2.set_xlabel(r'$\lambda_{\rm obs}\,[{\rm A}]$',fontsize=fontsize)
+        #plt.xticks(fontsize=2*fontsize*.8)
+        #plt.yticks(fontsize=2*fontsize*.8)
 
         if use_pars_fid == pars_original_c18:
             filename = 'results/PLOTS/EBL/err_rest_emissivity_z' + str(z) + '.png'
@@ -1861,18 +2044,114 @@ def plot_err_emissivity(z = [0.], use_pars_fid = pars_all, prior=False,plot_flag
             filename = 'results/PLOTS/EBL/err_rest_emissivity_allpars_z' + str(z) + '.png'
 
         plt.tight_layout()
-        plt.savefig(filename)
+        plt.savefig(filename,bbox_inches='tight')
         plt.show()
 
 
     return [sigma_galex, sigma_ultrasat, sigma_both], wave, signal_val 
 
 
+def plot_err_emissivity_PAPER():
 
-def plot_err_emissivity_combined(zall = [0.,0.5,1.,2.], use_pars_fid = pars_all, prior=False,plot_flag=True):
+    z = [0.,0.3,0.5,0.6,1.,1.5,2.]
+    wave = np.linspace(700,3000,500)
+
+    for zi in z:
+        signal_val = np.zeros(len(wave))
+
+        sigma_galex = np.zeros(len(wave))
+        sigma_both = np.zeros(len(wave))
+        for w in range(len(wave)):
+
+            signal_val[w] =  signal(wave[w]*u.AA,zi,'ULTRASAT',vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False).value
+
+            if wave[w] <= 912:
+                sigma_galex[w] = plot_err_ioncont([zi],wave[w], use_pars_fid = pars_original_c18,group_vox=True,run=False,plot_flag = False, prior=True,galex_detector='SDSS')[0][0][0]
+                
+                sigma_both[w] = plot_err_ioncont([zi],wave[w], use_pars_fid = pars_all,group_vox=True,run=False,plot_flag = False, prior=False,galex_detector='DESI')[0][2][0]
+
+            elif 912 < wave[w] < 1216*(1-0.005):
+                sigma_galex[w] = plot_err_line_surrounding([zi],wave[w], use_pars_fid = pars_original_c18,group_vox=True,run=False,plot_flag = False,prior=True,galex_detector='SDSS')[0][0][0]
+
+                sigma_both[w] = plot_err_line_surrounding([zi],wave[w], use_pars_fid = pars_all,group_vox=True,run=False,plot_flag = False,prior=False,galex_detector='DESI')[0][2][0]
+
+            elif 1216*(1-0.005) < wave[w] <= 1216:
+                sigma_galex[w] = plot_err_line([zi],wave[w], use_pars_fid = pars_original_c18,group_vox=True,run=False,plot_flag = False,prior=True,galex_detector='SDSS')[0][0][0]
+    
+                sigma_both[w] = plot_err_line([zi],wave[w], use_pars_fid = pars_all,group_vox=True,run=False,plot_flag = False,prior=False,galex_detector='DESI')[0][2][0]
+    
+            else:
+                sigma_galex[w] = plot_err_noninonizing_cont([zi],wave[w], use_pars_fid = pars_original_c18,group_vox=True,run=False,plot_flag = False,prior=True,galex_detector='SDSS')[0][0][0]
+                
+                sigma_both[w] = plot_err_noninonizing_cont([zi],wave[w], use_pars_fid = pars_all,group_vox=True,run=False,plot_flag = False,prior=False,galex_detector='DESI')[0][2][0]
+
+            sigma_galex[w] /= fiducials['bias'][0]
+            sigma_both[w] /= fiducials['bias'][0]
+            
+            #sigma_galex[w] *= 3
+            #sigma_both[w] *= 3
+
+
+        plt.figure(figsize=(12,9))
+
+        # plt.axvline(lambda_from_nu(nu_min_US).value/(1+zi), color='k',linewidth=.5)
+        plt.axvline(lambda_from_nu(nu_min_gNUV).value/(1+zi), color='k',linewidth=1,linestyle=':')
+        # plt.axvline(lambda_from_nu(nu_max_gFUV).value/(1+zi), color='k',linewidth=.5)
+
+        plt.fill_betweenx([1e25,5e28],lambda_from_nu(nu_min_US).value/(1+zi),3000,color='k',alpha=0.1)
+        plt.fill_betweenx([1e25,5e28],lambda_from_nu(nu_max_gFUV).value/(1+zi),color='k',alpha=0.1)
+
+        plt.plot(wave, signal_val,'k')
+        #plt.plot(wave, signal_val - sigma_both, color=color_ULTRASAT, linewidth=1., alpha=0.9, label=r'$\rm This\,work,\,1\sigma$')
+        #plt.plot(wave, signal_val + sigma_both, color=color_ULTRASAT, alpha=0.9, linewidth=1.)
+        plt.fill_between(wave, signal_val - 3*sigma_both, signal_val + 3*sigma_both, color=color_ULTRASAT, alpha = 0.2, label=r'$\rm This\,work,\,3\sigma$')
+        plt.plot(wave, signal_val - sigma_galex,color_FUV,alpha=0.6,label=r'$\rm C18\,results\,(1\sigma,\,reproduced)$',linestyle=(0,(5,1)),linewidth=1.5)
+        plt.plot(wave, signal_val + sigma_galex,color_FUV,alpha=0.6,linestyle=(0,(5,1)),linewidth=1.5)
+
+        #plt.fill_betweenx([3e24,1e28],lambda_from_nu(nu_max_US).value,color=color_ULTRASAT,alpha=0.1)
+        #plt.fill_betweenx([3e24,1e28],lambda_from_nu(nu_min_US).value,wave[-2]*(1+zall[-1]),color=color_ULTRASAT,alpha=0.1)
+
+
+        plt.ylabel(r'$\epsilon(\nu,z)$',fontsize=fontsize)
+        plt.yscale('log')
+        # ax2.set_xscale('log')
+        if zi == 2.:
+            plt.legend(loc=1,)
+            plt.ylim(1e25,3e28)
+        elif zi == 1. or zi == 1.5:
+            plt.legend(loc=1,)
+            plt.ylim(1e25,3e28)
+        # elif zi == 0.:
+        #     yticks = [1e25,2e25,3e25,4e25,5e25,6e25,7e25]
+        #     yticklabels = [r'$1$',r'$2$',r'$3$',r'$4$',r'$5$',r'$6$',r'$7$']
+        #     plt.yticks(yticks, yticklabels)  
+        #     plt.ylabel(r'$10^{25}\times\epsilon(\nu,z)$',fontsize=fontsize)
+        #     plt.legend(loc=4,)
+        #     plt.ylim(2e25,7e25)
+        else:
+            plt.legend(loc=1,)
+            plt.ylim(1e25,1e27)
+
+        plt.xlim(wave[0],wave[-1])
+
+        plt.title(r'$z=%g$'%zi,)
+        plt.xlabel(r'$\lambda_{\rm obs}/(1+z)\,[{\rm \AA}]$',fontsize=fontsize)
+
+        filename = 'results/PLOTS/EBL/err_final_emissivity_z' + str(zi) + '.png'
+        
+        plt.tight_layout()
+        plt.savefig(filename,bbox_inches='tight')
+        plt.show()
+
+
+    return 
+
+
+
+def plot_err_emissivity_combined(zall = [0.,0.5,1.,2.], use_pars_fid = pars_all, prior=False,plot_flag=True,galex_detector='SDSS'):
 
     linestyle=['-','--','-.',':']
-    plt.figure(figsize=(20,10))
+    plt.figure(figsize=(15,9))
     for z in zall:
         wave = np.linspace(700,3000,500)
         signal_val = np.zeros(len(wave))
@@ -1880,21 +2159,21 @@ def plot_err_emissivity_combined(zall = [0.,0.5,1.,2.], use_pars_fid = pars_all,
         sigma_both = np.zeros(len(wave))
         for w in range(len(wave)):
 
-            signal_val[w] = (fiducials['bias'][0]) * signal(wave[w]*u.AA,z,'ULTRASAT',vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False).value
+            signal_val[w] =  signal(wave[w]*u.AA,z,'ULTRASAT',vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False).value
 
             if wave[w] <= 912:
-                temp = plot_err_ioncont([z],wave[w], use_pars_fid = use_pars_fid,group_vox=True,run=False,plot_flag = False, prior=prior)[0]
+                temp = plot_err_ioncont([z],wave[w], use_pars_fid = use_pars_fid,group_vox=True,run=False,plot_flag = False, prior=prior,galex_detector=galex_detector)[0]
                 
             elif 912 < wave[w] < 1216*(1-0.005):
-                temp = plot_err_line_surrounding([z],wave[w], use_pars_fid = use_pars_fid,group_vox=True,run=False,plot_flag = False,prior=prior)[0]
+                temp = plot_err_line_surrounding([z],wave[w], use_pars_fid = use_pars_fid,group_vox=True,run=False,plot_flag = False,prior=prior,galex_detector=galex_detector)[0]
 
             elif 1216*(1-0.005) < wave[w] <= 1216:
-                temp = plot_err_line([z],wave[w], use_pars_fid = use_pars_fid,group_vox=True,run=False,plot_flag = False,prior=prior)[0]
+                temp = plot_err_line([z],wave[w], use_pars_fid = use_pars_fid,group_vox=True,run=False,plot_flag = False,prior=prior,galex_detector=galex_detector)[0]
     
             else:
-                temp = plot_err_noninonizing_cont([z],wave[w], use_pars_fid = use_pars_fid,group_vox=True,run=False,plot_flag = False,prior=prior)[0]
+                temp = plot_err_noninonizing_cont([z],wave[w], use_pars_fid = use_pars_fid,group_vox=True,run=False,plot_flag = False,prior=prior,galex_detector=galex_detector)[0]
 
-            sigma_both[w] = temp[2][0]
+            sigma_both[w] = temp[2][0] / fiducials['bias'][0]
 
         plt.plot(wave*(1+z), signal_val,'k',linestyle=linestyle[zall.index(z)],label=r'$z=%g$'%z)
 
@@ -1912,15 +2191,15 @@ def plot_err_emissivity_combined(zall = [0.,0.5,1.,2.], use_pars_fid = pars_all,
     plt.fill_betweenx([3e24,1e28],lambda_from_nu(nu_min_gNUV).value,wave[-2]*(1+zall[-1]),color=color_FUV,alpha=0.2)
     plt.fill_betweenx([3e24,1e28],lambda_from_nu(nu_max_gFUV).value,color=color_FUV,alpha=0.2)
 
-    plt.ylabel(r'$\epsilon_\nu(z=0)\,[{\rm erg\,s^{-1}Hz^{-1}Mpc^{-3}}]$')
+    plt.ylabel(r'$\epsilon_\nu(z=0)$',fontsize=fontsize)
     plt.yscale('log')
     plt.xscale('log')
     plt.legend(loc=1)
     plt.xlim(912,wave[-2]*(1+zall[-1]))
     plt.ylim(3e24,1e28)
 
-    plt.title(r'$\rm (GALEX\times SDSS) + (ULTRASAT\times DESI)$')
-    plt.xlabel(r'$\lambda_{\rm obs}\,[{\rm A}]$')
+    plt.title(r'$\rm (GALEX + ULTRASAT)\times DESI)$')
+    plt.xlabel(r'$\lambda_{\rm obs}\,[{\rm A}]$',fontsize=fontsize)
 
     if use_pars_fid == pars_original_c18:
         filename = 'results/PLOTS/EBL/err_rest_emissivity_combined.png'
@@ -1928,7 +2207,7 @@ def plot_err_emissivity_combined(zall = [0.,0.5,1.,2.], use_pars_fid = pars_all,
         filename = 'results/PLOTS/EBL/err_rest_emissivity_allpars_combined.png'
 
     plt.tight_layout()
-    plt.savefig(filename)
+    plt.savefig(filename,bbox_inches='tight')
     plt.show()
 
 

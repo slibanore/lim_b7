@@ -10,6 +10,74 @@ theta_min = lambda angular_distance: np.arctan(scale_physical_min.value / angula
 theta_max = lambda angular_distance, detector: ((4*u.deg).to(u.rad)).value if detector == 'ULTRASAT' else np.arctan(scale_physical_max.value / angular_distance)
 
 
+def plot_signal(vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias=False):
+
+    dJ_U =  dJdz(z_gals('DESI'),detector='ULTRASAT',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,filename='results/EBL/dJdz_ULTRASAT_reduced.dat')
+
+    dJ_N =  dJdz(z_gals('SDSS'),detector='GALEX_NUV',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,filename='results/EBL/dJdz_GALEX_NUV_reduced.dat')
+
+    dJ_F =  dJdz(z_gals('SDSS'),detector='GALEX_FUV',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,filename='results/EBL/dJdz_GALEX_FUV_reduced.dat')
+
+
+
+    bJ_U = bJ_z(z_gals('DESI'),detector='ULTRASAT',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = val_bias,filename='results/EBL/bJ_ULTRASAT_reduced.dat')
+
+    bJ_N = bJ_z(z_gals('SDSS'),detector='GALEX_NUV',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = val_bias,filename='results/EBL/bJ_GALEX_NUV_reduced.dat')
+
+    bJ_F = bJ_z(z_gals('SDSS'),detector='GALEX_FUV',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = val_bias,filename='results/EBL/bJ_GALEX_FUV_reduced.dat')
+
+
+    # figure 10 
+    plt.figure()
+    plt.plot(z_gals('SDSS'),dJ_N,label=r'$\rm GALEX\,NUV$',color=color_NUV)
+    plt.plot(z_gals('SDSS'),dJ_F,label=r'$\rm GALEX\,FUV$',color=color_FUV)
+    plt.plot(z_gals('DESI'),dJ_U,label=r'$\rm ULTRASAT$',color=color_ULTRASAT)
+    #plt.ylim(-10,200)
+    plt.xlabel(r'$z$',fontsize=fontsize)
+    plt.ylabel(r'$dJ/dz\,[{\rm Jy/sr}]$',fontsize=fontsize)
+    plt.legend(loc=4, ncol=2)
+    
+    plt.tight_layout()
+    plt.savefig('results/PLOTS/EBL/dJdz.png',bbox_inches='tight')
+
+    plt.figure()
+    plt.plot(z_gals('DESI'),bJ_U,label=r'$\rm ULTRASAT$',color=color_ULTRASAT)
+    plt.plot(z_gals('SDSS'),bJ_N,label=r'$\rm GALEX\,NUV$',color=color_NUV)
+    plt.plot(z_gals('SDSS'),bJ_F,label=r'$\rm GALEX\,FUV$',color=color_FUV)
+    plt.xlabel(r'$z$',fontsize=fontsize)
+    plt.ylabel(r'$b_J$',fontsize=fontsize)
+    plt.xlim(0,3)
+    plt.legend(loc=4, ncol=2)
+    
+    plt.tight_layout()
+    plt.savefig('results/PLOTS/EBL/bJz.png',bbox_inches='tight')
+
+    window_size = 70  # Adjust this value based on your preference
+    bJU_smoothed = moving_average(dJ_U*bJ_U, window_size)
+    bJGN_smoothed = moving_average(dJ_N*bJ_N, window_size)
+    bJGF_smoothed = moving_average(dJ_F*bJ_F, window_size)
+
+    
+    plt.figure(figsize=(20,12))
+    plt.plot(z_gals('SDSS')[:len(bJGF_smoothed)],bJGF_smoothed,label=r'$\rm GALEX\, FUV$',color=color_FUV)
+    plt.plot(z_gals('SDSS')[:len(bJGN_smoothed)],bJGN_smoothed,label=r'$\rm GALEX\, NUV$',color=color_NUV)
+    plt.plot(z_gals('DESI')[:len(bJU_smoothed)],bJU_smoothed,label=r'$\rm ULTRASAT$',color=color_ULTRASAT)
+    #plt.ylim(-10,200)
+    plt.xlabel(r'$z$',fontsize=fontsize*1.2)
+    plt.ylabel(r'$b_JdJ_{\nu_{\rm obs}}/dz\,[{\rm Jy/sr}]$',fontsize=fontsize*1.2)
+    plt.legend(bbox_to_anchor = (.95,-0.1), ncol=3,fontsize=fontsize*1.2)
+    plt.xticks(fontsize=1.2*.8*fontsize)
+    plt.yticks(fontsize=1.2*.8*fontsize)
+    
+    plt.xlim(0,2.3)
+
+    plt.tight_layout()
+    plt.savefig('results/PLOTS/EBL/bJdJdz.png',bbox_inches='tight')
+
+
+    plt.show()
+    return 
+
 def Jnu_monopole(detector,reduced_z = False):
 
     #if reduced_z:
@@ -293,6 +361,9 @@ def plot_dNgdz():
     Nsdss_smoothed = moving_average(N, window_size)
     Ndesi_smoothed = moving_average(Ndesi, window_size)
 
+    Nsdss_smoothed_normed = moving_average(N/np.trapz(N,z_sdss), window_size)
+    Ndesi_smoothed_normed = moving_average(Ndesi/np.trapz(Ndesi,z_desi), window_size)
+
    # Create a figure and axis
     fig, ax = plt.subplots()
 
@@ -302,13 +373,30 @@ def plot_dNgdz():
 
     plt.yscale('log')
     plt.xlabel(r'$z$',fontsize=fontsize)
-    plt.ylabel(r'$\delta z_i dN_g/d z$',fontsize=fontsize)
+    plt.ylabel(r'$N_{g,i}$',fontsize=fontsize)
     plt.legend(loc=4)
     plt.tight_layout()
     
     plt.xlim(min(z_gals_interp),min(max(z_gals_interp),z_desi[:len(Ndesi_smoothed)][-1]))
 
     plt.savefig('results/PLOTS/EBL/Ng.png',bbox_inches='tight')
+    plt.show()
+
+    fig, ax = plt.subplots()
+
+    plt.plot(z_desi[:len(Ndesi_smoothed)], Ndesi_smoothed_normed,color=color_ULTRASAT,label=r'$\rm DESI$',)
+    plt.plot(z_sdss[:len(Nsdss_smoothed)],Nsdss_smoothed_normed,label=r'$\rm SDSS$',color=color_FUV)
+    #plt.plot(z_spherex,Nsp,color_ULTRASAT,label=r'$\rm SPHEREx$')
+
+    plt.yscale('log')
+    plt.xlabel(r'$z$',fontsize=fontsize)
+    plt.ylabel(r'$dN_g/d\Omega dz$',fontsize=fontsize)
+    plt.legend(loc=4)
+    plt.tight_layout()
+    
+    plt.xlim(min(z_gals_interp),min(max(z_gals_interp),z_desi[:len(Ndesi_smoothed)][-1]))
+
+    plt.savefig('results/PLOTS/EBL/Ng_normed.png',bbox_inches='tight')
     plt.show()
 
     return 
@@ -548,12 +636,44 @@ def run_wJg(reduced_z = False):
     return 
 
 
+def run_wJg_galexdesi(reduced_z = False):
+
+    if reduced_z:
+        use_z = z_gals_interp
+        reduced_label = '_reduced'
+    else:
+        use_z = z_gals('DESI')
+        reduced_label = ''
+
+    wn = np.zeros(len(use_z))
+    wf = np.zeros(len(use_z))
+
+    # use the DM file with name ultrasat because it has the same z bins as desi, ma there is no info on the lim part
+    for i in (range(len(use_z))):
+        filename_wm = 'results/EBL/wmz_ULTRASAT' + reduced_label + '.dat'
+        wn[i] = wJgz(use_z[i],'GALEX_NUV','DESI',True,
+           filename_wm = filename_wm,
+           filename_dJ = 'results/EBL/dJdz_GALEX_NUV' + reduced_label + '.dat',
+           filename_bJ = 'results/EBL/bJ_GALEX_NUV' + reduced_label + '.dat')
+        wf[i] = wJgz(use_z[i],'GALEX_FUV','DESI',True,
+           filename_wm = filename_wm,
+           filename_dJ = 'results/EBL/dJdz_GALEX_FUV' + reduced_label + '.dat',
+           filename_bJ = 'results/EBL/bJ_GALEX_FUV' + reduced_label + '.dat')
+        
+    np.savetxt('results/EBL/wJg_GALEX_NUV,DESI' + reduced_label + '.dat',(use_z, wn))
+    np.savetxt('results/EBL/wJg_GALEX_FUV,DESI' + reduced_label + '.dat',(use_z, wf))
+    
+    return 
+
+
 
 def plot_wz(reduced_z = False):
 
     wm = np.zeros(len(z_gals('SDSS')))
     wn = np.zeros(len(z_gals('SDSS')))
     wf = np.zeros(len(z_gals('SDSS')))
+    wnD = np.zeros(len(z_gals('DESI')))
+    wfD = np.zeros(len(z_gals('DESI')))
     wu = np.zeros(len(z_gals('SPHEREx')))
     wuD = np.zeros(len(z_gals('DESI')))
 
@@ -561,6 +681,8 @@ def plot_wz(reduced_z = False):
     use_filename_wm = 'results/EBL/wmz_GALEX_NUV' + reduced_label + '.dat'
     use_filename_nuv = 'results/EBL/wJg_GALEX_NUV,SDSS'+ reduced_label + '.dat'
     use_filename_fuv = 'results/EBL/wJg_GALEX_FUV,SDSS'+ reduced_label + '.dat'
+    use_filename_nuv_desi = 'results/EBL/wJg_GALEX_NUV,DESI'+ reduced_label + '.dat'
+    use_filename_fuv_desi = 'results/EBL/wJg_GALEX_FUV,DESI'+ reduced_label + '.dat'
     for i in (range(len(z_gals('SDSS')))):
         print('\nDoing z = ' + str(z_gals('SDSS')[i]))
         print('DM')
@@ -584,21 +706,38 @@ def plot_wz(reduced_z = False):
     for i in (range(len(z_gals('DESI')))):
         wuD[i] = wJgz(z_gals('DESI')[i],'ULTRASAT','DESI',False,
             filename=filename_ULT_DESI)
+        wnD[i] = wJgz(z_gals('DESI')[i],'GALEX_NUV','DESI',False,filename=use_filename_nuv_desi)
+        wfD[i] = wJgz(z_gals('DESI')[i],'GALEX_FUV','DESI',False,
+            filename=use_filename_fuv_desi)
         
     window_size = 70  # Adjust this value based on your preference
     wGN_smoothed = moving_average(wn, window_size)
     wGF_smoothed = moving_average(wf, window_size)
     wU_smoothed = moving_average(wuD, window_size)
-        
-    plt.figure()
-    #plt.plot(z_gals('SPHEREx'),(wu),color_ULTRASAT,label=r'$\rm ULTRASAT\times SPHEREx$')
-    plt.plot(z_gals('DESI')[:len(wU_smoothed)],wU_smoothed,color_ULTRASAT,label=r'$\rm ULTRASAT\times DESI$')
-    plt.plot(z_gals('SDSS')[:len(wGN_smoothed)],wGN_smoothed,color_NUV,label=r'$\rm NUV\times SDSS$')
-    plt.plot(z_gals('SDSS')[:len(wGF_smoothed)],wGF_smoothed,color_FUV,label=r'$\rm FUV\times SDSS$')
 
-    plt.xlabel(r'$z$',fontsize=fontsize)
-    plt.ylabel(r'$\bar{\omega}_{J_\nu{\rm g}}(z)$',fontsize=fontsize)
-    plt.legend(loc=1,ncol=1)
+    wGND_smoothed = moving_average(wnD, window_size)
+    wGFD_smoothed = moving_average(wfD, window_size)
+
+    plt.figure(figsize=(20,14))
+
+    plt.xticks(fontsize=1.2*.8*fontsize)
+    plt.yticks(fontsize=1.2*.8*fontsize)
+    
+    plt.xlim(0,2.3)
+
+    plt.tight_layout()
+    plt.savefig('results/PLOTS/EBL/bJdJdz.png',bbox_inches='tight')
+    #plt.plot(z_gals('SPHEREx'),(wu),color_ULTRASAT,label=r'$\rm ULTRASAT\times SPHEREx$')
+    plt.plot(z_gals('SDSS')[:len(wGF_smoothed)],wGF_smoothed,color_FUV,label=r'$\rm FUV\times SDSS$')
+    plt.plot(z_gals('DESI')[:len(wGFD_smoothed)],wGFD_smoothed,color_FUV,label=r'$\rm FUV\times DESI$',linestyle='--')
+
+    plt.plot(z_gals('SDSS')[:len(wGN_smoothed)],wGN_smoothed,color_NUV,label=r'$\rm NUV\times SDSS$')
+    plt.plot(z_gals('DESI')[:len(wGND_smoothed)],wGND_smoothed,color_NUV,label=r'$\rm NUV\times DESI$',linestyle='--')
+    plt.plot(z_gals('DESI')[:len(wU_smoothed)],wU_smoothed,color_ULTRASAT,label=r'$\rm ULTRASAT\times DESI$')
+
+    plt.xlabel(r'$z$',fontsize=fontsize*1.2)
+    plt.legend(bbox_to_anchor = (1.005,-0.1), ncol=3,fontsize=fontsize*1.2)
+    plt.ylabel(r'$\bar{\omega}_{J_\nu{\rm g}}(z)$',fontsize=fontsize*1.2)
 
     plt.tight_layout()
     filefig = 'results/PLOTS/EBL/wJg' + reduced_label + '.png'
