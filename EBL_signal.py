@@ -15,11 +15,12 @@ linewidth = 2.5
 
 plt.rcParams['lines.linewidth'] = linewidth
 plt.rcParams['font.size'] = fontsize
-plt.rcParams['xtick.labelsize'] = fontsize*.9
-plt.rcParams['ytick.labelsize'] = fontsize*.9
-plt.rcParams['legend.fontsize'] = fontsize*.9
+plt.rcParams['xtick.labelsize'] = fontsize*.5
+plt.rcParams['ytick.labelsize'] = fontsize*.5
+plt.rcParams['legend.fontsize'] = fontsize*.7
 plt.rcParams['figure.figsize'] = figsize
 plt.rcParams['legend.columnspacing'] = 0.8
+plt.rcParams['legend.frameon'] = False
 
 color_FUV = '#1e6091'
 color_NUV = '#89c2d9'
@@ -510,40 +511,6 @@ def plot_rest_signal(detector='GALEX_NUV',vals_eps1500=False,vals_alpha1500=Fals
     return 
 
 
-def plot_z_signal(vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False):
-
-    # reproduce fig 2, mid panel and fig 8
-
-    z = [0,0.3,1.,2]#,5,10]
-
-#    rest_wave = np.concatenate((np.linspace(700,1216,2000), np.linspace(1216,3500,2000)))
-    rest_wave = np.linspace(700,3500,400)
-    for zv in range(len(z)):
-        s = np.zeros(len(rest_wave))
-        wave = np.zeros((len(rest_wave)))
-        for i in range(len(rest_wave)):
-            wave[i] = rest_wave[i] * (1.+z[zv])
-            if z[zv] <= 1:
-                detector = 'GALEX_NUV' # same for galex_fuv in EW
-            else:
-                detector = 'ULTRASAT' # same for hetdex and spherex
-            s[i] = signal(rest_wave[i]*u.AA,z[zv],detector,vals_eps1500,vals_alpha1500,vals_alpha1100,val_EW,val_flyc,val_alpha900,True).value 
-
-        plt.plot(wave, s, color= colors[zv], label=r'$z = %g$'%z[zv])
-
-    #plt.xscale('log')
-    plt.yscale('log')
-    plt.xlabel(r'$\lambda_{\rm obs}\,[{\rm \AA}]$',fontsize=fontsize)
-    plt.ylabel(r'$\epsilon_\nu\,[{\rm erg\,s^{-1}Hz^{-1}Mpc^{-3}}]$',fontsize=fontsize)
-    plt.legend(loc=4,ncol=2)
-    plt.xlim(700,8000)
-    plt.ylim(3e24,2e28)
-
-    plt.tight_layout()
-    plt.savefig('results/PLOTS/EBL/emissivity.png',bbox_inches='tight')
-    plt.show()
-
-    return 
 
 
 def Response(wavelenght,detector):
@@ -584,54 +551,6 @@ def Response(wavelenght,detector):
 
     return R
 
-
-
-def plot_response():
-
-    wavelenght, QE_dat = np.genfromtxt('dat/ULTRASAT.dat').T
-    
-    plt.figure()
-    plt.plot(wavelenght,QE_dat,label=r'$ULTRASAT$',color=color_ULTRASAT)
-    plt.legend(loc=1)
-    plt.xlabel(r'$\lambda\,[{\rm A}]$',fontsize=fontsize)
-    plt.ylabel(r'$\rm QE$',fontsize=fontsize)
-
-    plt.tight_layout()
-    plt.savefig('results/PLOTS/EBL/QE_ultrasat.png',bbox_inches='tight')
-
-    wavelenght_F = np.linspace(wavelenght_min('GALEX_FUV'),wavelenght_max('GALEX_FUV'))
-    wavelenght_N = np.linspace(wavelenght_min('GALEX_NUV'),wavelenght_max('GALEX_NUV'))
-    wavelenght = np.linspace(wavelenght_min('ULTRASAT'),wavelenght_max('ULTRASAT'))
-
-    R = np.zeros(len(wavelenght))
-    RN = np.zeros(len(wavelenght))
-    RF = np.zeros(len(wavelenght))
-    RCUV = np.zeros(len(wavelenght))
-    RCU = np.zeros(len(wavelenght))
-    RCG = np.zeros(len(wavelenght))
-
-    for i in range(len(wavelenght)):
-        R[i] = Response(wavelenght[i],'ULTRASAT')
-        RN[i] = Response(wavelenght_N[i],'GALEX_NUV')
-        RF[i] = Response(wavelenght_F[i],'GALEX_FUV')
-
-    plt.figure()
-    plt.plot(wavelenght,R-min(R),label=r'$\rm ULTRASAT$',color=color_ULTRASAT)
-    plt.plot(wavelenght_N,RN-min(RN),label=r'$\rm GALEX\, NUV$',color=color_NUV)
-    plt.plot(wavelenght_F,RF-min(RF),label=r'$\rm GALEX\, FUV$',color=color_FUV)
-
-    plt.yticks([])
-
-    plt.legend(loc=1,ncol=1)
-    plt.xlabel(r'$\lambda_{\rm obs}\,[{\rm \AA}]$',fontsize=fontsize)
-    plt.ylabel(r'$R(\lambda_{\rm obs})$',fontsize=fontsize)
-
-    plt.tight_layout()
-    plt.savefig('results/PLOTS/EBL/response.png',bbox_inches='tight')
-
-    plt.show()
-
-    return 
 
 
 def H(z):
@@ -985,64 +904,64 @@ def plot_bdJdz_multi():
     vals_alpha1100= False
     val_alpha900= False
     
-    plt.figure()
-    val_EW= False
-    val_flyc= False
+    # plt.figure()
+    # val_EW= False
+    # val_flyc= False
  
-    print('Doing alpha1500')
-    for A in tqdm(alpha_1500):
+    # print('Doing alpha1500')
+    # for A in tqdm(alpha_1500):
  
-        vals_alpha1500= A
+    #     vals_alpha1500= A
  
-        with Pool(6) as pool:
+    #     with Pool(6) as pool:
 
-            print('Doing NUV')
-            dJdz_NUV = partial(dJdz,detector='GALEX_NUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,)
-            dJ_nuv = pool.map(dJdz_NUV, z_gals('SDSS'))
+    #         print('Doing NUV')
+    #         dJdz_NUV = partial(dJdz,detector='GALEX_NUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,)
+    #         dJ_nuv = pool.map(dJdz_NUV, z_gals_interp)
 
-            print('Doing FUV')
-            dJdz_FUV = partial(dJdz,detector='GALEX_FUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,)
-            dJ_fuv = pool.map(dJdz_FUV, z_gals('SDSS'))
+    #         print('Doing FUV')
+    #         dJdz_FUV = partial(dJdz,detector='GALEX_FUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,)
+    #         dJ_fuv = pool.map(dJdz_FUV, z_gals_interp)
     
-            print('Doing bias NUV')
-            bJ_nuv_f =  partial(bJ_z,detector='GALEX_NUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename='results/EBL/dJdz_GALEX_NUV.dat')
-            bJ_nuv = pool.map(bJ_nuv_f, z_gals('SDSS'))
+    #         print('Doing bias NUV')
+    #         bJ_nuv_f =  partial(bJ_z,detector='GALEX_NUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename='results/EBL/dJdz_GALEX_NUV.dat')
+    #         bJ_nuv = pool.map(bJ_nuv_f, z_gals_interp)
  
-            print('Doing bias FUV')
-            bJ_fuv_f =  partial(bJ_z,detector='GALEX_FUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename='results/EBL/dJdz_GALEX_FUV.dat')
-            bJ_fuv = pool.map(bJ_fuv_f, z_gals('SDSS'))
+    #         print('Doing bias FUV')
+    #         bJ_fuv_f =  partial(bJ_z,detector='GALEX_FUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename='results/EBL/dJdz_GALEX_FUV.dat')
+    #         bJ_fuv = pool.map(bJ_fuv_f, z_gals_interp)
 
-            bdJ_nuv = np.asarray(dJ_nuv) * np.asarray(bJ_nuv)
-            bdJ_fuv = np.asarray(dJ_fuv) * np.asarray(bJ_fuv) 
+    #         bdJ_nuv = np.asarray(dJ_nuv) * np.asarray(bJ_nuv)
+    #         bdJ_fuv = np.asarray(dJ_fuv) * np.asarray(bJ_fuv) 
 
-        if not vals_alpha1500:
-            linestyle = '--'
-        else: 
-            linestyle = '-'
+    #     if not vals_alpha1500:
+    #         linestyle = '--'
+    #     else: 
+    #         linestyle = '-'
 
-        plt.subplot(121)
-        # plt.subplot(231)
-        plt.plot(z_gals('SDSS'),bdJ_fuv,color= color[alpha_1500.index(A)],label=r'$\alpha_{1500} = %g$'%A,linestyle=linestyle)
+    #     plt.subplot(121)
+    #     # plt.subplot(231)
+    #     plt.plot(z_gals('SDSS'),bdJ_fuv,color= color[alpha_1500.index(A)],label=r'$\alpha_{1500} = %g$'%A,linestyle=linestyle)
  
-        # plt.subplot(234)
-        plt.subplot(122)
-        plt.plot(z_gals('SDSS'),bdJ_nuv,color= color[alpha_1500.index(A)],label=r'$\alpha_{1500} = %g$'%A,linestyle=linestyle)
+    #     # plt.subplot(234)
+    #     plt.subplot(122)
+    #     plt.plot(z_gals('SDSS'),bdJ_nuv,color= color[alpha_1500.index(A)],label=r'$\alpha_{1500} = %g$'%A,linestyle=linestyle)
  
-    # plt.subplot(231)
-    plt.subplot(121)
-    plt.xlim(z_gals('SDSS')[0],z_gals('SDSS')[-1])
-    #plt.ylim(-10,65)
-    plt.xlabel(r'$z$',fontsize=fontsize)
-    plt.ylabel(r'$\rm b\,dJ/dz\,[Jy/sr]$',fontsize=fontsize)
-    plt.legend(loc=1)
+    # # plt.subplot(231)
+    # plt.subplot(121)
+    # plt.xlim(z_gals_interp,z_gals('SDSS')[-1])
+    # #plt.ylim(-10,65)
+    # plt.xlabel(r'$z$',fontsize=fontsize)
+    # plt.ylabel(r'$\rm b\,dJ/dz\,[Jy/sr]$',fontsize=fontsize)
+    # plt.legend(loc=1)
  
-    plt.subplot(122)
-    # plt.subplot(234)
-    plt.xlim(z_gals('SDSS')[0],z_gals('SDSS')[-1])
-    #plt.ylim(-10,65)
-    plt.xlabel(r'$z$',fontsize=fontsize)
-    plt.ylabel(r'$\rm b\,dJ/dz\,[Jy/sr]$',fontsize=fontsize)
-    plt.legend(loc=1)
+    # plt.subplot(122)
+    # # plt.subplot(234)
+    # plt.xlim(z_gals_interp,z_gals('SDSS')[-1])
+    # #plt.ylim(-10,65)
+    # plt.xlabel(r'$z$',fontsize=fontsize)
+    # plt.ylabel(r'$\rm b\,dJ/dz\,[Jy/sr]$',fontsize=fontsize)
+    # plt.legend(loc=1)
 
 
     plt.figure()
@@ -1058,17 +977,17 @@ def plot_bdJdz_multi():
 
             print('Doing NUV')
             dJdz_NUV = partial(dJdz,detector='GALEX_NUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,)
-            dJ_nuv = pool.map(dJdz_NUV, z_gals('SDSS'))
+            dJ_nuv = pool.map(dJdz_NUV, z_gals_interp)
             print('Doing FUV')
             dJdz_FUV = partial(dJdz,detector='GALEX_FUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,)
-            dJ_fuv = pool.map(dJdz_FUV, z_gals('SDSS'))
+            dJ_fuv = pool.map(dJdz_FUV, z_gals_interp)
     
             bJ_nuv_f =  partial(bJ_z,detector='GALEX_NUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename='results/EBL/dJdz_GALEX_NUV.dat')
-            bJ_nuv = pool.map(bJ_nuv_f, z_gals('SDSS'))
+            bJ_nuv = pool.map(bJ_nuv_f, z_gals_interp)
  
             print('Doing b FUV')
             bJ_fuv_f =  partial(bJ_z,detector='GALEX_FUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename='results/EBL/dJdz_GALEX_FUV.dat')
-            bJ_fuv = pool.map(bJ_fuv_f, z_gals('SDSS'))
+            bJ_fuv = pool.map(bJ_fuv_f, z_gals_interp)
 
             bdJ_nuv = np.asarray(dJ_nuv) * np.asarray(bJ_nuv)
             bdJ_fuv = np.asarray(dJ_fuv) * np.asarray(bJ_fuv) 
@@ -1079,11 +998,11 @@ def plot_bdJdz_multi():
             linestyle = '-'
         # plt.subplot(232)
         plt.subplot(121)
-        plt.plot(z_gals('SDSS'),bdJ_fuv,color= color[EW.index(A)],label=r'$\rm EW = %g$'%A,linestyle=linestyle)
+        plt.plot(z_gals_interp,bdJ_fuv,color= color[EW.index(A)],label=r'$\rm EW = %g$'%A,linestyle=linestyle)
 
         plt.subplot(122)
         # plt.subplot(235)
-        plt.plot(z_gals('SDSS'),bdJ_nuv,color= color[EW.index(A)],label=r'$\rm EW = %g$'%A,linestyle=linestyle)
+        plt.plot(z_gals_interp,bdJ_nuv,color= color[EW.index(A)],label=r'$\rm EW = %g$'%A,linestyle=linestyle)
 
     plt.subplot(121)
     # plt.subplot(232)
@@ -1102,63 +1021,63 @@ def plot_bdJdz_multi():
     plt.legend(loc=1)
 
 
-    plt.figure()
-    val_EW= False
-    vals_alpha1500= False
+#     plt.figure()
+#     val_EW= False
+#     vals_alpha1500= False
 
-    print('Doing fLyC')
-    for A in tqdm(f_Lyc):
+#     print('Doing fLyC')
+#     for A in tqdm(f_Lyc):
 
-        val_flyc= A
-        with Pool(6) as pool:
+#         val_flyc= A
+#         with Pool(6) as pool:
 
-            print('Doing NUV')
-            dJdz_NUV = partial(dJdz,detector='GALEX_NUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,)
-            dJ_nuv = pool.map(dJdz_NUV, z_gals('SDSS'))
-            print('Doing FUV')
-            dJdz_FUV = partial(dJdz,detector='GALEX_FUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,)
-            dJ_fuv = pool.map(dJdz_FUV, z_gals('SDSS'))
+#             print('Doing NUV')
+#             dJdz_NUV = partial(dJdz,detector='GALEX_NUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,)
+#             dJ_nuv = pool.map(dJdz_NUV, z_gals_interp)
+#             print('Doing FUV')
+#             dJdz_FUV = partial(dJdz,detector='GALEX_FUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,)
+#             dJ_fuv = pool.map(dJdz_FUV, z_gals_interp)
     
-            bJ_nuv_f =  partial(bJ_z,detector='GALEX_NUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename='results/EBL/dJdz_GALEX_NUV.dat')
-            bJ_nuv = pool.map(bJ_nuv_f, z_gals('SDSS'))
+#             bJ_nuv_f =  partial(bJ_z,detector='GALEX_NUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename='results/EBL/dJdz_GALEX_NUV.dat')
+#             bJ_nuv = pool.map(bJ_nuv_f, z_gals_interp)
  
-            print('Doing b FUV')
-            bJ_fuv_f =  partial(bJ_z,detector='GALEX_FUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename='results/EBL/dJdz_GALEX_FUV.dat')
-            bJ_fuv = pool.map(bJ_fuv_f, z_gals('SDSS'))
+#             print('Doing b FUV')
+#             bJ_fuv_f =  partial(bJ_z,detector='GALEX_FUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename='results/EBL/dJdz_GALEX_FUV.dat')
+#             bJ_fuv = pool.map(bJ_fuv_f, z_gals_interp)
 
-            bdJ_nuv = np.asarray(dJ_nuv) * np.asarray(bJ_nuv)
-            bdJ_fuv = np.asarray(dJ_fuv) * np.asarray(bJ_fuv) 
+#             bdJ_nuv = np.asarray(dJ_nuv) * np.asarray(bJ_nuv)
+#             bdJ_fuv = np.asarray(dJ_fuv) * np.asarray(bJ_fuv) 
 
-        if not val_flyc:
-            linestyle = '--'
-        else: 
-            linestyle = '-'
+#         if not val_flyc:
+#             linestyle = '--'
+#         else: 
+#             linestyle = '-'
 
-        plt.subplot(121)
-        # plt.subplot(233)
-        plt.plot(z_gals('SDSS'),bdJ_fuv,color= color[f_Lyc.index(A)],label=r'$f_{\rm LyC} = %g$'%A,linestyle=linestyle)
+#         plt.subplot(121)
+#         # plt.subplot(233)
+#         plt.plot(z_gals_interp,bdJ_fuv,color= color[f_Lyc.index(A)],label=r'$f_{\rm LyC} = %g$'%A,linestyle=linestyle)
 
-        plt.subplot(122)
-        # plt.subplot(236)
-        plt.plot(z_gals('SDSS'),bdJ_nuv,color= color[f_Lyc.index(A)],label=r'$f_{\rm LyC} = %g$'%A,linestyle=linestyle)
+#         plt.subplot(122)
+#         # plt.subplot(236)
+#         plt.plot(z_gals_interp,bdJ_nuv,color= color[f_Lyc.index(A)],label=r'$f_{\rm LyC} = %g$'%A,linestyle=linestyle)
 
-    plt.subplot(121)
-    # plt.subplot(233)
-    plt.xlim(z_gals('SDSS')[0],z_gals('SDSS')[-1])
-#    plt.ylim(-10,65)
-    plt.xlabel(r'$z$',fontsize=fontsize)
-    plt.ylabel(r'$\rm b\,dJ/dz\,[Jy/sr]$',fontsize=fontsize)
-    plt.legend(loc=1)
+#     plt.subplot(121)
+#     # plt.subplot(233)
+#     plt.xlim(z_gals('SDSS')[0],z_gals('SDSS')[-1])
+# #    plt.ylim(-10,65)
+#     plt.xlabel(r'$z$',fontsize=fontsize)
+#     plt.ylabel(r'$\rm b\,dJ/dz\,[Jy/sr]$',fontsize=fontsize)
+#     plt.legend(loc=1)
 
-    # plt.subplot(236)
-    plt.subplot(122)
-    plt.xlim(z_gals('SDSS')[0],z_gals('SDSS')[-1])
-#    plt.ylim(-10,65)
-    plt.xlabel(r'$z$',fontsize=fontsize)
-    plt.ylabel(r'$\rm b\,dJ/dz\,[Jy/sr]$',fontsize=fontsize)
-    plt.legend(loc=1)
+#     # plt.subplot(236)
+#     plt.subplot(122)
+#     plt.xlim(z_gals('SDSS')[0],z_gals('SDSS')[-1])
+# #    plt.ylim(-10,65)
+#     plt.xlabel(r'$z$',fontsize=fontsize)
+#     plt.ylabel(r'$\rm b\,dJ/dz\,[Jy/sr]$',fontsize=fontsize)
+#     plt.legend(loc=1)
 
-    plt.show()
+#     plt.show()
     return 
 
 
