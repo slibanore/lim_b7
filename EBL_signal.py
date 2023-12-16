@@ -387,32 +387,6 @@ def signal(wavelenght,z,detector,vals_eps1500,vals_alpha1500,vals_alpha1100,val_
 
     return eps 
 
-# def signal_with_DM(wavelenght,z,detector,vals_eps1500,vals_alpha1500,vals_alpha1100,val_EW,val_flyc,val_alpha900, to_plot = False):
-# 
-    # mass_DM_eV = 5 # eV 
-    # nu0 = 1.21e14 * mass_DM_eV * u.Hz # ---> 495 eV , in ultrasat band from z=1
-    # gamma = 1e-18 * u.s**-1
-# 
-    # rho_crit = (2.77536627e11*(u.Msun.to(u.kg)*u.kg*u.Mpc**-3) * cu.c**2 ).to(u.erg/u.Mpc**3)     
-    # rhoM = rho_crit*(camb_pars.omegam-camb_pars.omeganu)
-# 
-    # f_DM = 1
-    # rho_DM_0 = f_DM * rhoM
-    # rho_DM = (rho_DM_0*(1+z)**3) / u.Hz #* np.exp(-gamma*(t-t0)) --> exponent around 1 
-# 
-    # eps_DM = (gamma * rho_DM).to(u.erg*u.s**-1*u.Hz**-1*u.Mpc**-3) * gaussian(nu_from_lambda(wavelenght), nu_from_lambda(1216*u.AA), nu_from_lambda(wavelenght)**2 / (cu.c.to(u.AA/u.s)) * EW/1e10) #if int(wavelenght.value) == int(lambda_from_nu(nu0).value) else 0.
-# 
-    # if wavelenght.value <= 912:
-        # eps = non_ionizing_continuum(nu_from_lambda(1216*u.AA),z,vals_eps1500,vals_alpha1500) * Lya_break(nu_from_lambda(wavelenght),z,vals_alpha1100,val_flyc,val_alpha900)
-# 
-    # elif 912 < wavelenght.value <= 1216:
-        # eps = non_ionizing_continuum(nu_from_lambda(1216*u.AA),z,vals_eps1500,vals_alpha1500) * Lya_line(nu_from_lambda(wavelenght),z,detector,vals_alpha1100,val_EW,to_plot)
-# 
-    # else:
-        # eps = non_ionizing_continuum(nu_from_lambda(wavelenght),z,vals_eps1500,vals_alpha1500)
-# 
-    # return eps + eps_DM
-
 
 def plot_parameters():
 
