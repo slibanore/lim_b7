@@ -1750,7 +1750,7 @@ def plot_multi_line(detector, use_pars_fid = pars_original_c18, line = True, non
         filename = 'results/PLOTS/EBL/eps_err_multiwave' + detector + '_allpars.png'
 
     plt.tight_layout()
-    plt.savefig(filename,bbox_inches='tight')
+    #plt.savefig(filename,bbox_inches='tight')
     plt.show()
 
 
