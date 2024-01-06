@@ -12,7 +12,7 @@ def sigma_N(detector, group_vox=True):
             else:
                 px_size = 50*u.arcsec
 
-        mag_limit = 20.5
+        mag_limit = 22.#20.5
 
     elif detector == 'ULTRASAT':
         if not group_vox:
@@ -37,12 +37,43 @@ def sigma_N(detector, group_vox=True):
     return noise_per_voxel
 
 
+def sigma_monopole(detector, group_vox=True):
+
+    sigma_N_val = sigma_N(detector, group_vox)
+
+    if detector == 'GALEX_NUV' or detector == 'GALEX_FUV':
+        if not group_vox:
+            px_size = 5*u.arcsec
+        else:
+            if type(group_vox) == float or type(group_vox) == int or type(group_vox) == np.float64:
+                px_size = group_vox*u.arcsec
+            else:
+                px_size = 50.*u.arcsec
+        sky_LIM = 5500*u.steradian
+
+    elif detector == 'ULTRASAT':
+        if not group_vox:
+            px_size = 5.4*u.arcsec
+        else:
+            if type(group_vox) == float or type(group_vox) == int or type(group_vox) == np.float64:
+                px_size = group_vox*u.arcsec
+            else:
+                px_size = 5.4*u.arcsec
+        sky_LIM = 40000*u.steradian
+
+    Nvox = sky_LIM / (px_size**2).to(u.steradian)    
+
+    monopole= Jnu_monopole(detector,reduced_z = True)*(u.Jy/u.sr) 
+
+    return monopole /np.sqrt(Nvox)
+
 
 def sigma_wz(z, detector, gal_survey, group_vox):
 
-    delta_zc = 1e-2
+    delta_zc = 1e-2 # !!!!!
 
     if detector == 'GALEX_NUV' or detector == 'GALEX_FUV':
+        
         if not group_vox:
             px_size = 5*u.arcsec
         else:
@@ -59,6 +90,11 @@ def sigma_wz(z, detector, gal_survey, group_vox):
                 px_size = group_vox*u.arcsec
             else:
                 px_size = 5.4*u.arcsec
+
+    if detector == 'GALEX_NUV' or detector == 'ULTRASAT':
+        delta_fg = 2.2
+    elif detector == 'GALEX_FUV':
+        delta_fg = 1.8
 
     if gal_survey == 'SDSS':
         Omega_survey = (5500*u.deg**2).to(u.steradian)
@@ -87,7 +123,7 @@ def sigma_wz(z, detector, gal_survey, group_vox):
 
     angle_observed =  (np.pi*(theta_max(cosmo.angular_diameter_distance(z),detector))**2*u.steradian)
 
-    noise = (dzi) / delta_zc * np.sqrt(Avox  * (Jnu_monopole(detector)**2 + sigma_N(detector, group_vox).value**2) / (dNgdz(z,gal_survey)*delta_zi_interp )  / angle_observed)
+    noise = (dzi) / delta_zc * np.sqrt(Avox  * ((Jnu_monopole(detector)*(1+delta_fg))**2 + sigma_N(detector, group_vox).value**2) / (dNgdz(z,gal_survey)*delta_zi_interp )  / angle_observed)
 
 
     return noise
@@ -758,9 +794,9 @@ def compare_surveys(detector = 'GALEX_ULTRASAT', pars =pars_original_c18, prior 
 
     if prior: 
         for j in range(len(pars)):
-            # if pars[j] == 'gamma_1500':
-            #     temp[j,j] += 1/.3**2
             if detector == 'GALEX':
+                if pars[j] == 'gamma_1500':
+                    temp[j,j] += 1/.3**2
                 if pars[j] == 'C_alpha_1500':
                     temp[j,j] += 1/1.5**2
                 if pars[j] == 'C_alpha_1100':

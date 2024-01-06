@@ -14,6 +14,8 @@ def plot_collective():
     #plt.subplot(311)
     z = [0.,0.5,1.,2]
 
+    colors_z = ['k','#0a9396','#ca6702','#9b2226']
+
     rest_wave = np.linspace(700,3500,400)
     for zv in range(len(z)):
         s = np.zeros(len(rest_wave))
@@ -29,8 +31,8 @@ def plot_collective():
         if z[zv] == 1.:
             ax[0].plot(wave, s, color= 'k')
             ax[0].plot(1500*(1+z[zv]), s_1500, marker = 'o',color= 'k', zorder= len(z)-zv,markersize=7)
-        ax[1].plot(wave, s, color= colors[zv], label=r'$z = %g$'%z[zv], zorder= len(z)-zv)
-        ax[1].plot(1500*(1+z[zv]), s_1500, marker = 'o',color= colors[zv], zorder= len(z)-zv,markersize=7)
+        ax[1].plot(wave, s, color= colors_z[zv], label=r'$z = %g$'%z[zv], zorder= len(z)-zv)
+        ax[1].plot(1500*(1+z[zv]), s_1500, marker = 'o',color= colors_z[zv], zorder= len(z)-zv,markersize=7)
 
     ax[0].set_yscale('log')
     ax[0].set_ylabel(r'$\epsilon(\nu,z)\,[{\rm erg\,s^{-1}Hz^{-1}Mpc^{-3}}]$',fontsize=fontsize_legend)
