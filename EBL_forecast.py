@@ -1,5 +1,7 @@
 from EBL_observable import * 
 
+z_gals_interp_FISHER = lambda gal_survey: np.arange(zmin_gal,zmax_gal+delta_zi_interp,delta_zi_interp) if gal_survey == 'SDSS' else np.arange(zmin_gal,zmax_gal+delta_zi_interp,delta_zi_interp) if gal_survey == 'DESI' else -1 
+#z_gals_interp_FISHER[-1] = round(z_gals_interp_FISHER[-1],0)
 
 def sigma_N(detector, group_vox=True):
 
@@ -68,10 +70,9 @@ def sigma_monopole(detector, group_vox=True):
     return monopole /np.sqrt(Nvox)
 
 
-def sigma_wz(z, detector, gal_survey, group_vox):
+def sigma_wz(z, detector, gal_survey, group_vox, correlated = 1.):
 
-    delta_zc = 1e-2 # !!!!!
-
+    delta_zc = max(1e-3,H(z)*scale_physical_min/(cu.c).to(u.km/u.s) * (1+z))
     if detector == 'GALEX_NUV' or detector == 'GALEX_FUV':
         
         if not group_vox:
@@ -113,17 +114,16 @@ def sigma_wz(z, detector, gal_survey, group_vox):
 
 #    noise = delta_zi(gal_survey) / delta_zc * use_thetamax * np.sqrt(np.pi) * np.sqrt(Jnu_monopole(detector)**2 + sigma_N(detector, group_vox).value**2) / np.sqrt((Ngal_ref*Nvox_inthetamax))
 # 
-    dzi = delta_zi(gal_survey)
-    #if gal_survey == 'DESI' and z >= 1.6:
-    #    dzi *= 7
+    dzi = max(delta_zi(gal_survey),delta_zc)
 
-    #noise = np.sqrt(dzi) / delta_zc * np.sqrt(Avox * (Jnu_monopole(detector)**2 + sigma_N(detector, group_vox).value**2)) / np.sqrt(dNgdz(z,gal_survey)) 
-
-    Nz = delta_zi_interp / delta_zi(gal_survey) #len(z_gals_interp)
+    use_delta_zi = delta_zi_interp if gal_survey == 'SDSS' else delta_zi_interp if gal_survey == 'DESI' else -1
+#    Nz = delta_zi_interp / delta_zi(gal_survey) 
 
     angle_observed =  (np.pi*(theta_max(cosmo.angular_diameter_distance(z),detector))**2*u.steradian)
 
-    noise = (dzi) / delta_zc * np.sqrt(Avox  * ((Jnu_monopole(detector)*(1+delta_fg))**2 + sigma_N(detector, group_vox).value**2) / (dNgdz(z,gal_survey)*delta_zi_interp )  / angle_observed)
+    ratio_factors = dzi / delta_zc
+
+    noise = ratio_factors * np.sqrt(correlated * Avox  * ((Jnu_monopole(detector)*(1+delta_fg))**2 + sigma_N(detector, group_vox).value**2) / (dNgdz(z,gal_survey)*use_delta_zi )  / angle_observed)
 
 
     return noise
@@ -143,7 +143,7 @@ def plot_signal_and_noise(detector,gal_survey,reduced_z = False):
 
     signal = np.zeros(len(use_z))
 
-    filename = 'results/EBL/wJg_' + detector +',' + gal_survey + reduced_label + '.dat'
+    filename = use_results_dir + 'EBL/wJg_' + detector +',' + gal_survey + reduced_label + '.dat'
 
     for i in tqdm(range(len(use_z))):
         signal[i] = abs(wJgz(use_z[i],detector,gal_survey,False,filename=filename))
@@ -178,7 +178,7 @@ def plot_signal_and_noise(detector,gal_survey,reduced_z = False):
 
     plt.tight_layout()
 
-    filefig = 'results/PLOTS/EBL/noise_' + detector + ',' + gal_survey + '.png'
+    filefig = use_results_dir + 'PLOTS/EBL/noise_' + detector + ',' + gal_survey + '.png'
     
     #plt.savefig(filefig,bbox_inches='tight')
     plt.show()
@@ -213,32 +213,33 @@ def ders(parameter,detector,gal_survey,reduced_z = False):
 
     print('Doing der: ' + str(parameter))
 
-    filename = 'results/EBL/der/d' + parameter + '_' + detector + ',' + gal_survey + reduced_label + '.dat'
+    use_results_dir_HERE = './test_results/'
+
+    filename = use_results_dir_HERE + 'EBL/der/d' + parameter + '_' + detector + ',' + gal_survey + reduced_label + '.dat'
 
     if detector == 'GALEX_NUV' or detector == 'GALEX_FUV' or detector == 'ULTRASAT':
-        filename_wm = 'results/EBL/wmz_' + detector + reduced_label + '.dat'
+        filename_wm = use_results_dir_HERE + 'EBL/wmz_' + detector + reduced_label + '.dat'
     else:
         filename_wm = -1
 
-    filename_dJ = 'results/EBL/der/dJ_d' + parameter + '_' + detector + ',' + gal_survey  + reduced_label +  '.dat'
-    filename_bJ = 'results/EBL/der/bJ_d' + parameter + '_' + detector + ',' + gal_survey  + reduced_label +  '.dat'
-
-    filename_dJ_fid = 'results/EBL/dJdz_' + detector  + reduced_label +  '.dat'
-    filename_bJ_fid = 'results/EBL/bJ_' + detector  + reduced_label +  '.dat' 
+    filename_dJ =  use_results_dir_HERE + 'EBL/der/dJ_d' + parameter + '_' + detector + ',' + gal_survey  + reduced_label +  '.dat'
+    filename_bJ =  use_results_dir_HERE + 'EBL/der/bJ_d' + parameter + '_' + detector + ',' + gal_survey  + reduced_label +  '.dat' 
+    filename_dJ_fid =  use_results_dir_HERE + 'EBL/dJdz_' + detector  + reduced_label +  '.dat' 
+    filename_bJ_fid =  use_results_dir_HERE + 'EBL/bJ_' + detector  + reduced_label +  '.dat' 
 
     fid_vals = fid_vals_det(detector)
+
     if os.path.exists(filename):
-        use_z = z_gals_interp #z_gals(gal_survey) if detector == 'GALEX_NUV' or detector == 'GALEX_FUV' or detector == 'ULTRASAT' else -1
+        use_z = z_gals_interp_FISHER(gal_survey) #z_gals(gal_survey) if detector == 'GALEX_NUV' or detector == 'GALEX_FUV' or detector == 'ULTRASAT' else -1
 
         z_arr, der_wz_arr = np.genfromtxt(filename)
-        der_wz = interp1d(z_arr,der_wz_arr)(use_z)
+        der_wz = interp1d(z_arr,der_wz_arr,bounds_error=False,fill_value = der_wz_arr[-1])(use_z)
 
     else:
-
         if reduced_z:
-            use_z = z_gals_interp if detector == 'GALEX_NUV' or detector ==    'GALEX_FUV' or detector == 'ULTRASAT' else -1
+            use_z = z_gals_interp if detector == 'GALEX_NUV' or detector == 'GALEX_FUV' or detector == 'ULTRASAT' else -1
         else:
-            use_z = z_gals(gal_survey) if detector == 'GALEX_NUV' or detector ==    'GALEX_FUV' or detector == 'ULTRASAT' else -1
+            use_z = z_gals(gal_survey) if detector == 'GALEX_NUV' or detector == 'GALEX_FUV' or detector == 'ULTRASAT' else -1
 
         use_pars_up = []
         for i in range(len(pars_fid)):
@@ -281,14 +282,13 @@ def ders(parameter,detector,gal_survey,reduced_z = False):
         np.savetxt(filename_dJ,(use_z,dJ_up))
         np.savetxt(filename_bJ,(use_z,bJ_up))
 
-
-        filename_fid = 'results/EBL/wJg_' + detector + ',' + gal_survey + reduced_label + '.dat'
+        filename_fid = use_results_dir_HERE + 'EBL/wJg_' + detector + ',' + gal_survey + reduced_label + '.dat'
        
         if os.path.exists(filename_fid):
                 run_fid = False 
         else:
                 run_fid = True       
-       
+
         der_wz = np.zeros(len(use_z))
         for z in tqdm(range(len(use_z))):
             wz_up = wJgz(use_z[z],detector, gal_survey,
@@ -344,8 +344,8 @@ def plot_ders(pars, reduced_z = False):
     wn = np.zeros(len(z_gals('SDSS')))
     reduced_label = '_reduced' if reduced_z else ''
 
-    use_filename_nuv_J = 'results/EBL/dJdz_GALEX_NUV' + reduced_label + '.dat'
-    use_filename_nuv_b = 'results/EBL/bJ_GALEX_NUV' + reduced_label + '.dat'
+    use_filename_nuv_J = use_results_dir + 'EBL/dJdz_GALEX_NUV' + reduced_label + '.dat'
+    use_filename_nuv_b = use_results_dir + 'EBL/bJ_GALEX_NUV' + reduced_label + '.dat'
 
     for i in (range(len(z_gals('SDSS')))):
         print('\nDoing z = ' + str(z_gals('SDSS')[i]))
@@ -359,24 +359,35 @@ def plot_ders(pars, reduced_z = False):
     for p in pars:
         wder = np.zeros(len(z_gals('SDSS')))
 
-        use_filename_wder_J = 'results/EBL/der/dJ_d' + p + '_' + 'GALEX_NUV,SDSS' + reduced_label +  '.dat'
-        use_filename_wder_b = 'results/EBL/der/bJ_d' + p + '_' + 'GALEX_NUV,SDSS' + reduced_label +  '.dat'
+        use_filename_wder_J = use_results_dir + 'EBL/der/dJ_d' + p + '_' + 'GALEX_NUV,SDSS' + reduced_label +  '.dat'
+        use_filename_wder_b = use_results_dir + 'EBL/der/bJ_d' + p + '_' + 'GALEX_NUV,SDSS' + reduced_label +  '.dat'
 
         for i in (range(len(z_gals('SDSS')))):
             print('\nDoing z = ' + str(z_gals('SDSS')[i]))
             wder[i] = dJdz(z_gals('SDSS')[i], 'GALEX_NUV',run = False,\
                            vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False, filename = use_filename_wder_J) * bJ_z(z_gals('SDSS')[i], 'GALEX_NUV', run = False, vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias=False, filename = use_filename_wder_b)
 
-        plt.plot(z_gals('SDSS'),wder,label=r'$\rm d%s$'%p)
+        plt.figure(1)
+        plt.plot(z_gals('SDSS'),wder,linestyle='--',label=r'$\rm d%s$'%p)
 
+        use_fiducial = fiducials['eps1500'][0] if p == 'eps_1500_0' else fiducials['eps1500'][1] if p == 'gamma_1500' else  fiducials['alpha1500'][0] if p == 'alpha_1500_0' else  fiducials['alpha1500'][1] if p == 'C_alpha_1500' else fiducials['alpha1100'][0] if p == 'alpha_1100_0' else fiducials['alpha1100'][1] if p == 'C_alpha_1100' else  fiducials['EW']('SDSS')[0] if p == 'EW_z1' else  fiducials['EW']('SDSS')[1] if p == 'EW_z2' else fiducials['fescape']('SDSS')[0] if p == 'log_fLyC_1' else  fiducials['fescape']('SDSS')[1] if p == 'log_fLyC_2' else -1
+
+        plt.figure(2)
+        plt.plot(z_gals('SDSS'),(wder-wn)/(delta_der*(use_fiducial)),label=str(p))
+ 
+    plt.figure(1)
     plt.xlabel(r'$z$',fontsize=fontsize)
-    plt.ylabel(r'$\bar{\omega}_{J_\nu{\rm g}}(z)$',fontsize=fontsize)
+    plt.ylabel(r'$dJ/dz$',fontsize=fontsize)
+    plt.yscale('log')
     plt.legend(loc=1,ncol=2)
 
     plt.tight_layout()
-    plt.show()
 
-    plt.plot(z_gals('SDSS'),(wder-wn)/(delta_der*(fiducials['eps1500'][0])))
+
+    plt.figure(2)
+    plt.xlabel(r'$z$')
+    plt.legend()
+    plt.ylabel(r'$d\omega$')
     plt.show()
 # 
     return 
@@ -387,8 +398,8 @@ def plot_ders_ultr(pars, reduced_z = False):
     wn = np.zeros(len(z_gals('DESI')))
     reduced_label = '_reduced' if reduced_z else ''
 
-    use_filename_nuv_J = 'results/EBL/dJdz_ULTRASAT' + reduced_label + '.dat'
-    use_filename_nuv_b = 'results/EBL/bJ_ULTRASAT' + reduced_label + '.dat'
+    use_filename_nuv_J = use_results_dir + 'EBL/dJdz_ULTRASAT' + reduced_label + '.dat'
+    use_filename_nuv_b = use_results_dir + 'EBL/bJ_ULTRASAT' + reduced_label + '.dat'
 
     for i in (range(len(z_gals('DESI')))):
         print('\nDoing z = ' + str(z_gals('DESI')[i]))
@@ -402,8 +413,8 @@ def plot_ders_ultr(pars, reduced_z = False):
     for p in pars:
         wder = np.zeros(len(z_gals('DESI')))
 
-        use_filename_wder_J = 'results/EBL/der/dJ_d' + p + '_' + 'ULTRASAT,DESI' + reduced_label +  '.dat'
-        use_filename_wder_b = 'results/EBL/der/bJ_d' + p + '_' + 'ULTRASAT,DESI' + reduced_label +  '.dat'
+        use_filename_wder_J = use_results_dir + 'EBL/der/dJ_d' + p + '_' + 'ULTRASAT,DESI' + reduced_label +  '.dat'
+        use_filename_wder_b = use_results_dir + 'EBL/der/bJ_d' + p + '_' + 'ULTRASAT,DESI' + reduced_label +  '.dat'
 
         for i in (range(len(z_gals('DESI')))):
             print('\nDoing z = ' + str(z_gals('DESI')[i]))
@@ -422,12 +433,36 @@ def plot_ders_ultr(pars, reduced_z = False):
     return 
 
 
-def fisher_matrix(pars,detector,gal_survey,group_vox,run = False):
+def fisher_matrix(pars,detector,gal_survey,group_vox,run = False,correlated = False):
     
-    if group_vox: 
-        filename = 'results/EBL/FISHER_' + detector + ',' + gal_survey + '.dat'
+    if correlated:
+        if correlated == 'FUV_ULTRASAT':
+            correlate_value = 2.
+        else:
+            if gal_survey == 'SDSS':
+                correlate_value = 4.
+            elif gal_survey == 'DESI':
+                correlate_value = 9.
+            else:
+                return -1
     else:
-        filename = 'results/EBL/FISHER_' + detector + ',' + gal_survey + '_singleVOX.dat'
+        correlate_value = 1.
+    if group_vox: 
+        if correlated:
+            if correlated == 'FUV_ULTRASAT':
+                filename = use_results_dir + 'EBL/FISHER_' + detector + ',' + gal_survey + 'FU.dat'
+            else:
+                filename = use_results_dir + 'EBL/FISHER_' + detector + ',' + gal_survey + 'corrdetect.dat'
+        else:
+            filename = use_results_dir + 'EBL/FISHER_' + detector + ',' + gal_survey + '.dat'
+    else:
+        if correlated:
+            if correlated == 'FUV_ULTRASAT':
+                filename = use_results_dir + 'EBL/FISHER_' + detector + ',' + gal_survey + '_singleVOX_FU.dat'            
+            else:
+                filename = use_results_dir + 'EBL/FISHER_' + detector + ',' + gal_survey + '_singleVOX_corrdetect.dat'
+        else:
+            filename = use_results_dir + 'EBL/FISHER_' + detector + ',' + gal_survey + '_singleVOX.dat'
 
     if not run and os.path.exists(filename):
         Fisher_start = np.genfromtxt(filename)
@@ -443,7 +478,7 @@ def fisher_matrix(pars,detector,gal_survey,group_vox,run = False):
 
     Fisher = np.zeros((len(pars),len(pars)))
     
-    use_z = z_gals_interp #z_gals(gal_survey) if detector == 'GALEX_NUV' or detector == 'GALEX_FUV' or detector == 'ULTRASAT' else -1
+    use_z = z_gals_interp_FISHER(gal_survey) #z_gals(gal_survey) if detector == 'GALEX_NUV' or detector == 'GALEX_FUV' or detector == 'ULTRASAT' else -1
 
     der_pars = {}
     for p in range(len(pars)):
@@ -457,7 +492,7 @@ def fisher_matrix(pars,detector,gal_survey,group_vox,run = False):
     print('Doing sigma2')
     for zv in tqdm(range(len(use_z))):
 
-        sigma2[zv] = sigma_wz(use_z[zv],detector,gal_survey,group_vox).value**2
+        sigma2[zv] = sigma_wz(use_z[zv],detector,gal_survey,group_vox,correlate_value).value**2
 
     Fisher = np.zeros((len(pars),len(pars)))
     print('Doing Fisher')
@@ -481,12 +516,12 @@ def fisher_matrix(pars,detector,gal_survey,group_vox,run = False):
     return Fisher
 
 
-def Fisher_change_var(pars,detector,gal_survey,group_vox,run=False):
+def Fisher_change_var(pars,detector,gal_survey,group_vox,run=False,correlated=False):
 
     if detector == 'GALEX':
         F = fisher_matrix_test(pars_fid,gal_survey,group_vox, run)
     else:
-        F = fisher_matrix(pars_fid,detector,gal_survey,group_vox, run)
+        F = fisher_matrix(pars_fid,detector,gal_survey,group_vox, run, correlated)
 
 #    dlogeps_dP = 1 
     deps_dP = np.log(10) * fid_vals_det(detector)[pars_fid.index('eps_1500_0')]
@@ -520,7 +555,7 @@ def Fisher_change_var(pars,detector,gal_survey,group_vox,run=False):
 
 
 
-def sigma_epsbias(group_vox=True, fix_bias = False):
+def sigma_epsbias(group_vox=True, fix_bias = False, correlated = False):
 
     print('Doing contour plots')
 
@@ -530,13 +565,13 @@ def sigma_epsbias(group_vox=True, fix_bias = False):
     else:
         pars = ['eps_1500_0','bias_1500_0','gamma_1500','alpha_1500_0','C_alpha_1500','alpha_1100_0','C_alpha_1100','log_fLyC_1','log_fLyC_2', 'gamma_bv','gamma_bz','EW_z1','EW_z2']
 #
-    F_N = fisher_matrix(pars,'GALEX_NUV','SDSS',group_vox,False)
-    F_F = fisher_matrix(pars,'GALEX_FUV','SDSS',group_vox,False)
+    F_N = fisher_matrix(pars,'GALEX_NUV','SDSS',group_vox,False,correlated)
+    F_F = fisher_matrix(pars,'GALEX_FUV','SDSS',group_vox,False,correlated)
     F_GALEX = F_N + F_F
 
-    F_ULTRASAT = fisher_matrix(pars,'ULTRASAT','SPHEREx',group_vox,False)
+    F_ULTRASAT = fisher_matrix(pars,'ULTRASAT','SPHEREx',group_vox,False,correlated)
 
-    F_ULTRASAT_DESI = fisher_matrix(pars,'ULTRASAT','DESI',group_vox,False)
+    F_ULTRASAT_DESI = fisher_matrix(pars,'ULTRASAT','DESI',group_vox,False,correlated)
 
     F_both = np.zeros((len(pars)+1,len(pars)+1))
     F_both_DESI = np.zeros((len(pars)+1,len(pars)+1))
@@ -634,7 +669,7 @@ pars_all = ['log10_epsbias_1500_0','gamma_1500','alpha_1500_0','C_alpha_1500','a
 pars_z = ['log10_epsbias_1500_0','alpha_1500_0']#'gamma_1500','C_alpha_1500','C_alpha_1100','EW_z1','EW_z2','gamma_bz']
 
 
-def compare_surveys(detector = 'GALEX_ULTRASAT', pars =pars_original_c18, prior = False, plot_flag = True, group_vox = True):
+def compare_surveys(detector = 'GALEX_ULTRASAT', pars =pars_original_c18, prior = False, plot_flag = True, group_vox = True,correlated=False):
 
     #if pars == pars_original_c18:
     #    prior = True
@@ -643,44 +678,44 @@ def compare_surveys(detector = 'GALEX_ULTRASAT', pars =pars_original_c18, prior 
 
     if detector == 'GALEX':
 
-       F_N = Fisher_change_var(pars,'GALEX_NUV','SDSS',group_vox,False)
-       F_F = Fisher_change_var(pars,'GALEX_FUV','SDSS',group_vox,False)
+       F_N = Fisher_change_var(pars,'GALEX_NUV','SDSS',group_vox,False,correlated=correlated)
+       F_F = Fisher_change_var(pars,'GALEX_FUV','SDSS',group_vox,False,correlated=correlated)
        temp = F_N + F_F
 
 #        temp = Fisher_change_var(pars,'GALEX','SDSS',group_vox,False)
     elif detector == 'GALEX_DESI':
 
-        F_N = Fisher_change_var(pars,'GALEX_NUV','DESI',group_vox,False)
-        F_F = Fisher_change_var(pars,'GALEX_FUV','DESI',group_vox,False)
+        F_N = Fisher_change_var(pars,'GALEX_NUV','DESI',group_vox,False,correlated=correlated)
+        F_F = Fisher_change_var(pars,'GALEX_FUV','DESI',group_vox,False,correlated=correlated)
         temp = F_N + F_F
 
     elif detector == 'GALEX_NUV':
 
-        F_N = Fisher_change_var(pars,'GALEX_NUV','SDSS',group_vox,False)
+        F_N = Fisher_change_var(pars,'GALEX_NUV','SDSS',group_vox,False,correlated=correlated)
         temp = F_N
 
     elif detector == 'GALEX_FUV':
 
-        F_F = Fisher_change_var(pars,'GALEX_FUV','SDSS',group_vox,False)
+        F_F = Fisher_change_var(pars,'GALEX_FUV','SDSS',group_vox,False,correlated=correlated)
         temp = F_F
 
 
     elif detector == 'ULTRASAT':
 
-        F = Fisher_change_var(pars,'ULTRASAT','SPHEREx',group_vox,False)
+        F = Fisher_change_var(pars,'ULTRASAT','SPHEREx',group_vox,False,correlated=correlated)
         temp = F
 
     elif detector == 'ULTRASAT_DESI':
 
-        F = Fisher_change_var(pars,'ULTRASAT','DESI',group_vox,False)
+        F = Fisher_change_var(pars,'ULTRASAT','DESI',group_vox,False,correlated=correlated)
         temp = F
 
     elif detector == 'GALEX_ULTRASAT':
 
-        F_N = Fisher_change_var(pars,'GALEX_NUV','SDSS',group_vox,False)
-        F_F = Fisher_change_var(pars,'GALEX_FUV','SDSS',group_vox,False)
+        F_N = Fisher_change_var(pars,'GALEX_NUV','SDSS',group_vox,False,correlated=correlated)
+        F_F = Fisher_change_var(pars,'GALEX_FUV','SDSS',group_vox,False,correlated=correlated)
         F_GALEX = F_N + F_F
-        F_ULTRASAT = Fisher_change_var(pars,'ULTRASAT','SPHEREx',group_vox,False)
+        F_ULTRASAT = Fisher_change_var(pars,'ULTRASAT','SPHEREx',group_vox,False,correlated=correlated)
 
         F_both = np.zeros((len(pars)+1,len(pars)+1))
         for i in range(len(pars)):
@@ -716,10 +751,10 @@ def compare_surveys(detector = 'GALEX_ULTRASAT', pars =pars_original_c18, prior 
 
 #    elif detector == 'GALEX_ULTRASAT_DESI':
 #
-#        F_N = Fisher_change_var(pars,'GALEX_NUV','SDSS',group_vox,False)
-#        F_F = Fisher_change_var(pars,'GALEX_FUV','SDSS',group_vox,False)
+#        F_N = Fisher_change_var(pars,'GALEX_NUV','SDSS',group_vox,False,correlated=correlated)
+#        F_F = Fisher_change_var(pars,'GALEX_FUV','SDSS',group_vox,False,correlated=correlated)
 #        F_GALEX = F_N + F_F
-#        F_ULTRASAT = Fisher_change_var(pars,'ULTRASAT','DESI',group_vox,False)
+#        F_ULTRASAT = Fisher_change_var(pars,'ULTRASAT','DESI',group_vox,False,correlated=correlated)
 #
 #        F_both = np.zeros((len(pars)+1,len(pars)+1))
 #        for i in range(len(pars)):
@@ -755,10 +790,10 @@ def compare_surveys(detector = 'GALEX_ULTRASAT', pars =pars_original_c18, prior 
 
     elif detector == 'GALEX_ULTRASAT_DESIDESI':
 
-        F_N = Fisher_change_var(pars,'GALEX_NUV','DESI',group_vox,False)
-        F_F = Fisher_change_var(pars,'GALEX_FUV','DESI',group_vox,False)
+        F_N = Fisher_change_var(pars,'GALEX_NUV','DESI',group_vox,False,correlated=correlated)
+        F_F = Fisher_change_var(pars,'GALEX_FUV','DESI',group_vox,False,correlated=correlated)
         F_GALEX = F_N + F_F
-        F_ULTRASAT = Fisher_change_var(pars,'ULTRASAT','DESI',group_vox,False)
+        F_ULTRASAT = Fisher_change_var(pars,'ULTRASAT','DESI',group_vox,False,correlated=correlated)
 
         F_both = np.zeros((len(pars)+1,len(pars)+1))
         for i in range(len(pars)):
@@ -792,6 +827,46 @@ def compare_surveys(detector = 'GALEX_ULTRASAT', pars =pars_original_c18, prior 
 
         temp = F_both
 
+
+    elif detector == 'FUV_ULTRASAT':
+
+        F_F = Fisher_change_var(pars,'GALEX_FUV','DESI',group_vox,False,correlated='FUV_ULTRASAT')
+        F_GALEX = F_F
+        F_ULTRASAT = Fisher_change_var(pars,'ULTRASAT','DESI',group_vox,False,correlated='FUV_ULTRASAT')
+
+        F_both = np.zeros((len(pars)+1,len(pars)+1))
+        for i in range(len(pars)):
+            if pars[i] != 'EW_z1' and pars[i] != 'EW_z2':
+                for j in range(len(pars)):
+                    if pars[j] != 'EW_z1' and pars[j] != 'EW_z2':
+                        F_both[i,j] = F_ULTRASAT[i,j] + F_GALEX[i,j]
+                    elif pars[j] == 'EW_z1':
+                        F_both[i,j] = F_GALEX[i,pars.index('EW_z1')]                    
+                    elif pars[j] == 'EW_z2':
+                        F_both[i,j] = F_GALEX[i,pars.index('EW_z2')]  +  F_ULTRASAT[i,pars.index('EW_z1')]
+                F_both[i,-1] = F_ULTRASAT[i,pars.index('EW_z2')]
+            elif pars[i] == 'EW_z1':
+                for j in range(len(pars)):
+                    F_both[i,j] = F_GALEX[pars.index('EW_z1'),j]
+            elif pars[i] == 'EW_z2':
+                for j in range(len(pars)):
+                    if pars[j] != 'EW_z1' and pars[j] != 'EW_z2':
+                        F_both[i,j] = F_ULTRASAT[pars.index('EW_z1'),j] + F_GALEX[pars.index('EW_z2'),j]
+                    elif pars[j] == 'EW_z1':
+                        F_both[i,j] = F_GALEX[pars.index('EW_z2'),pars.index('EW_z1')]                    
+                    elif pars[j] == 'EW_z2':
+                        F_both[i,j] = F_GALEX[pars.index('EW_z2'),pars.index('EW_z2')]  +  F_ULTRASAT[pars.index('EW_z1'),pars.index('EW_z1')]
+                F_both[i,-1] = F_ULTRASAT[pars.index('EW_z1'),pars.index('EW_z2')]
+        for j in range(len(pars)):
+            if pars[j] != 'EW_z1' and pars[j] != 'EW_z2':
+                F_both[-1,j] = F_ULTRASAT[pars.index('EW_z2'),j]
+            elif pars[j] == 'EW_z2':
+                F_both[-1,j] = F_ULTRASAT[pars.index('EW_z2'),pars.index('EW_z1')]
+        F_both[-1,-1] = F_ULTRASAT[pars.index('EW_z2'),pars.index('EW_z2')]
+
+        temp = F_both
+
+
     if prior: 
         for j in range(len(pars)):
             if detector == 'GALEX':
@@ -812,7 +887,7 @@ def compare_surveys(detector = 'GALEX_ULTRASAT', pars =pars_original_c18, prior 
     names = []
     fiducials_pars = []    
 
-    if detector == 'GALEX_ULTRASAT' or detector=='GALEX_ULTRASAT_DESI' or detector=='GALEX_ULTRASAT_DESIDESI':
+    if detector == 'GALEX_ULTRASAT' or detector=='GALEX_ULTRASAT_DESI' or detector=='GALEX_ULTRASAT_DESIDESI' or detector == 'FUV_ULTRASAT':
         for i in pars:
             if i == 'log10_epsbias_1500_0':
                 fiducials_pars.append(np.log10(fid_vals_det('GALEX_NUV')[pars_fid.index('eps_1500_0')]*fid_vals_det('GALEX_NUV')[pars_fid.index('bias_1500_0')]))
@@ -902,7 +977,7 @@ def compare_surveys(detector = 'GALEX_ULTRASAT', pars =pars_original_c18, prior 
             name_plot = 'ellipse_combined_DESI' 
         else:
             name_plot = 'ellipse_' + detector
-        filename = 'results/PLOTS/EBL/' + name_plot + '.png'
+        filename = use_results_dir + 'PLOTS/EBL/' + name_plot + '.png'
         plt.savefig(filename,bbox_inches='tight')
 
         plt.show()
@@ -951,7 +1026,7 @@ def sum_galex_ultrasat_desi(pars, F_N, F_F, F_ULTRASAT):
 
 
 
-def plot_err_noninonizing_cont(z, lambda_val, use_pars_fid = pars_original_c18,group_vox=True,run=False,plot_flag = True, prior=False,galex_detector='SDSS'):
+def plot_err_noninonizing_cont(z, lambda_val, use_pars_fid = pars_original_c18,group_vox=True,run=False,plot_flag = True, prior=False,galex_detector='SDSS',correlated=False):
 
     use_nu = nu_from_lambda(lambda_val*u.AA)
     nu_1500 = nu_from_lambda(1500*u.AA)
@@ -966,9 +1041,9 @@ def plot_err_noninonizing_cont(z, lambda_val, use_pars_fid = pars_original_c18,g
     fid_alpha1500_0 = fiducials['alpha1500'][0]
     fid_C1500 = fiducials['alpha1500'][1]
 
-    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV',galex_detector,group_vox,run)
-    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV',galex_detector,group_vox,run)
-    F_U = Fisher_change_var(use_pars_fid,'ULTRASAT','DESI',group_vox,run)
+    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV',galex_detector,group_vox,run,correlated=correlated)
+    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV',galex_detector,group_vox,run,correlated=correlated)
+    F_U = Fisher_change_var(use_pars_fid,'ULTRASAT','DESI',group_vox,run,correlated=correlated)
     
     if prior: 
         for j in range(len(use_pars_fid)):
@@ -1063,9 +1138,9 @@ def plot_err_noninonizing_cont(z, lambda_val, use_pars_fid = pars_original_c18,g
 
 
         if use_pars_fid == pars_original_c18:
-            filename = 'results/PLOTS/EBL/eps_nonion_err_wave' + str(1500) + '.png'
+            filename = use_results_dir + 'PLOTS/EBL/eps_nonion_err_wave' + str(1500) + '.png'
         elif use_pars_fid == pars_all:
-            filename = 'results/PLOTS/EBL/eps_nonion_err_wave' + str(1500) + '_allpar.png'
+            filename = use_results_dir + 'PLOTS/EBL/eps_nonion_err_wave' + str(1500) + '_allpar.png'
 
         # !!! bias as function of z and nu ??? !!!
 
@@ -1079,7 +1154,7 @@ def plot_err_noninonizing_cont(z, lambda_val, use_pars_fid = pars_original_c18,g
 
 
 
-def plot_err_line(z, lambda_val, use_pars_fid = pars_original_c18,group_vox=True,run=False,plot_flag = True, prior=False,galex_detector='SDSS'):
+def plot_err_line(z, lambda_val, use_pars_fid = pars_original_c18,group_vox=True,run=False,plot_flag = True, prior=False,galex_detector='SDSS',correlated=False):
 
     use_nu = nu_from_lambda(lambda_val*u.AA)
     nu_1500 = nu_from_lambda(1500*u.AA)
@@ -1095,9 +1170,9 @@ def plot_err_line(z, lambda_val, use_pars_fid = pars_original_c18,group_vox=True
     fid_alpha1100_0 = fiducials['alpha1100'][0]
     fid_C1100 = fiducials['alpha1100'][1]
 
-    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV',galex_detector,group_vox,run)
-    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV',galex_detector,group_vox,run)
-    F_U = Fisher_change_var(use_pars_fid,'ULTRASAT','DESI',group_vox,run)
+    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV',galex_detector,group_vox,run,correlated=correlated)
+    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV',galex_detector,group_vox,run,correlated=correlated)
+    F_U = Fisher_change_var(use_pars_fid,'ULTRASAT','DESI',group_vox,run,correlated=correlated)
 
     if prior: 
         for j in range(len(use_pars_fid)):
@@ -1246,9 +1321,9 @@ def plot_err_line(z, lambda_val, use_pars_fid = pars_original_c18,group_vox=True
         plt.xlim(z[0],z[-1])
 
         if use_pars_fid == pars_original_c18:
-            filename = 'results/PLOTS/EBL/eps_line_err_wave' + str(1216) + '.png'
+            filename = use_results_dir + 'PLOTS/EBL/eps_line_err_wave' + str(1216) + '.png'
         elif use_pars_fid == pars_all:
-            filename = 'results/PLOTS/EBL/eps_line_err_wave' + str(1216) + '_allpar.png'
+            filename = use_results_dir + 'PLOTS/EBL/eps_line_err_wave' + str(1216) + '_allpar.png'
 
         plt.savefig(filename)
         plt.show()
@@ -1259,7 +1334,7 @@ def plot_err_line(z, lambda_val, use_pars_fid = pars_original_c18,group_vox=True
     return
 
 
-def plot_err_line_surrounding(z, lambda_val, use_pars_fid = pars_original_c18,group_vox=True,run=False,plot_flag = True,prior=False,galex_detector='SDSS'):
+def plot_err_line_surrounding(z, lambda_val, use_pars_fid = pars_original_c18,group_vox=True,run=False,plot_flag = True,prior=False,galex_detector='SDSS',correlated=False):
 
     use_nu = nu_from_lambda(lambda_val*u.AA)
     nu_1500 = nu_from_lambda(1500*u.AA)
@@ -1275,9 +1350,9 @@ def plot_err_line_surrounding(z, lambda_val, use_pars_fid = pars_original_c18,gr
     fid_alpha1100_0 = fiducials['alpha1100'][0]
     fid_C1100 = fiducials['alpha1100'][1]
 
-    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV',galex_detector,group_vox,run)
-    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV',galex_detector,group_vox,run)
-    F_U = Fisher_change_var(use_pars_fid,'ULTRASAT','DESI',group_vox,run)
+    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV',galex_detector,group_vox,run,correlated=correlated)
+    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV',galex_detector,group_vox,run,correlated=correlated)
+    F_U = Fisher_change_var(use_pars_fid,'ULTRASAT','DESI',group_vox,run,correlated=correlated)
 
     if prior: 
         for j in range(len(use_pars_fid)):
@@ -1419,9 +1494,9 @@ def plot_err_line_surrounding(z, lambda_val, use_pars_fid = pars_original_c18,gr
         plt.xlim(z[0],z[-1])
 
         if use_pars_fid == pars_original_c18:
-            filename = 'results/PLOTS/EBL/eps_line_err_wave' + str(1216) + '.png'
+            filename = use_results_dir + 'PLOTS/EBL/eps_line_err_wave' + str(1216) + '.png'
         elif use_pars_fid == pars_all:
-            filename = 'results/PLOTS/EBL/eps_line_err_wave' + str(1216) + '_allpar.png'
+            filename = use_results_dir + 'PLOTS/EBL/eps_line_err_wave' + str(1216) + '_allpar.png'
 
         plt.savefig(filename)
         plt.show()
@@ -1432,7 +1507,7 @@ def plot_err_line_surrounding(z, lambda_val, use_pars_fid = pars_original_c18,gr
     return
 
 
-def plot_err_ioncont(z, lambda_val, use_pars_fid = pars_all,group_vox=True,run=False,plot_flag = True, prior=False,galex_detector='SDSS'):
+def plot_err_ioncont(z, lambda_val, use_pars_fid = pars_all,group_vox=True,run=False,plot_flag = True, prior=False,galex_detector='SDSS',correlated=False):
 
     use_nu = nu_from_lambda(lambda_val*u.AA)
     nu_1500 = nu_from_lambda(1500*u.AA)
@@ -1453,9 +1528,9 @@ def plot_err_ioncont(z, lambda_val, use_pars_fid = pars_all,group_vox=True,run=F
     fid_C1100 = fiducials['alpha1100'][1]
     fid_alpha900 = fiducials['alpha900']
 
-    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV',galex_detector,group_vox,run)
-    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV',galex_detector,group_vox,run)
-    F_U = Fisher_change_var(use_pars_fid,'ULTRASAT','DESI',group_vox,run)
+    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV',galex_detector,group_vox,run,correlated=correlated)
+    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV',galex_detector,group_vox,run,correlated=correlated)
+    F_U = Fisher_change_var(use_pars_fid,'ULTRASAT','DESI',group_vox,run,correlated=correlated)
 
     if prior: 
         for j in range(len(use_pars_fid)):
@@ -1563,9 +1638,9 @@ def plot_err_ioncont(z, lambda_val, use_pars_fid = pars_all,group_vox=True,run=F
         plt.xlim(z[0],z[-1])
 
         if use_pars_fid == pars_original_c18:
-            filename = 'results/PLOTS/EBL/eps_ion_err_wave' + str(912) + '.png'
+            filename = use_results_dir + 'PLOTS/EBL/eps_ion_err_wave' + str(912) + '.png'
         elif use_pars_fid == pars_all:
-            filename = 'results/PLOTS/EBL/eps_ion_err_wave' + str(912) + '_allpar.png'
+            filename = use_results_dir + 'PLOTS/EBL/eps_ion_err_wave' + str(912) + '_allpar.png'
 
         plt.savefig(filename)
         plt.show()
@@ -1576,7 +1651,7 @@ def plot_err_ioncont(z, lambda_val, use_pars_fid = pars_all,group_vox=True,run=F
     return
 
 
-def plot_err_bias(lambda_val, use_pars_fid = pars_all,group_vox=True,run=False,plot_flag = True,prior=False):
+def plot_err_bias(lambda_val, use_pars_fid = pars_all,group_vox=True,run=False,plot_flag = True,prior=False,correlated=False):
 
     use_nu = nu_from_lambda(lambda_val*u.AA)
     nu_1500 = nu_from_lambda(1500*u.AA)
@@ -1589,9 +1664,9 @@ def plot_err_bias(lambda_val, use_pars_fid = pars_all,group_vox=True,run=False,p
     fid_gamma_bnu = fiducials['bias'][1]
     fid_gamma_bz = fiducials['bias'][2]
 
-    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV','SDSS',group_vox,run)
-    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV','SDSS',group_vox,run)
-    F_U = Fisher_change_var(use_pars_fid,'ULTRASAT','DESI',group_vox,run)
+    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV','SDSS',group_vox,run,correlated=correlated)
+    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV','SDSS',group_vox,run,correlated=correlated)
+    F_U = Fisher_change_var(use_pars_fid,'ULTRASAT','DESI',group_vox,run,correlated=correlated)
 
     if prior: 
         for j in range(len(use_pars_fid)):
@@ -1666,9 +1741,9 @@ def plot_err_bias(lambda_val, use_pars_fid = pars_all,group_vox=True,run=False,p
     plt.xlim(z[0],z[-1])
 
     if use_pars_fid == pars_original_c18:
-        filename = 'results/PLOTS/EBL/errbias_' + str(lambda_val)+ '.png'
+        filename = use_results_dir + 'PLOTS/EBL/errbias_' + str(lambda_val)+ '.png'
     elif use_pars_fid == pars_all:
-        filename = 'results/PLOTS/EBL/errbias_' + str(lambda_val)+ '_allpar.png'
+        filename = use_results_dir + 'PLOTS/EBL/errbias_' + str(lambda_val)+ '_allpar.png'
 
     plt.savefig(filename)
     plt.show()
@@ -1781,9 +1856,9 @@ def plot_multi_line(detector, use_pars_fid = pars_original_c18, line = True, non
 
 
     if use_pars_fid == pars_original_c18:
-        filename = 'results/PLOTS/EBL/eps_err_multiwave' + detector + '.png'
+        filename = use_results_dir + 'PLOTS/EBL/eps_err_multiwave' + detector + '.png'
     elif use_pars_fid == pars_all:
-        filename = 'results/PLOTS/EBL/eps_err_multiwave' + detector + '_allpars.png'
+        filename = use_results_dir + 'PLOTS/EBL/eps_err_multiwave' + detector + '_allpars.png'
 
     plt.tight_layout()
     #plt.savefig(filename,bbox_inches='tight')
@@ -1811,7 +1886,7 @@ def plot_err_emissivity(z = [0.], use_pars_fid = pars_all, prior=False,plot_flag
     sigma_both = np.zeros(len(wave))
     for w in range(len(wave)):
 
-        signal_val[w] =  signal(wave[w]*u.AA,z[0],'ULTRASAT',vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False).value
+        signal_val[w] =  signal(wave[w]*u.AA,z[0],'ULTRASAT',vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,to_plot=True).value
 
         if wave[w] <= 912:
             temp = plot_err_ioncont(z,wave[w], use_pars_fid = use_pars_fid,group_vox=True,run=False,plot_flag = False, prior=prior)[0]
@@ -1860,9 +1935,9 @@ def plot_err_emissivity(z = [0.], use_pars_fid = pars_all, prior=False,plot_flag
         #plt.yticks(fontsize=2*fontsize*.8)
 
         if use_pars_fid == pars_original_c18:
-            filename = 'results/PLOTS/EBL/err_rest_emissivity_z' + str(z) + '.png'
+            filename = use_results_dir + 'PLOTS/EBL/err_rest_emissivity_z' + str(z) + '.png'
         elif use_pars_fid == pars_all:
-            filename = 'results/PLOTS/EBL/err_rest_emissivity_allpars_z' + str(z) + '.png'
+            filename = use_results_dir + 'PLOTS/EBL/err_rest_emissivity_allpars_z' + str(z) + '.png'
 
         plt.tight_layout()
         plt.savefig(filename,bbox_inches='tight')
@@ -1885,7 +1960,7 @@ def plot_err_emissivity_combined(zall = [0.,0.5,1.,2.], use_pars_fid = pars_all,
         sigma_both = np.zeros(len(wave))
         for w in range(len(wave)):
 
-            signal_val[w] =  signal(wave[w]*u.AA,z,'ULTRASAT',vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False).value
+            signal_val[w] =  signal(wave[w]*u.AA,z,'ULTRASAT',vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,to_plot=True).value
 
             if wave[w] <= 912:
                 temp = plot_err_ioncont([z],wave[w], use_pars_fid = use_pars_fid,group_vox=True,run=False,plot_flag = False, prior=prior,galex_detector=galex_detector)[0]
@@ -1928,9 +2003,9 @@ def plot_err_emissivity_combined(zall = [0.,0.5,1.,2.], use_pars_fid = pars_all,
     plt.xlabel(r'$\lambda_{\rm obs}\,[{\rm A}]$',fontsize=fontsize)
 
     if use_pars_fid == pars_original_c18:
-        filename = 'results/PLOTS/EBL/err_rest_emissivity_combined.png'
+        filename = use_results_dir + 'PLOTS/EBL/err_rest_emissivity_combined.png'
     elif use_pars_fid == pars_all:
-        filename = 'results/PLOTS/EBL/err_rest_emissivity_allpars_combined.png'
+        filename = use_results_dir + 'PLOTS/EBL/err_rest_emissivity_allpars_combined.png'
 
     plt.tight_layout()
     plt.savefig(filename,bbox_inches='tight')
@@ -1965,7 +2040,7 @@ def err_bdJ(use_pars_fid = pars_all, prior=False):
         det_i = 'GALEX_NUV' if i == 'GALEX' else 'ULTRASAT'
         label_i = r'$\rm GALEX \times SDSS$' if i == 'GALEX' else r'$\rm ULTRASAT \times DESI$' if i == 'ULTRASAT' else r'$\rm (G\times SDSS)+(U\times DESI)$'
         dJ = dJdz(z, i,run = False,\
-         vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False, filename = './results/EBL/dJdz_' + det_i + '_reduced.dat')
+         vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False, filename = use_results_dir + 'EBL/dJdz_' + det_i + '_reduced.dat')
 
         #bdJ = bias * dJ
 
@@ -1999,7 +2074,7 @@ def err_bdJ(use_pars_fid = pars_all, prior=False):
 
 
 
-def error_dJ_biasfix(group_vox,run = False):
+def error_dJ_biasfix(group_vox,run = False,correlated=False):
 
     # !!! WE FIX THE BIAS 
 
@@ -2027,10 +2102,10 @@ def error_dJ_biasfix(group_vox,run = False):
         ]
     
 #    if detector == 'ULTRASAT':
-    F_U = fisher_matrix(use_pars_fid,'ULTRASAT','SPHEREx',group_vox,run)
+    F_U = fisher_matrix(use_pars_fid,'ULTRASAT','SPHEREx',group_vox,run,correlated)
 #    else:
-    F_N = fisher_matrix(use_pars_fid,'GALEX_NUV','SDSS',group_vox,run)
-    F_F = fisher_matrix(use_pars_fid,'GALEX_FUV','SDSS',group_vox,run)
+    F_N = fisher_matrix(use_pars_fid,'GALEX_NUV','SDSS',group_vox,run,correlated)
+    F_F = fisher_matrix(use_pars_fid,'GALEX_FUV','SDSS',group_vox,run,correlated)
     F_all = F_N + F_F
     F_UF = F_U + F_F + F_N 
 
@@ -2090,22 +2165,22 @@ def error_dJ_biasfix(group_vox,run = False):
     detector = 'GALEX_NUV'
     for use_z in z_val:
 
-        use_signal = lambda w: signal(w,use_z,detector,False,False,False,False,False,False)
+        use_signal = lambda w: signal(w,use_z,detector,False,False,False,False,False,False,to_plot=False)
 
-        depsnu_deps1500_0 = lambda w: signal(w,use_z,detector,False,False,False,False,False,False) / pow(10,use_fid_vals[use_pars_fid.index('log10_eps_1500_0')])
+        depsnu_deps1500_0 = lambda w: signal(w,use_z,detector,False,False,False,False,False,False,to_plot=False) / pow(10,use_fid_vals[use_pars_fid.index('log10_eps_1500_0')])
 
-        depsnu_dgamma1500 = lambda w: signal(w,use_z,detector,False,False,False,False,False,False) * np.log10(1+use_z)
+        depsnu_dgamma1500 = lambda w: signal(w,use_z,detector,False,False,False,False,False,False,to_plot=False) * np.log10(1+use_z)
 
         coef_alpha1500 = lambda w: np.log(nu_from_lambda(w) / nu_from_lambda(1500*u.nm)) if w.value > 121.6 else np.log(nu_from_lambda(121.6*u.nm) / nu_from_lambda(1500*u.nm))
 
-        depsnu_dalpha1500_0 = lambda w: signal(w,use_z,detector,False,False,False,False,False,False) * coef_alpha1500(w)
+        depsnu_dalpha1500_0 = lambda w: signal(w,use_z,detector,False,False,False,False,False,False,to_plot=False) * coef_alpha1500(w)
 
-        depsnu_dC1500 = lambda w: signal(w,use_z,detector,False,False,False,False,False,False) * coef_alpha1500(w) * np.log10(use_z)
+        depsnu_dC1500 = lambda w: signal(w,use_z,detector,False,False,False,False,False,False,to_plot=False) * coef_alpha1500(w) * np.log10(use_z)
 
-        depsnu_dalpha1100_0 = lambda w: (signal(w,use_z,detector,False,False,False,False,False,False) * np.log(nu_from_lambda(91.2*u.nm) / nu_from_lambda(121.6*u.nm))).value if w.value <= 91.2 else (non_ionizing_continuum(nu_from_lambda(121.6*u.nm),use_z,False,False) * ( nu_from_lambda(w) / nu_from_lambda(121.6*u.nm))**alpha1100(use_z,False) * np.log(nu_from_lambda(w) / nu_from_lambda(121.6*u.nm))).value if w.value <= 121.6 else 0.
+        depsnu_dalpha1100_0 = lambda w: (signal(w,use_z,detector,False,False,False,False,False,False,to_plot=False) * np.log(nu_from_lambda(91.2*u.nm) / nu_from_lambda(121.6*u.nm))).value if w.value <= 91.2 else (non_ionizing_continuum(nu_from_lambda(121.6*u.nm),use_z,False,False) * ( nu_from_lambda(w) / nu_from_lambda(121.6*u.nm))**alpha1100(use_z,False) * np.log(nu_from_lambda(w) / nu_from_lambda(121.6*u.nm))).value if w.value <= 121.6 else 0.
 
 
-        depsnu_dC1100 = lambda w: (signal(w,use_z,detector,False,False,False,False,False,False) * np.log(nu_from_lambda(91.2*u.nm) / nu_from_lambda(121.6*u.nm)) * np.log10(1+use_z)).value if w.value <= 91.2 else (non_ionizing_continuum(nu_from_lambda(121.6*u.nm),use_z,False,False) * ( nu_from_lambda(w) / nu_from_lambda(121.6*u.nm))**alpha1100(use_z,False) * np.log(nu_from_lambda(w) / nu_from_lambda(121.6*u.nm)) * np.log10(1+use_z)).value if w.value <= 121.6 else 0.
+        depsnu_dC1100 = lambda w: (signal(w,use_z,detector,False,False,False,False,False,False,to_plot=False) * np.log(nu_from_lambda(91.2*u.nm) / nu_from_lambda(121.6*u.nm)) * np.log10(1+use_z)).value if w.value <= 91.2 else (non_ionizing_continuum(nu_from_lambda(121.6*u.nm),use_z,False,False) * ( nu_from_lambda(w) / nu_from_lambda(121.6*u.nm))**alpha1100(use_z,False) * np.log(nu_from_lambda(w) / nu_from_lambda(121.6*u.nm)) * np.log10(1+use_z)).value if w.value <= 121.6 else 0.
 
 
         dEW_dEW03 = 1 - np.log10((1+use_z)/(1+0.3))/np.log10((1+1)/(1+0.3))
@@ -2142,15 +2217,15 @@ def error_dJ_biasfix(group_vox,run = False):
 
         unit = (dlambda_dnu(1*u.Hz)* (u.nm)**-1 * sigma_eps_nu_use(lambda_from_nu(1*u.Hz)) /(1*u.Hz)).unit
 
-        sigma_dJ_FN[z_val.index(use_z)] = (((cu.c.to(u.km/u.s) / (4*np.pi*H(use_z)*(1+use_z)) * np.trapz(intg_FN,nu_obs_val))*unit*u.Hz/u.steradian).to(u.Jy/u.steradian)).value * bJ_z(use_z,'GALEX_FUV',run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename='results/EBL/bJ_' + 'GALEX_FUV' + '.dat')
+        sigma_dJ_FN[z_val.index(use_z)] = (((cu.c.to(u.km/u.s) / (4*np.pi*H(use_z)*(1+use_z)) * np.trapz(intg_FN,nu_obs_val))*unit*u.Hz/u.steradian).to(u.Jy/u.steradian)).value * bJ_z(use_z,'GALEX_FUV',run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=use_results_dir + 'EBL/bJ_' + 'GALEX_FUV' + '.dat')
 
-        sigma_dJ_FU[z_val.index(use_z)] = (((cu.c.to(u.km/u.s) / (4*np.pi*H(use_z)*(1+use_z)) * np.trapz(intg_FU,nu_obs_val))*unit*u.Hz/u.steradian).to(u.Jy/u.steradian)).value * bJ_z(use_z,'GALEX_FUV',run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename='results/EBL/bJ_' + 'GALEX_FUV' + '.dat')
+        sigma_dJ_FU[z_val.index(use_z)] = (((cu.c.to(u.km/u.s) / (4*np.pi*H(use_z)*(1+use_z)) * np.trapz(intg_FU,nu_obs_val))*unit*u.Hz/u.steradian).to(u.Jy/u.steradian)).value * bJ_z(use_z,'GALEX_FUV',run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=use_results_dir + 'EBL/bJ_' + 'GALEX_FUV' + '.dat')
 
-        dJ_F[z_val.index(use_z)] = dJdz(use_z,'GALEX_FUV',False,False,False,False,False,False,False,filename='results/map_EBL/dJdz_' + 'GALEX_FUV' + '.dat') * bJ_z(use_z,'GALEX_FUV',run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename='results/EBL/bJ_' + 'GALEX_FUV' + '.dat')
+        dJ_F[z_val.index(use_z)] = dJdz(use_z,'GALEX_FUV',False,False,False,False,False,False,False,filename=use_results_dir + 'map_EBL/dJdz_' + 'GALEX_FUV' + '.dat') * bJ_z(use_z,'GALEX_FUV',run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=use_results_dir + 'EBL/bJ_' + 'GALEX_FUV' + '.dat')
                 
-        sigma_dJ_U[z_val.index(use_z)] = (((cu.c.to(u.km/u.s) / (4*np.pi*H(use_z)*(1+use_z)) * np.trapz(intg_U,nu_obs_val))*unit*u.Hz/u.steradian).to(u.Jy/u.steradian)).value * bJ_z(use_z,'ULTRASAT',run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename='results/EBL/bJ_' + 'ULTRASAT' + '.dat')
+        sigma_dJ_U[z_val.index(use_z)] = (((cu.c.to(u.km/u.s) / (4*np.pi*H(use_z)*(1+use_z)) * np.trapz(intg_U,nu_obs_val))*unit*u.Hz/u.steradian).to(u.Jy/u.steradian)).value * bJ_z(use_z,'ULTRASAT',run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=use_results_dir + 'EBL/bJ_' + 'ULTRASAT' + '.dat')
 
-        dJ_U[z_val.index(use_z)] = dJdz(use_z,'ULTRASAT',False,False,False,False,False,False,False,filename='results/map_EBL/dJdz_' + 'ULTRASAT' + '.dat') * bJ_z(use_z,'ULTRASAT',run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename='results/EBL/bJ_' + 'ULTRASAT' + '.dat')
+        dJ_U[z_val.index(use_z)] = dJdz(use_z,'ULTRASAT',False,False,False,False,False,False,False,filename=use_results_dir + 'map_EBL/dJdz_' + 'ULTRASAT' + '.dat') * bJ_z(use_z,'ULTRASAT',run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=use_results_dir + 'EBL/bJ_' + 'ULTRASAT' + '.dat')
         
     #detector_name = r'$GALEX\, NUV$' if detector == 'GALEX_NUV' else r'$GALEX\, FUV$' if detector == 'GALEX_FUV' else r'$ULTRASAT$' if detector == 'ULTRASAT' else -1
     plt.plot(z_val,dJ_F,label=r'$\rm GALEX\,FUV\,signal$',color=color_FUV)
@@ -2178,7 +2253,7 @@ def error_dJ_biasfix(group_vox,run = False):
 
 # !!!!
 # !!!! TO FIX 
-def error_dJ_ULTRASAT(group_vox,run = False):
+def error_dJ_ULTRASAT(group_vox,run = False, correlated=False):
 
     detector_all = ['GALEX_NUV','GALEX_FUV','ULTRASAT']
     z_val = list(z_gals('SDSS'))
@@ -2204,9 +2279,9 @@ def error_dJ_ULTRASAT(group_vox,run = False):
         fiducials['bias'][2]
         ]
     
-    F_N = fisher_matrix(use_pars_fid,'GALEX_NUV','SDSS',group_vox,run)
-    F_F = fisher_matrix(use_pars_fid,'GALEX_FUV','SDSS',group_vox,run)
-    F_U = fisher_matrix(use_pars_fid,'ULTRASAT','SPHEREx',group_vox,run)
+    F_N = fisher_matrix(use_pars_fid,'GALEX_NUV','SDSS',group_vox,run,correlated)
+    F_F = fisher_matrix(use_pars_fid,'GALEX_FUV','SDSS',group_vox,run,correlated)
+    F_U = fisher_matrix(use_pars_fid,'ULTRASAT','SPHEREx',group_vox,run, correlated)
     F_all = F_N + F_F + F_U
     F_GAL = F_N + F_F
 
@@ -2258,22 +2333,22 @@ def error_dJ_ULTRASAT(group_vox,run = False):
         dJ_bias = np.zeros(len(z_val))
         for use_z in z_val:
 
-            use_signal = lambda w: signal(w,use_z,detector,False,False,False,False,False,False)
+            use_signal = lambda w: signal(w,use_z,detector,False,False,False,False,False,False,to_plot=False)
 
-            depsnu_deps1500_0 = lambda w: signal(w,use_z,detector,False,False,False,False,False,False) / pow(10,use_fid_vals[use_pars_fid.index('log10_eps_1500_0')])
+            depsnu_deps1500_0 = lambda w: signal(w,use_z,detector,False,False,False,False,False,False,to_plot=False) / pow(10,use_fid_vals[use_pars_fid.index('log10_eps_1500_0')])
 
-            depsnu_dgamma1500 = lambda w: signal(w,use_z,detector,False,False,False,False,False,False) * np.log10(1+use_z)
+            depsnu_dgamma1500 = lambda w: signal(w,use_z,detector,False,False,False,False,False,False,to_plot=False) * np.log10(1+use_z)
 
             coef_alpha1500 = lambda w: np.log(nu_from_lambda(w) / nu_from_lambda(1500*u.nm)) if w.value > 121.6 else np.log(nu_from_lambda(121.6*u.nm) / nu_from_lambda(1500*u.nm))
 
-            depsnu_dalpha1500_0 = lambda w: signal(w,use_z,detector,False,False,False,False,False,False) * coef_alpha1500(w)
+            depsnu_dalpha1500_0 = lambda w: signal(w,use_z,detector,False,False,False,False,False,False,to_plot=False) * coef_alpha1500(w)
 
-            depsnu_dC1500 = lambda w: signal(w,use_z,detector,False,False,False,False,False,False) * coef_alpha1500(w) * np.log10(use_z)
+            depsnu_dC1500 = lambda w: signal(w,use_z,detector,False,False,False,False,False,False,to_plot=False) * coef_alpha1500(w) * np.log10(use_z)
 
-            depsnu_dalpha1100_0 = lambda w: (signal(w,use_z,detector,False,False,False,False,False,False) * np.log(nu_from_lambda(91.2*u.nm) / nu_from_lambda(121.6*u.nm))).value if w.value <= 91.2 else (non_ionizing_continuum(nu_from_lambda(121.6*u.nm),use_z,False,False) * ( nu_from_lambda(w) / nu_from_lambda(121.6*u.nm))**alpha1100(use_z,False) * np.log(nu_from_lambda(w) / nu_from_lambda(121.6*u.nm))).value if w.value <= 121.6 else 0.
+            depsnu_dalpha1100_0 = lambda w: (signal(w,use_z,detector,False,False,False,False,False,False,to_plot=False) * np.log(nu_from_lambda(91.2*u.nm) / nu_from_lambda(121.6*u.nm))).value if w.value <= 91.2 else (non_ionizing_continuum(nu_from_lambda(121.6*u.nm),use_z,False,False) * ( nu_from_lambda(w) / nu_from_lambda(121.6*u.nm))**alpha1100(use_z,False) * np.log(nu_from_lambda(w) / nu_from_lambda(121.6*u.nm))).value if w.value <= 121.6 else 0.
 
 
-            depsnu_dC1100 = lambda w: (signal(w,use_z,detector,False,False,False,False,False,False) * np.log(nu_from_lambda(91.2*u.nm) / nu_from_lambda(121.6*u.nm)) * np.log10(1+use_z)).value if w.value <= 91.2 else (non_ionizing_continuum(nu_from_lambda(121.6*u.nm),use_z,False,False) * ( nu_from_lambda(w) / nu_from_lambda(121.6*u.nm))**alpha1100(use_z,False) * np.log(nu_from_lambda(w) / nu_from_lambda(121.6*u.nm)) * np.log10(1+use_z)).value if w.value <= 121.6 else 0.
+            depsnu_dC1100 = lambda w: (signal(w,use_z,detector,False,False,False,False,False,False,to_plot=False) * np.log(nu_from_lambda(91.2*u.nm) / nu_from_lambda(121.6*u.nm)) * np.log10(1+use_z)).value if w.value <= 91.2 else (non_ionizing_continuum(nu_from_lambda(121.6*u.nm),use_z,False,False) * ( nu_from_lambda(w) / nu_from_lambda(121.6*u.nm))**alpha1100(use_z,False) * np.log(nu_from_lambda(w) / nu_from_lambda(121.6*u.nm)) * np.log10(1+use_z)).value if w.value <= 121.6 else 0.
 
 
             dEW_dEW03 = 1 - np.log10((1+use_z)/(1+0.3))/np.log10((1+1)/(1+0.3))
@@ -2318,26 +2393,26 @@ def error_dJ_ULTRASAT(group_vox,run = False):
 
             if detector == 'ULTRASAT':
             
-                sigma_dJ[z_val.index(use_z)] = (((cu.c.to(u.km/u.s) / (4*np.pi*H(use_z)*(1+use_z)) * np.trapz(intg,nu_obs_val))*unit*u.Hz/u.steradian).to(u.Jy/u.steradian)).value * bJ_z(use_z,detector,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename='results/EBL/bJ_' + detector + '.dat')
+                sigma_dJ[z_val.index(use_z)] = (((cu.c.to(u.km/u.s) / (4*np.pi*H(use_z)*(1+use_z)) * np.trapz(intg,nu_obs_val))*unit*u.Hz/u.steradian).to(u.Jy/u.steradian)).value * bJ_z(use_z,detector,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=use_results_dir + 'EBL/bJ_' + detector + '.dat')
 
-                sigma_dJ_det[z_val.index(use_z)] = (((cu.c.to(u.km/u.s) / (4*np.pi*H(use_z)*(1+use_z)) * np.trapz(intg_det,nu_obs_val))*unit*u.Hz/u.steradian).to(u.Jy/u.steradian)).value * bJ_z(use_z,detector,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename='results/EBL/bJ_' + detector + '.dat')
+                sigma_dJ_det[z_val.index(use_z)] = (((cu.c.to(u.km/u.s) / (4*np.pi*H(use_z)*(1+use_z)) * np.trapz(intg_det,nu_obs_val))*unit*u.Hz/u.steradian).to(u.Jy/u.steradian)).value * bJ_z(use_z,detector,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=use_results_dir + 'EBL/bJ_' + detector + '.dat')
 
-                dJ[z_val.index(use_z)] = dJdz(use_z,detector,False,False,False,False,False,False,False,filename='results/EBL/dJdz_' + detector + '.dat') * bJ_z(use_z,detector,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename='results/EBL/bJ_' + detector + '.dat')
+                dJ[z_val.index(use_z)] = dJdz(use_z,detector,False,False,False,False,False,False,False,filename=use_results_dir + 'EBL/dJdz_' + detector + '.dat') * bJ_z(use_z,detector,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=use_results_dir + 'EBL/bJ_' + detector + '.dat')
             
-                dJ_eps[z_val.index(use_z)] = dJdz(use_z,detector,True,eps_large,False,False,False,False,False,filename='results/EBL/dJdz_' + detector + '_eps1500_0_large.dat') * bJ_z(use_z,detector,run=True,vals_eps1500=eps_large,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename='results/EBL/bJ_' + detector + '_eps1500_0_large.dat')
+                dJ_eps[z_val.index(use_z)] = dJdz(use_z,detector,True,eps_large,False,False,False,False,False,filename=use_results_dir + 'EBL/dJdz_' + detector + '_eps1500_0_large.dat') * bJ_z(use_z,detector,run=True,vals_eps1500=eps_large,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=use_results_dir + 'EBL/bJ_' + detector + '_eps1500_0_large.dat')
             
-                dJ_bias[z_val.index(use_z)] = dJdz(use_z,detector,False,False,False,False,False,False,False,filename='results/EBL/dJdz_' + detector + '.dat') * bJ_z(use_z,detector,run=True,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = bias_large,filename='results/EBL/bJ_' + detector + '_b1500_0_large.dat')
+                dJ_bias[z_val.index(use_z)] = dJdz(use_z,detector,False,False,False,False,False,False,False,filename=use_results_dir + 'EBL/dJdz_' + detector + '.dat') * bJ_z(use_z,detector,run=True,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = bias_large,filename=use_results_dir + 'EBL/bJ_' + detector + '_b1500_0_large.dat')
             
             else:
-                sigma_dJ[z_val.index(use_z)] = (((cu.c.to(u.km/u.s) / (4*np.pi*H(use_z)*(1+use_z)) * np.trapz(intg,nu_obs_val))*unit*u.Hz/u.steradian).to(u.Jy/u.steradian)).value * bJ_z(use_z,detector,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename='results/EBL/bJ_' + detector + '.dat')
+                sigma_dJ[z_val.index(use_z)] = (((cu.c.to(u.km/u.s) / (4*np.pi*H(use_z)*(1+use_z)) * np.trapz(intg,nu_obs_val))*unit*u.Hz/u.steradian).to(u.Jy/u.steradian)).value * bJ_z(use_z,detector,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=use_results_dir + 'EBL/bJ_' + detector + '.dat')
 
-                sigma_dJ_det[z_val.index(use_z)] = (((cu.c.to(u.km/u.s) / (4*np.pi*H(use_z)*(1+use_z)) * np.trapz(intg_det,nu_obs_val))*unit*u.Hz/u.steradian).to(u.Jy/u.steradian)).value * bJ_z(use_z,detector,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename='results/EBL/bJ_' + detector + '.dat')
+                sigma_dJ_det[z_val.index(use_z)] = (((cu.c.to(u.km/u.s) / (4*np.pi*H(use_z)*(1+use_z)) * np.trapz(intg_det,nu_obs_val))*unit*u.Hz/u.steradian).to(u.Jy/u.steradian)).value * bJ_z(use_z,detector,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=use_results_dir + 'EBL/bJ_' + detector + '.dat')
 
-                dJ[z_val.index(use_z)] = dJdz(use_z,detector,False,False,False,False,False,False,False,filename='results/EBL/dJdz_' + detector + '.dat') * bJ_z(use_z,detector,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename='results/EBL/bJ_' + detector + '.dat')
+                dJ[z_val.index(use_z)] = dJdz(use_z,detector,False,False,False,False,False,False,False,filename=use_results_dir + 'EBL/dJdz_' + detector + '.dat') * bJ_z(use_z,detector,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=use_results_dir + 'EBL/bJ_' + detector + '.dat')
 
-                dJ_eps[z_val.index(use_z)] = dJdz(use_z,detector,True,eps_large,False,False,False,False,False,filename='results/EBL/dJdz_' + detector + '_eps1500_0_large.dat') * bJ_z(use_z,detector,run=True,vals_eps1500=eps_large,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename='results/EBL/bJ_' + detector + '_eps1500_0_large.dat')
+                dJ_eps[z_val.index(use_z)] = dJdz(use_z,detector,True,eps_large,False,False,False,False,False,filename=use_results_dir + 'EBL/dJdz_' + detector + '_eps1500_0_large.dat') * bJ_z(use_z,detector,run=True,vals_eps1500=eps_large,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=use_results_dir + 'EBL/bJ_' + detector + '_eps1500_0_large.dat')
             
-                dJ_bias[z_val.index(use_z)] = dJdz(use_z,detector,False,False,False,False,False,False,False,filename='results/EBL/dJdz_' + detector + '.dat') * bJ_z(use_z,detector,run=True,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = bias_large,filename='results/EBL/bJ_' + detector + '_b1500_0_large.dat')
+                dJ_bias[z_val.index(use_z)] = dJdz(use_z,detector,False,False,False,False,False,False,False,filename=use_results_dir + 'EBL/dJdz_' + detector + '.dat') * bJ_z(use_z,detector,run=True,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = bias_large,filename=use_results_dir + 'EBL/bJ_' + detector + '_b1500_0_large.dat')
 
         plt.subplot(subplot[detector_all.index(detector)])
 
@@ -2356,9 +2431,9 @@ def error_dJ_ULTRASAT(group_vox,run = False):
 
     plt.tight_layout()
     if scale_physical_max == 300*u.Mpc: 
-        filename = 'results/PLOTS/EBL/forecast_dJ_all_beps_thetamax.png'
+        filename = use_results_dir + 'PLOTS/EBL/forecast_dJ_all_beps_thetamax.png'
     else:
-        filename = 'results/PLOTS/EBL/forecast_dJ_all_beps.png'
+        filename = use_results_dir + 'PLOTS/EBL/forecast_dJ_all_beps.png'
     plt.savefig(filename,bbox_inches='tight')
     plt.show()
 
@@ -2367,10 +2442,10 @@ def error_dJ_ULTRASAT(group_vox,run = False):
 
 
 
-def test_galex(pars =pars_original_c18, prior = False, plot_flag = True, group_vox = True):
+def test_galex(pars =pars_original_c18, prior = False, plot_flag = True, group_vox = True, correlated=False):
 
-    F_N = Fisher_change_var(pars,'GALEX_NUV','SDSS',group_vox,False)
-    F_F = Fisher_change_var(pars,'GALEX_FUV','SDSS',group_vox,False)
+    F_N = Fisher_change_var(pars,'GALEX_NUV','SDSS',group_vox,False,correlated=correlated)
+    F_F = Fisher_change_var(pars,'GALEX_FUV','SDSS',group_vox,False,correlated=correlated)
 
     F_G = F_N + F_F
 
@@ -2468,9 +2543,9 @@ def test_galex(pars =pars_original_c18, prior = False, plot_flag = True, group_v
 def fisher_matrix_test(pars,gal_survey,group_vox,run = False):
     
     if group_vox: 
-        filename = 'results/EBL/FISHER_GALEXtest,' + gal_survey + '.dat'
+        filename = use_results_dir + 'EBL/FISHER_GALEXtest,' + gal_survey + '.dat'
     else:
-        filename = 'results/EBL/FISHER_GALEXtest,' + gal_survey + '_singleVOX.dat'
+        filename = use_results_dir + 'EBL/FISHER_GALEXtest,' + gal_survey + '_singleVOX.dat'
 
     print(filename)
     if not run and os.path.exists(filename):
@@ -2536,11 +2611,11 @@ def plot_ders_test(pars, reduced_z = False):
     wf = np.zeros(len(z_gals('SDSS')))
     reduced_label = '_reduced' if reduced_z else ''
 
-    use_filename_nuv_J = 'results/EBL/dJdz_GALEX_NUV' + reduced_label + '.dat'
-    use_filename_nuv_b = 'results/EBL/bJ_GALEX_NUV' + reduced_label + '.dat'
+    use_filename_nuv_J = use_results_dir + 'EBL/dJdz_GALEX_NUV' + reduced_label + '.dat'
+    use_filename_nuv_b = use_results_dir + 'EBL/bJ_GALEX_NUV' + reduced_label + '.dat'
 
-    use_filename_fuv_J = 'results/EBL/dJdz_GALEX_FUV' + reduced_label + '.dat'
-    use_filename_fuv_b = 'results/EBL/bJ_GALEX_FUV' + reduced_label + '.dat'
+    use_filename_fuv_J = use_results_dir + 'EBL/dJdz_GALEX_FUV' + reduced_label + '.dat'
+    use_filename_fuv_b = use_results_dir + 'EBL/bJ_GALEX_FUV' + reduced_label + '.dat'
 
     for i in (range(len(z_gals('SDSS')))):
         print('\nDoing z = ' + str(z_gals('SDSS')[i]))
@@ -2556,11 +2631,11 @@ def plot_ders_test(pars, reduced_z = False):
         wder = np.zeros(len(z_gals('SDSS')))
         wderf = np.zeros(len(z_gals('SDSS')))
 
-        use_filename_wder_J = 'results/EBL/der/dJ_d' + p + '_' + 'GALEX_NUV,SDSS' + reduced_label +  '.dat'
-        use_filename_wder_b = 'results/EBL/der/bJ_d' + p + '_' + 'GALEX_NUV,SDSS' + reduced_label +  '.dat'
+        use_filename_wder_J = use_results_dir + 'EBL/der/dJ_d' + p + '_' + 'GALEX_NUV,SDSS' + reduced_label +  '.dat'
+        use_filename_wder_b = use_results_dir + 'EBL/der/bJ_d' + p + '_' + 'GALEX_NUV,SDSS' + reduced_label +  '.dat'
 
-        use_filename_wder_Jf = 'results/EBL/der/dJ_d' + p + '_' + 'GALEX_FUV,SDSS' + reduced_label +  '.dat'
-        use_filename_wder_bf = 'results/EBL/der/bJ_d' + p + '_' + 'GALEX_FUV,SDSS' + reduced_label +  '.dat'
+        use_filename_wder_Jf = use_results_dir + 'EBL/der/dJ_d' + p + '_' + 'GALEX_FUV,SDSS' + reduced_label +  '.dat'
+        use_filename_wder_bf = use_results_dir + 'EBL/der/bJ_d' + p + '_' + 'GALEX_FUV,SDSS' + reduced_label +  '.dat'
 
         for i in (range(len(z_gals('SDSS')))):
             print('\nDoing z = ' + str(z_gals('SDSS')[i]))

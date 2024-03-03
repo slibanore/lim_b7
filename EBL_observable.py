@@ -4,7 +4,7 @@ from scipy.interpolate import CubicSpline
 from scipy import signal as scipy_signal
 from matplotlib import patches
 
-scale_physical_min = 0.5*u.Mpc
+scale_physical_min = 1.*u.Mpc #0.5*u.Mpc
 scale_physical_max = 5*u.Mpc
 theta_min = lambda angular_distance: np.arctan(scale_physical_min.value / angular_distance) 
 theta_max = lambda angular_distance, detector: ((4*u.deg).to(u.rad)).value if detector == 'ULTRASAT' else np.arctan(scale_physical_max.value / angular_distance)
@@ -20,7 +20,7 @@ def Jnu_monopole(detector,reduced_z = False):
 
     reduced_label = '_reduced' #if reduced_z else ''
 
-    filename = 'results/EBL/dJdz_' + detector + reduced_label + '.dat'
+    filename = use_results_dir + 'EBL/dJdz_' + detector + reduced_label + '.dat'
     
     J = np.zeros(len(use_z))
     for i in range(len(use_z)):
@@ -93,7 +93,7 @@ def plot_bessel():
     plt.ylabel(r'$J_0(k\theta\chi(z))$',fontsize=fontsize)
     plt.legend()
 
-    plt.savefig('results/PLOTS/EBL/bessel.png',bbox_inches='tight')
+    plt.savefig(use_results_dir + 'PLOTS/EBL/bessel.png',bbox_inches='tight')
     plt.show()
 
     return 
@@ -124,7 +124,7 @@ def plot_kernel():
     plt.ylabel(r'$|ker_{\rm REF}|$',fontsize=fontsize)
 
 
-    zv = [z_gals[0],z_gals[50],z_gals[100],z_gals[500],z_gals[-1]] 
+    zv = [z_gals('DESI')[0],z_gals('DESI')[50],z_gals('DESI')[100],z_gals('DESI')[500],z_gals('DESI')[-1]] 
     ktheta = np.logspace(-4,2)
     plt.subplot(122)
     for zi in zv:
@@ -139,7 +139,7 @@ def plot_kernel():
 
     plt.legend(loc=3)
     plt.tight_layout()
-    plt.savefig('results/PLOTS/EBL/kernel.png',bbox_inches='tight')
+    plt.savefig(use_results_dir + 'PLOTS/EBL/kernel.png',bbox_inches='tight')
     plt.show()
 
     return 
@@ -153,7 +153,7 @@ def w_thetaz_m(theta,z):
 
     #unit = k_arr[0].unit*k_arr[0].unit*Pkz(k_arr[0],0).unit * dz_dchi(0.).unit ---> adimensional, we don't put it to save time
     
-    w = quad(intg, k_arr[0].value,k_arr[-1].value)[0]
+    w = quad(intg, 1e-3,k_arr[-1].value)[0]
 
 
     return w #* unit
@@ -175,7 +175,7 @@ def plot_wtz():
         
         plt.loglog(theta/0.000290888,np.abs(w),label=r'$z =%g$'%i)
         plt.axvline(theta_min(cosmo.angular_diameter_distance(0.5))/0.000290888,ymin=0,ymax=1,color='k',linewidth=1.5)
-        plt.axvline(theta_max(cosmo.angular_diameter_distance(0.5,'GALEX_NUV'))/0.000290888,ymin=0,ymax=1,color='k',linewidth=1.5)
+        plt.axvline(theta_max(cosmo.angular_diameter_distance(0.5),'GALEX_NUV')/0.000290888,ymin=0,ymax=1,color='k',linewidth=1.5)
         plt.axvline(theta_min(cosmo.angular_diameter_distance(1))/0.000290888,0,1,color='k',linestyle='--',linewidth=1.5)
         plt.axvline(theta_max(cosmo.angular_diameter_distance(1),'ULTRASAT')/0.000290888,0,1,color='k',linestyle='--',linewidth=1.5)
 
@@ -185,9 +185,9 @@ def plot_wtz():
     plt.ylim(1e-6,3e-3)
 
     if scale_physical_max == 300*u.Mpc:
-        filefig = 'results/PLOTS/EBL/wthetaz_thetamax.png'
+        filefig = use_results_dir + 'PLOTS/EBL/wthetaz_thetamax.png'
     else:
-        filefig = 'results/PLOTS/EBL/wthetaz.png'
+        filefig = use_results_dir + 'PLOTS/EBL/wthetaz.png'
 
     plt.savefig(filefig,bbox_inches='tight')
     plt.show()
@@ -353,7 +353,7 @@ def plot_bgal():
     plt.legend(loc=4)
 
     plt.tight_layout()
-    plt.savefig('results/PLOTS/EBL/bg.png',bbox_inches='tight')
+    plt.savefig(use_results_dir + 'PLOTS/EBL/bg.png',bbox_inches='tight')
     plt.show()
 
     return 
@@ -370,13 +370,15 @@ def intg_f(tv,z):
 
 def wz_m(z, detector, run = False, filename = ''):
     
-
     if run:
-        theta_min_use = theta_min(cosmo.angular_diameter_distance(z)) 
-        theta_max_use = theta_max(cosmo.angular_diameter_distance(z),detector)
+        DA_z = cosmo.angular_diameter_distance(z)
+        theta_min_use = theta_min(DA_z) 
+        theta_max_use = theta_max(DA_z,detector)
 
         theta = np.linspace(theta_min_use,theta_max_use,200)
-
+        # theta_min_standard =  np.arctan(0.5 / DA_z)
+        # theta = np.arange(theta_min_use,theta_max_use,(theta_max_use-theta_min_standard)/199)
+        
         with Pool(6) as pool:
             intg_ff = partial(intg_f, z=z)
             intg = pool.map(intg_ff, theta)
@@ -411,7 +413,7 @@ def wJgz(z,detector,gal_survey,run=False,
     if not run and os.path.exists(filename):
 
         z_arr, bar_wJg_all = np.genfromtxt(filename)
-        bar_wJg = interp1d(z_arr,bar_wJg_all)(z)
+        bar_wJg = interp1d(z_arr,bar_wJg_all,bounds_error=False,fill_value=bar_wJg_all[-1])(z)
 
     else:
 
@@ -442,7 +444,7 @@ def run_wm(detector,reduced_z = False):
         reduced_label = ''
 
     wm = np.zeros(len(use_z))
-    filename = 'results/EBL/wmz_' + detector + reduced_label + '.dat'
+    filename = use_results_dir + 'EBL/wmz_' + detector + reduced_label + '.dat'
 
     for i in (range(len(use_z))):
         print('\nDoing z = ' + str(use_z[i]))
@@ -451,7 +453,7 @@ def run_wm(detector,reduced_z = False):
 
     np.savetxt(filename,(use_z, wm))
 
-    return 
+    return wm
 
 
 def run_wJg(reduced_z = False):
@@ -474,29 +476,29 @@ def run_wJg(reduced_z = False):
     for i in (range(len(use_z))):
        print('\nDoing z = ' + str(use_z[i]))
        print('NUV')
-       filename_wm = 'results/EBL/wmz_GALEX_NUV' + reduced_label + '.dat'
+       filename_wm = use_results_dir + 'EBL/wmz_GALEX_NUV' + reduced_label + '.dat'
        wn[i] = wJgz(use_z[i],'GALEX_NUV','SDSS',True,
            filename_wm = filename_wm,
-           filename_dJ = 'results/EBL/dJdz_GALEX_NUV' + reduced_label + '.dat',
-           filename_bJ = 'results/EBL/bJ_GALEX_NUV' + reduced_label + '.dat')
+           filename_dJ = use_results_dir + 'EBL/dJdz_GALEX_NUV' + reduced_label + '.dat',
+           filename_bJ = use_results_dir + 'EBL/bJ_GALEX_NUV' + reduced_label + '.dat')
        print('FUV')
-       filename_wm = 'results/EBL/wmz_GALEX_FUV' + reduced_label + '.dat'
+       filename_wm = use_results_dir + 'EBL/wmz_GALEX_FUV' + reduced_label + '.dat'
        wf[i] = wJgz(use_z[i],'GALEX_FUV','SDSS',True,
            filename_wm = filename_wm,
-           filename_dJ = 'results/EBL/dJdz_GALEX_FUV' + reduced_label + '.dat',
-           filename_bJ = 'results/EBL/bJ_GALEX_FUV' + reduced_label + '.dat')
+           filename_dJ = use_results_dir + 'EBL/dJdz_GALEX_FUV' + reduced_label + '.dat',
+           filename_bJ = use_results_dir + 'EBL/bJ_GALEX_FUV' + reduced_label + '.dat')
 #
     for i in (range(len(use_z_ultrasat))):
         print('ULTRASAT')
-        filename_wm = 'results/EBL/wmz_ULTRASAT' + reduced_label + '.dat'
+        filename_wm = use_results_dir + 'EBL/wmz_ULTRASAT' + reduced_label + '.dat'
         wu[i] = wJgz(use_z_ultrasat[i],'ULTRASAT','DESI',True,
            filename_wm = filename_wm,
-           filename_dJ = 'results/EBL/dJdz_ULTRASAT' + reduced_label + '.dat',
-           filename_bJ = 'results/EBL/bJ_ULTRASAT' + reduced_label + '.dat')
+           filename_dJ = use_results_dir + 'EBL/dJdz_ULTRASAT' + reduced_label + '.dat',
+           filename_bJ = use_results_dir + 'EBL/bJ_ULTRASAT' + reduced_label + '.dat')
         
-    np.savetxt('results/EBL/wJg_GALEX_NUV,SDSS' + reduced_label + '.dat',(use_z, wn))
-    np.savetxt('results/EBL/wJg_GALEX_FUV,SDSS' + reduced_label + '.dat',(use_z, wf))
-    filename_ULT = 'results/EBL/wJg_ULTRASAT,DESI' + reduced_label + '.dat'
+    np.savetxt(use_results_dir + 'EBL/wJg_GALEX_NUV,SDSS' + reduced_label + '.dat',(use_z, wn))
+    np.savetxt(use_results_dir + 'EBL/wJg_GALEX_FUV,SDSS' + reduced_label + '.dat',(use_z, wf))
+    filename_ULT = use_results_dir + 'EBL/wJg_ULTRASAT,DESI' + reduced_label + '.dat'
 
     np.savetxt(filename_ULT,(use_z_ultrasat, wu))
     
@@ -517,18 +519,18 @@ def run_wJg_galexdesi(reduced_z = False):
 
     # use the DM file with name ultrasat because it has the same z bins as desi, ma there is no info on the lim part
     for i in (range(len(use_z))):
-        filename_wm = 'results/EBL/wmz_ULTRASAT' + reduced_label + '.dat'
+        filename_wm = use_results_dir + 'EBL/wmz_ULTRASAT' + reduced_label + '.dat'
         wn[i] = wJgz(use_z[i],'GALEX_NUV','DESI',True,
            filename_wm = filename_wm,
-           filename_dJ = 'results/EBL/dJdz_GALEX_NUV' + reduced_label + '.dat',
-           filename_bJ = 'results/EBL/bJ_GALEX_NUV' + reduced_label + '.dat')
+           filename_dJ = use_results_dir + 'EBL/dJdz_GALEX_NUV' + reduced_label + '.dat',
+           filename_bJ = use_results_dir + 'EBL/bJ_GALEX_NUV' + reduced_label + '.dat')
         wf[i] = wJgz(use_z[i],'GALEX_FUV','DESI',True,
            filename_wm = filename_wm,
-           filename_dJ = 'results/EBL/dJdz_GALEX_FUV' + reduced_label + '.dat',
-           filename_bJ = 'results/EBL/bJ_GALEX_FUV' + reduced_label + '.dat')
+           filename_dJ = use_results_dir + 'EBL/dJdz_GALEX_FUV' + reduced_label + '.dat',
+           filename_bJ = use_results_dir + 'EBL/bJ_GALEX_FUV' + reduced_label + '.dat')
         
-    np.savetxt('results/EBL/wJg_GALEX_NUV,DESI' + reduced_label + '.dat',(use_z, wn))
-    np.savetxt('results/EBL/wJg_GALEX_FUV,DESI' + reduced_label + '.dat',(use_z, wf))
+    np.savetxt(use_results_dir + 'EBL/wJg_GALEX_NUV,DESI' + reduced_label + '.dat',(use_z, wn))
+    np.savetxt(use_results_dir + 'EBL/wJg_GALEX_FUV,DESI' + reduced_label + '.dat',(use_z, wf))
     
     return 
 
@@ -545,19 +547,19 @@ def plot_wz(reduced_z = False):
     wuD = np.zeros(len(z_gals('DESI')))
 
     reduced_label = '_reduced' #if reduced_z else ''
-    use_filename_wm = 'results/EBL/wmz_GALEX_NUV' + reduced_label + '.dat'
-    use_filename_nuv = 'results/EBL/wJg_GALEX_NUV,SDSS'+ reduced_label + '.dat'
-    use_filename_fuv = 'results/EBL/wJg_GALEX_FUV,SDSS'+ reduced_label + '.dat'
-    use_filename_nuv_desi = 'results/EBL/wJg_GALEX_NUV,DESI'+ reduced_label + '.dat'
-    use_filename_fuv_desi = 'results/EBL/wJg_GALEX_FUV,DESI'+ reduced_label + '.dat'
+    use_filename_wm = use_results_dir + 'EBL/wmz_GALEX_NUV' + reduced_label + '.dat'
+    use_filename_nuv = use_results_dir + 'EBL/wJg_GALEX_NUV,SDSS'+ reduced_label + '.dat'
+    use_filename_fuv = use_results_dir + 'EBL/wJg_GALEX_FUV,SDSS'+ reduced_label + '.dat'
+    use_filename_nuv_desi = use_results_dir + 'EBL/wJg_GALEX_NUV,DESI'+ reduced_label + '.dat'
+    use_filename_fuv_desi = use_results_dir + 'EBL/wJg_GALEX_FUV,DESI'+ reduced_label + '.dat'
     for i in (range(len(z_gals('SDSS')))):
         print('\nDoing z = ' + str(z_gals('SDSS')[i]))
         print('DM')
         wm[i] = wz_m(z_gals('SDSS')[i],detector='GALEX_NUV',run = False,filename = use_filename_wm)
 
-    #filename_ULT = 'results/EBL/wJg_ULTRASAT,SPHEREx' + reduced_label + '.dat'
+    #filename_ULT = use_results_dir + 'EBL/wJg_ULTRASAT,SPHEREx' + reduced_label + '.dat'
 #
-    filename_ULT_DESI = 'results/EBL/wJg_ULTRASAT,DESI' + reduced_label + '.dat'
+    filename_ULT_DESI = use_results_dir + 'EBL/wJg_ULTRASAT,DESI' + reduced_label + '.dat'
 
     for i in (range(len(z_gals('SDSS')))):
         print('\nDoing z = ' + str(z_gals('SDSS')[i]))
@@ -587,13 +589,6 @@ def plot_wz(reduced_z = False):
 
     plt.figure(figsize=(20,14))
 
-    plt.xticks(fontsize=1.2*.8*fontsize)
-    plt.yticks(fontsize=1.2*.8*fontsize)
-    
-    plt.xlim(0,2.3)
-
-    plt.tight_layout()
-    plt.savefig('results/PLOTS/EBL/bJdJdz.png',bbox_inches='tight')
     #plt.plot(z_gals('SPHEREx'),(wu),color_ULTRASAT,label=r'$\rm ULTRASAT\times SPHEREx$')
     plt.plot(z_gals('SDSS')[:len(wGF_smoothed)],wGF_smoothed,color_FUV,label=r'$\rm FUV\times SDSS$')
     plt.plot(z_gals('DESI')[:len(wGFD_smoothed)],wGFD_smoothed,color_FUV,label=r'$\rm FUV\times DESI$',linestyle='--')
@@ -607,7 +602,7 @@ def plot_wz(reduced_z = False):
     plt.ylabel(r'$\bar{\omega}_{J_\nu{\rm g}}(z)$',fontsize=fontsize*1.2)
 
     plt.tight_layout()
-    filefig = 'results/PLOTS/EBL/wJg' + reduced_label + '.png'
+    filefig = use_results_dir + 'PLOTS/EBL/wJg' + reduced_label + '.png'
 
     plt.savefig(filefig,bbox_inches='tight')
     plt.show()

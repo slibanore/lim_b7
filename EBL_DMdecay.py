@@ -13,6 +13,17 @@ logaddexp = lambda x,y: x + np.log(1 + np.exp(y - x)) if (x > y) else y + np.log
 
 sigmoid = lambda lambda_rest: np.exp(-logaddexp(0, -(lambda_rest.value - (1216*u.AA).value) / 100))
 
+alpha_fid = 1.67
+m0_fid = 3.82
+
+mass_spectrum_range = np.linspace(7.5,15,11)
+
+#use_dir_0 = 'results/EBL/'
+#use_dir = lambda m_DM, f_DM_decay_DM: use_dir_0 + 'DM_' + str(m_DM) + ',' + str(np.log10(f_DM_decay_DM)) + '/'
+
+use_dir_0 = 'test_results/EBL_DM/'
+use_dir = lambda m_DM, f_DM_decay_DM: use_dir_0 + 'DM_' + str(m_DM) + ',' + str(np.log10(f_DM_decay_DM)) + '/'
+
 
 def ddm_mass_probability_density(m_ddm, alpha, m_0, plot = False):
     term1 = alpha / m_0
@@ -21,15 +32,61 @@ def ddm_mass_probability_density(m_ddm, alpha, m_0, plot = False):
     term4 = lambda use_mass: np.exp(-((use_mass / m_0) ** alpha))
 
     if plot:
-        m_ddm_values = np.linspace(1,20)
+        m_ddm_values = np.linspace(0,20)
         probability_values = term1 * term2 * term3(m_ddm_values) * term4(m_ddm_values)
-        plt.plot(m_ddm_values, probability_values, 'k', label=r'$\alpha={}, m_0={}$'.format(alpha, m_0))
-        plt.xlabel(r'$m_{\mathrm{DDM}}$')
-        plt.ylabel(r'$p(m_{\rm DDM})$')
-        plt.legend()
 
+        term1_1 = 1.66 / m_0
+        term2_1 = 1 / gamma(1 + 1/1.66)
+        term3_1 = lambda use_mass: (use_mass / 3.21) ** 1.66
+        term4_1 = lambda use_mass: np.exp(-((use_mass / 3.21) ** 1.66))
+        probability_values_1 = term1_1 * term2_1 * term3_1(m_ddm_values) * term4_1(m_ddm_values)
+
+        plt.figure(figsize=(10,9))
+        fontsize_label = 30
+        fontsize_legend = 27
+        fontsize_tick = 27
+
+        plt.plot(m_ddm_values, probability_values, 'k', label=r'$\alpha={}, m_0={}$'.format(alpha, m_0))
+        plt.plot(m_ddm_values, probability_values_1, 'k--', label=r'$\alpha={}, m_0={}$'.format(1.66, 3.21))
+        plt.xlabel(r'$m_{\mathrm{DDM}}c^2$',fontsize=fontsize_label)
+        plt.ylabel(r'$p(m_{\rm DDM})$',fontsize=fontsize_label)
+
+        z = [0.1,0.3,0.5]#1.]
+        for i in range(len(z)):
+            mass_min_galex= ((4*np.pi*cu.hbar*(1+z[i])*nu_from_lambda(wavelenght_min('GALEX_FUV'))).to(u.eV)).value
+            mass_max_galex= ((4*np.pi*cu.hbar*(1+z[i])*nu_from_lambda(wavelenght_max('GALEX_FUV'))).to(u.eV)).value
+
+            mass_min_galex_nuv= ((4*np.pi*cu.hbar*(1+z[i])*nu_from_lambda(wavelenght_min('GALEX_NUV'))).to(u.eV)).value
+            mass_max_galex_nuv= ((4*np.pi*cu.hbar*(1+z[i])*nu_from_lambda(wavelenght_max('GALEX_NUV'))).to(u.eV)).value
+
+            mass_min_ULTRASAT= ((4*np.pi*cu.hbar*(1+z[i])*nu_from_lambda(wavelenght_min('ULTRASAT'))).to(u.eV)).value
+            mass_max_ULTRASAT= ((4*np.pi*cu.hbar*(1+z[i])*nu_from_lambda(wavelenght_max('ULTRASAT'))).to(u.eV)).value
+
+            plt.fill_betweenx(y=[-0.005,0.03+i/70],x1=mass_min_galex,x2=mass_max_galex,color=color_FUV,alpha=0.6-i/5,label=r'$\rm GALEX\,FUV$')
+    # 
+            plt.fill_betweenx(y=[-0.005,0.03+i/70],x1=mass_min_galex_nuv,x2=mass_max_galex_nuv,color=color_NUV,alpha=0.6-i/5,label=r'$\rm GALEX\,NUV$')
+    # 
+            plt.fill_betweenx(y=[-0.005,0.03+i/70],x1=mass_min_ULTRASAT,x2=mass_max_ULTRASAT,color=color_ULTRASAT,alpha=0.6-i/5,label=r'$\rm ULTRASAT$')
+
+            plt.text(mass_max_ULTRASAT,0.031+i/70,r'$z=%g$'%z[i],fontsize=25)
+            if i == 0 :
+                plt.axvline(mass_min_galex,ymax=0.19, color=color_FUV,linestyle=':')
+                plt.axvline(mass_max_galex,ymax=0.19,color=color_FUV,linestyle=':')
+
+                plt.axvline(mass_min_galex_nuv,ymax=0.19,color=color_NUV,linestyle=':')
+                plt.axvline(mass_max_galex_nuv,ymax=0.19,color=color_NUV,linestyle=':')
+
+                plt.axvline(mass_min_ULTRASAT,ymax=0.19,color=color_ULTRASAT,linestyle=':')
+                plt.axvline(mass_max_ULTRASAT,ymax=0.19,color=color_ULTRASAT,linestyle=':')
+
+                plt.legend(loc = 1,fontsize=fontsize_legend)
+
+        plt.xlim(0.,20.)
+        plt.ylim(-0.005,0.185)
         plt.tight_layout()
-        plt.subplots_adjust(hspace=.37)
+        plt.yticks(fontsize=fontsize_tick)
+        plt.xticks(fontsize=fontsize_tick)
+
         plt.savefig('results/PLOTS/EBL_DM/massfunction.png',bbox_inches='tight')
 
         plt.show()
@@ -42,8 +99,7 @@ def ddm_nu_probability_density(m_ddm, alpha, m_0, plot = False):
     pm  = lambda use_m: ddm_mass_probability_density(use_m, alpha, m_0, plot = False)
     if plot:
         pm_1  = lambda use_m: ddm_mass_probability_density(use_m, 1.66, 3.21, plot = False)
-
-    nu_rest_DM = lambda use_m: ((use_m*u.eV / (4*np.pi*cu.hbar)).to(u.Hz))
+        nu_rest_DM = lambda use_m: ((use_m*u.eV / (4*np.pi*cu.hbar)).to(u.Hz))
 
     unit = cu.hbar.unit
     p_nu_unn = lambda use_m: ( pm(use_m) * (4*np.pi*cu.hbar)).value
@@ -103,40 +159,77 @@ def ddm_nu_probability_density(m_ddm, alpha, m_0, plot = False):
     return p_nu(m_ddm)
 
 
+def signal_DM(nu_obs, m_DM, f_DM_decay_DM, run_compare=False, mass_function =False, alpha=alpha_fid,m_0=m0_fid):
 
-
-def signal_DM(nu_obs, m_DM, f_DM_decay_DM, run_compare=False):
-
-    m_DM *= u.eV
     f_DM_decay_DM *= u.s**-1
+    
+    if mass_function:
 
-    nu_rest_DM = (m_DM / (4*np.pi*cu.hbar)).to(u.Hz)
+        eps_DM = 0.
+        for m in range(len(mass_spectrum_range)):        
 
-    z = -1 + nu_rest_DM/ nu_obs  
-    if not run_compare:
-        if zmin_gal <= z <= zmax_gal:
-            # * (1+z)**3 the factor should not be included, compare eq 2 chiang menard with eq A1 in Jose 
-            eps_DM = fLyC(z,False) * sigmoid(lambda_from_nu(nu_rest_DM)) * (f_gg * f_DM_decay_DM * camb_pars.omegac * rho_crit  * cu.c**2 * (1+F_g)/nu_rest_DM).to(u.erg*u.s**-1*u.Hz**-1*u.Mpc**-3) # need to be weighted by absorptions
-        else:
-            eps_DM = 0. * u.erg*u.s**-1*u.Hz**-1*u.Mpc**-3
+            nu_rest_DM = (mass_spectrum_range[m] * u.eV / (4*np.pi*cu.hbar)).to(u.Hz)
+
+            z = -1 + nu_rest_DM/ nu_obs  
+            if not run_compare:
+                if zmin_gal <= z <= zmax_gal:
+                    # * (1+z)**3 the factor should not be included, compare eq 2 chiang menard with eq A1 in Jose 
+                    eps_DM_m = fLyC(z,False) * sigmoid(lambda_from_nu(nu_rest_DM)) * (f_gg * f_DM_decay_DM * camb_pars.omegac * rho_crit  * cu.c**2 * (1+F_g)/nu_rest_DM).to(u.erg*u.s**-1*u.Hz**-1*u.Mpc**-3) # need to be weighted by absorptions
+                else:
+                    eps_DM_m = 0. * u.erg*u.s**-1*u.Hz**-1*u.Mpc**-3
+            else:
+                if zmin_gal <= z <= zmax_gal:
+                    # * (1+z)**3 the factor should not be included, compare eq 2 chiang menard with eq A1 in Jose 
+                    eps_DM_m = (f_gg * f_DM_decay_DM * camb_pars.omegac * rho_crit  * cu.c**2 * (1+F_g)/nu_rest_DM).to(u.erg*u.s**-1*u.Hz**-1*u.Mpc**-3) # need to be weighted by absorptions
+                else:
+                    eps_DM_m = 0. * u.erg*u.s**-1*u.Hz**-1*u.Mpc**-3
+
+            eps_DM += eps_DM_m * ddm_nu_probability_density(mass_spectrum_range[m], alpha, m_0, plot = False) * u.eV
+
     else:
-        if zmin_gal <= z <= zmax_gal:
-            # * (1+z)**3 the factor should not be included, compare eq 2 chiang menard with eq A1 in Jose 
-            eps_DM = (f_gg * f_DM_decay_DM * camb_pars.omegac * rho_crit  * cu.c**2 * (1+F_g)/nu_rest_DM).to(u.erg*u.s**-1*u.Hz**-1*u.Mpc**-3) # need to be weighted by absorptions
+        m_DM *= u.eV
+
+        nu_rest_DM = (m_DM / (4*np.pi*cu.hbar)).to(u.Hz)
+
+        z = -1 + nu_rest_DM/ nu_obs  
+        if not run_compare:
+            if zmin_gal <= z <= zmax_gal:
+                # * (1+z)**3 the factor should not be included, compare eq 2 chiang menard with eq A1 in Jose 
+                eps_DM = fLyC(z,False) * sigmoid(lambda_from_nu(nu_rest_DM)) * (f_gg * f_DM_decay_DM * camb_pars.omegac * rho_crit  * cu.c**2 * (1+F_g)/nu_rest_DM).to(u.erg*u.s**-1*u.Hz**-1*u.Mpc**-3) # need to be weighted by absorptions
+            else:
+                eps_DM = 0. * u.erg*u.s**-1*u.Hz**-1*u.Mpc**-3 
         else:
-            eps_DM = 0. * u.erg*u.s**-1*u.Hz**-1*u.Mpc**-3
+            if zmin_gal <= z <= zmax_gal:
+                # * (1+z)**3 the factor should not be included, compare eq 2 chiang menard with eq A1 in Jose 
+                eps_DM = (f_gg * f_DM_decay_DM * camb_pars.omegac * rho_crit  * cu.c**2 * (1+F_g)/nu_rest_DM).to(u.erg*u.s**-1*u.Hz**-1*u.Mpc**-3) # need to be weighted by absorptions
+            else:
+                eps_DM = 0. * u.erg*u.s**-1*u.Hz**-1*u.Mpc**-3
 
     return eps_DM
 
 
-def signal_DM_zdep(z, m_DM, f_DM_decay_DM):
+def signal_DM_zdep(z, m_DM, f_DM_decay_DM, mass_function =False, alpha=alpha_fid,m_0=m0_fid):
 
-    m_DM *= u.eV
     f_DM_decay_DM *= u.s**-1
 
-    nu_rest_DM = m_DM / (4*np.pi*cu.hbar) #/ (1+z)
+    if mass_function:
 
-    eps_DM = fLyC(z,False) * sigmoid(lambda_from_nu(nu_rest_DM)) * (f_gg * f_DM_decay_DM * camb_pars.omegac * rho_crit  * cu.c**2 * (1+F_g)/nu_rest_DM).to(u.erg*u.s**-1*u.Hz**-1*u.Mpc**-3) # need to be weighted by absorptions
+        eps_DM = 0.
+
+        for m in range(len(mass_spectrum_range)):
+        
+            nu_rest_DM =( mass_spectrum_range[m] / (4*np.pi*cu.hbar) * u.eV).to(u.Hz) #/ (1+z)
+
+            eps_DM_m = fLyC(z,False) * sigmoid(lambda_from_nu(nu_rest_DM)) * (f_gg * f_DM_decay_DM * camb_pars.omegac * rho_crit  * cu.c**2 * (1+F_g)/nu_rest_DM).to(u.erg*u.s**-1*u.Hz**-1*u.Mpc**-3) # need to be weighted by absorptions
+
+            eps_DM += eps_DM_m * ddm_nu_probability_density(mass_spectrum_range[m], alpha, m_0, plot = False) * u.eV
+
+    else:
+        m_DM *= u.eV
+
+        nu_rest_DM = m_DM / (4*np.pi*cu.hbar) #/ (1+z)
+
+        eps_DM = fLyC(z,False) * sigmoid(lambda_from_nu(nu_rest_DM)) * (f_gg * f_DM_decay_DM * camb_pars.omegac * rho_crit  * cu.c**2 * (1+F_g)/nu_rest_DM).to(u.erg*u.s**-1*u.Hz**-1*u.Mpc**-3) # need to be weighted by absorptions
 
     return eps_DM
 
@@ -161,6 +254,7 @@ def plot_model_DM(m_DM=10,f_DM_decay = 1e-23):
 
         s = np.zeros(len(rest_wave)+1)
         s_tot = np.zeros(len(rest_wave)+1)
+        s_tot_spectrum = np.zeros(len(rest_wave)+1)
         wave = np.zeros((len(rest_wave)+1))
         unsort_wave = np.zeros((len(rest_wave)+1))
         for i in range(len(rest_wave)):
@@ -171,8 +265,25 @@ def plot_model_DM(m_DM=10,f_DM_decay = 1e-23):
 
         wave = np.sort(unsort_wave)
 
+        m_range = np.linspace(10,25,100)
+        s_spectrum = np.zeros((len(m_range),len(rest_wave)+1))
+        for m in range(len(m_range)):
+            lambda_obs_DM_m = lambda_from_nu(m_range[m]*u.eV / (4*np.pi*cu.hbar) / (1+z[zv])).value
+
+            for i in range(len(wave)):
+
+                detector = 'ULTRASAT' # same for galex_fuv in EW
+
+                if wave[i] == lambda_obs_DM_m:
+                    use_signal_DM_spectrum = signal_DM_zdep(z[zv], m_range[m], f_DM_decay,True,alpha_fid,m0_fid).value
+                else:
+                    use_signal_DM_spectrum = 0.
+
+                s_spectrum[m,i] = use_signal_DM_spectrum
+
         for i in range(len(wave)):
 
+            s_tot_spectrum[i] = signal(wave[i]/(1+z[zv])*u.AA,z[zv],detector,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,to_plot=True).value + np.trapz(s_spectrum[:,i],m_range)
             detector = 'GALEX_NUV' # same for galex_fuv in EW
 
             s[i] = signal(wave[i]/(1.+z[zv])*u.AA,z[zv],detector,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,to_plot=True).value
@@ -181,13 +292,15 @@ def plot_model_DM(m_DM=10,f_DM_decay = 1e-23):
                 use_signal_DM = signal_DM_zdep(z[zv], m_DM, f_DM_decay).value
             else:
                 use_signal_DM = 0.
-
+              
             s_tot[i] = signal(wave[i]/(1+z[zv])*u.AA,z[zv],detector,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,to_plot=True).value + use_signal_DM
 
         s_1500 = signal(1500*u.AA,z[zv],detector,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,to_plot=True).value 
 
         if z[zv] == 1.:
             plt.plot(wave, s_tot, color= 'k')
+            #for m in range(len(m_range)):
+            plt.plot(wave, s_tot_spectrum, color= 'k',linestyle='--')
             plt.plot(1500*(1+z[zv]), s_1500, marker = 'o',color= 'k', zorder= len(z)-zv,markersize=7)
    
     plt.yscale('log')
@@ -234,7 +347,7 @@ def plot_model_DM(m_DM=10,f_DM_decay = 1e-23):
     return 
 
 def dJdz_DM(z, detector, m_DM, f_DM_decay_DM, run = False,\
-         vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False, filename = '',with_foreground=False,run_compare=False):
+         vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False, filename = '',with_foreground=False,run_compare=False,mass_function =False, alpha=alpha_fid,m_0=m0_fid):
 
     if run:
         if detector == 'GALEX_NUV':
@@ -261,19 +374,23 @@ def dJdz_DM(z, detector, m_DM, f_DM_decay_DM, run = False,\
             elif detector == 'GALEX_FUV':
                 delta_fg = 1.8
 
-        sum_signal = lambda nu_obs: signal_DM(nu_obs, m_DM, f_DM_decay_DM,run_compare) + signal(lambda_from_nu(nu_obs*(1+z)),z,detector,vals_eps1500,vals_alpha1500,vals_alpha1100,val_EW,val_flyc,val_alpha900)*(1+delta_fg)
-
-        unit = (Response(lambda_from_nu(1.*u.Hz), detector) *sum_signal(1*u.Hz).unit * np.exp(-tau_Lya(lambda_from_nu(1*u.Hz),0.))/(1*u.Hz)).unit
-
-
-        intg = lambda nu_obs: Response(lambda_from_nu(nu_obs*u.Hz), detector) * sum_signal(nu_obs*u.Hz).value * np.exp(-tau_Lya(lambda_from_nu(nu_obs*u.Hz),z))/nu_obs 
-
         obs_wave = np.linspace(lambda_from_nu(nu_min).value,lambda_from_nu(nu_max).value,500)
 
         nu_obs_arr = np.zeros(len(obs_wave))
-        intg_arr = np.zeros(len(obs_wave))
         for i in range(len(obs_wave)):
             nu_obs_arr[i] = nu_from_lambda(obs_wave[i]*u.AA).value
+
+        sum_signal = lambda nu_obs: signal_DM(nu_obs, m_DM, f_DM_decay_DM,run_compare,mass_function = mass_function, alpha=alpha,m_0=m_0) + signal(lambda_from_nu(nu_obs*(1+z)),z,detector,vals_eps1500,vals_alpha1500,vals_alpha1100,val_EW,val_flyc,val_alpha900)*(1+delta_fg)
+
+        unit = (Response(lambda_from_nu(1.*u.Hz), detector) *sum_signal(1*u.Hz).unit * np.exp(-tau_Lya(lambda_from_nu(1*u.Hz),0.))/(1*u.Hz)).unit
+
+        if not run_compare:
+            intg = lambda nu_obs: Response(lambda_from_nu(nu_obs*u.Hz), detector) * sum_signal(nu_obs*u.Hz).value * np.exp(-tau_Lya(lambda_from_nu(nu_obs*u.Hz),z))/nu_obs 
+        else:
+            intg = lambda nu_obs: Response(lambda_from_nu(nu_obs*u.Hz), detector) * sum_signal(nu_obs*u.Hz).value /nu_obs 
+
+        intg_arr = np.zeros(len(obs_wave))
+        for i in range(len(obs_wave)):
             intg_arr[i] = intg(nu_obs_arr[i])
 
         dJdz = cu.c.to(u.km/u.s) / (4*np.pi*H(z)*(1+z)) * np.trapz(intg_arr,nu_obs_arr)*(unit*u.Hz/u.steradian) 
@@ -285,7 +402,7 @@ def dJdz_DM(z, detector, m_DM, f_DM_decay_DM, run = False,\
     return (dJdz.to(u.Jy/u.steradian)).value
 
 
-def bJ_z_DM(z, detector,  m_DM, f_DM_decay_DM,run = False, vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias=False, filename = '',run_compare=False):
+def bJ_z_DM(z, detector,  m_DM, f_DM_decay_DM,run = False, vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias=False, filename = '',run_compare=False,mass_function =False, alpha=alpha_fid,m_0=m0_fid):
 
     if run:
         if detector == 'GALEX_NUV':
@@ -305,13 +422,18 @@ def bJ_z_DM(z, detector,  m_DM, f_DM_decay_DM,run = False, vals_eps1500=False,va
             return 
 #
         
-        sum_signal = lambda nu_obs: signal_DM(nu_obs, m_DM, f_DM_decay_DM, run_compare) + signal(lambda_from_nu(nu_obs*(1+z)),z,detector,vals_eps1500,vals_alpha1500,vals_alpha1100,val_EW,val_flyc,val_alpha900)
+        sum_signal = lambda nu_obs: signal_DM(nu_obs, m_DM, f_DM_decay_DM, run_compare,mass_function =mass_function, alpha=alpha,m_0=m_0) + signal(lambda_from_nu(nu_obs*(1+z)),z,detector,vals_eps1500,vals_alpha1500,vals_alpha1100,val_EW,val_flyc,val_alpha900)
 
-        sum_signal_bias = lambda nu_obs: signal_DM(nu_obs, m_DM, f_DM_decay_DM,run_compare) + bias(nu_obs*(1+z),z,val_bias)*signal(lambda_from_nu(nu_obs*(1+z)),z,detector,vals_eps1500,vals_alpha1500,vals_alpha1100,val_EW,val_flyc,val_alpha900) # !! check
+        sum_signal_bias = lambda nu_obs: signal_DM(nu_obs, m_DM, f_DM_decay_DM,run_compare,mass_function =mass_function, alpha=alpha,m_0=m_0) + bias(nu_obs*(1+z),z,val_bias)*signal(lambda_from_nu(nu_obs*(1+z)),z,detector,vals_eps1500,vals_alpha1500,vals_alpha1100,val_EW,val_flyc,val_alpha900,) 
 
-        intg_num = lambda nu_obs: Response(lambda_from_nu(nu_obs*u.Hz), detector) * sum_signal_bias(nu_obs*u.Hz).value * np.exp(-tau_Lya(lambda_from_nu(nu_obs*u.Hz),z))/nu_obs 
-#
-        intg_den = lambda nu_obs: Response(lambda_from_nu(nu_obs*u.Hz), detector) * sum_signal(nu_obs*u.Hz).value * np.exp(-tau_Lya(lambda_from_nu(nu_obs*u.Hz),z))/nu_obs 
+        if not run_compare:
+            intg_num = lambda nu_obs: Response(lambda_from_nu(nu_obs*u.Hz), detector) * sum_signal_bias(nu_obs*u.Hz).value * np.exp(-tau_Lya(lambda_from_nu(nu_obs*u.Hz),z))/nu_obs 
+    #
+            intg_den = lambda nu_obs: Response(lambda_from_nu(nu_obs*u.Hz), detector) * sum_signal(nu_obs*u.Hz).value * np.exp(-tau_Lya(lambda_from_nu(nu_obs*u.Hz),z))/nu_obs 
+        else:
+            intg_num = lambda nu_obs: Response(lambda_from_nu(nu_obs*u.Hz), detector) * sum_signal_bias(nu_obs*u.Hz).value /nu_obs 
+    #
+            intg_den = lambda nu_obs: Response(lambda_from_nu(nu_obs*u.Hz), detector) * sum_signal(nu_obs*u.Hz).value /nu_obs 
 
         rest_wave = np.linspace(lambda_from_nu(nu_min).value,lambda_from_nu(nu_max).value,500)
 
@@ -335,73 +457,79 @@ def bJ_z_DM(z, detector,  m_DM, f_DM_decay_DM,run = False, vals_eps1500=False,va
     return bJ
 
 
-def compute_vals_DM(m_DM, f_DM_decay_DM, reduced_z = False, vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,run_compare=False):
+def compute_vals_DM(m_DM, f_DM_decay_DM, reduced_z = False, vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,run_compare=False,mass_function =False, alpha=alpha_fid,m_0=m0_fid):
 
     reduced_label = '_reduced' if reduced_z else ''
 
-    dir_DM = './results/EBL/DM_' + str(m_DM) + ',' + str(np.log10(f_DM_decay_DM))+'/'
-
-    if run_compare:
-        dir_DM += 'compare_JLB/'
+    dir_DM = use_dir(m_DM,f_DM_decay_DM)
+    #'./results/EBL/DM_' + str(m_DM) + ',' + str(np.log10(f_DM_decay_DM))+'/'
     if not os.path.exists(dir_DM):
         os.makedirs(dir_DM)
 
+    if run_compare:
+        dir_DM += 'new_compare_JLB/'
+    if not os.path.exists(dir_DM):
+        os.makedirs(dir_DM)
+
+    if mass_function:
+        dir_DM += 'spectrum_'
+
     with Pool(6) as pool:
         
-        print('Doing NUV')
-        dJdz_NUV = partial(dJdz_DM,detector='GALEX_NUV',m_DM=m_DM, f_DM_decay_DM=f_DM_decay_DM,run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900, filename=dir_DM+'dJdz_GALEX_NUV' + reduced_label + '.dat',run_compare=run_compare)
-        if reduced_z:
-            dJ_nuv = pool.map(dJdz_NUV, z_gals_interp)
-            np.savetxt(dir_DM+ 'dJdz_GALEX_NUV' + reduced_label + '.dat', (z_gals_interp,np.asarray(dJ_nuv)))
-        else:
-            dJ_nuv = pool.map(dJdz_NUV, z_gals('SDSS'))
-            np.savetxt(dir_DM+ 'dJdz_GALEX_NUV' + reduced_label + '.dat', (z_gals('SDSS'),np.asarray(dJ_nuv)))
+        # print('Doing NUV')
+        # dJdz_NUV = partial(dJdz_DM,detector='GALEX_NUV',m_DM=m_DM, f_DM_decay_DM=f_DM_decay_DM,run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900, filename=dir_DM+'dJdz_GALEX_NUV' + reduced_label + '.dat',run_compare=run_compare,mass_function =mass_function, alpha=alpha,m_0=m_0)
+        # if reduced_z:
+        #     dJ_nuv = pool.map(dJdz_NUV, z_gals_interp)
+        #     np.savetxt(dir_DM+ 'dJdz_GALEX_NUV' + reduced_label + '.dat', (z_gals_interp,np.asarray(dJ_nuv)))
+        # else:
+        #     dJ_nuv = pool.map(dJdz_NUV, z_gals('SDSS'))
+        #     np.savetxt(dir_DM+ 'dJdz_GALEX_NUV' + reduced_label + '.dat', (z_gals('SDSS'),np.asarray(dJ_nuv)))
 
-        print('Doing FUV')
-        dJdz_FUV = partial(dJdz_DM,detector='GALEX_FUV',m_DM=m_DM, f_DM_decay_DM=f_DM_decay_DM,run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,filename=dir_DM+ 'dJdz_GALEX_FUV' + reduced_label + '.dat',run_compare=run_compare)
+        # print('Doing FUV')
+        # dJdz_FUV = partial(dJdz_DM,detector='GALEX_FUV',m_DM=m_DM, f_DM_decay_DM=f_DM_decay_DM,run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,filename=dir_DM+ 'dJdz_GALEX_FUV' + reduced_label + '.dat',run_compare=run_compare,mass_function =mass_function, alpha=alpha,m_0=m_0)
 
-        if reduced_z:
-            dJ_fuv = pool.map(dJdz_FUV, z_gals_interp)
-            np.savetxt(dir_DM+'dJdz_GALEX_FUV' + reduced_label + '.dat', (z_gals_interp,np.asarray(dJ_fuv)))
-        else:
-            dJ_fuv = pool.map(dJdz_FUV, z_gals('SDSS'))
-            np.savetxt(dir_DM+ 'dJdz_GALEX_FUV' + reduced_label + '.dat', (z_gals('SDSS'),np.asarray(dJ_fuv)))
+        # if reduced_z:
+        #     dJ_fuv = pool.map(dJdz_FUV, z_gals_interp)
+        #     np.savetxt(dir_DM+'dJdz_GALEX_FUV' + reduced_label + '.dat', (z_gals_interp,np.asarray(dJ_fuv)))
+        # else:
+        #     dJ_fuv = pool.map(dJdz_FUV, z_gals('SDSS'))
+        #     np.savetxt(dir_DM+ 'dJdz_GALEX_FUV' + reduced_label + '.dat', (z_gals('SDSS'),np.asarray(dJ_fuv)))
     
-        print('Doing b NUV')
-        bJ_nuv_f =  partial(bJ_z_DM,detector='GALEX_NUV',m_DM=m_DM, f_DM_decay_DM=f_DM_decay_DM,run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename=dir_DM+ 'bJ_GALEX_NUV' + reduced_label + '.dat',run_compare=run_compare)
+        # print('Doing b NUV')
+        # bJ_nuv_f =  partial(bJ_z_DM,detector='GALEX_NUV',m_DM=m_DM, f_DM_decay_DM=f_DM_decay_DM,run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename=dir_DM+ 'bJ_GALEX_NUV' + reduced_label + '.dat',run_compare=run_compare,mass_function =mass_function, alpha=alpha,m_0=m_0)
 
-        if reduced_z:
-            bJ_nuv = pool.map(bJ_nuv_f, z_gals_interp)
-            np.savetxt(dir_DM+ 'bJ_GALEX_NUV' + reduced_label + '.dat', (z_gals_interp,np.asarray(bJ_nuv)))
-        else:
-            bJ_nuv = pool.map(bJ_nuv_f, z_gals('SDSS'))
-            np.savetxt(dir_DM+ 'bJ_GALEX_NUV' + reduced_label + '.dat', (z_gals('SDSS'),np.asarray(bJ_nuv)))
+        # if reduced_z:
+        #     bJ_nuv = pool.map(bJ_nuv_f, z_gals_interp)
+        #     np.savetxt(dir_DM+ 'bJ_GALEX_NUV' + reduced_label + '.dat', (z_gals_interp,np.asarray(bJ_nuv)))
+        # else:
+        #     bJ_nuv = pool.map(bJ_nuv_f, z_gals('SDSS'))
+        #     np.savetxt(dir_DM+ 'bJ_GALEX_NUV' + reduced_label + '.dat', (z_gals('SDSS'),np.asarray(bJ_nuv)))
 
-        print('Doing b FUV')
-        bJ_fuv_f =  partial(bJ_z_DM,detector='GALEX_FUV',m_DM=m_DM, f_DM_decay_DM=f_DM_decay_DM,run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename=dir_DM+ 'bJ_GALEX_FUV' + reduced_label + '.dat',run_compare=run_compare)
+        # print('Doing b FUV')
+        # bJ_fuv_f =  partial(bJ_z_DM,detector='GALEX_FUV',m_DM=m_DM, f_DM_decay_DM=f_DM_decay_DM,run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename=dir_DM+ 'bJ_GALEX_FUV' + reduced_label + '.dat',run_compare=run_compare,mass_function =mass_function, alpha=alpha,m_0=m_0)
 
-        if reduced_z:
-            bJ_fuv = pool.map(bJ_fuv_f, z_gals_interp)
-            np.savetxt(dir_DM+  'bJ_GALEX_FUV' + reduced_label + '.dat', (z_gals_interp,np.asarray(bJ_fuv)))
-        else:
-            bJ_fuv = pool.map(bJ_fuv_f, z_gals('SDSS'))
-            np.savetxt(dir_DM+ 'bJ_GALEX_FUV' + reduced_label + '.dat', (z_gals('SDSS'),np.asarray(bJ_fuv)))
+        # if reduced_z:
+        #     bJ_fuv = pool.map(bJ_fuv_f, z_gals_interp)
+        #     np.savetxt(dir_DM+  'bJ_GALEX_FUV' + reduced_label + '.dat', (z_gals_interp,np.asarray(bJ_fuv)))
+        # else:
+        #     bJ_fuv = pool.map(bJ_fuv_f, z_gals('SDSS'))
+        #     np.savetxt(dir_DM+ 'bJ_GALEX_FUV' + reduced_label + '.dat', (z_gals('SDSS'),np.asarray(bJ_fuv)))
      
         print('Doing ULTRASAT')
-        dJdz_f = partial(dJdz_DM,detector='ULTRASAT',m_DM=m_DM, f_DM_decay_DM=f_DM_decay_DM,run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,filename=dir_DM+'dJdz_ULTRASAT' + reduced_label + '.dat',run_compare=run_compare)
+        dJdz_f = partial(dJdz_DM,detector='ULTRASAT',m_DM=m_DM, f_DM_decay_DM=f_DM_decay_DM,run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,filename=dir_DM+'dJdz_ULTRASAT' + reduced_label + '.dat',run_compare=run_compare,mass_function =mass_function, alpha=alpha,m_0=m_0)
 #
         if reduced_z:
-           dJ_U = pool.map(dJdz_f, z_gals_interp)
-           np.savetxt(dir_DM+'dJdz_ULTRASAT' + reduced_label + '.dat', (z_gals_interp,np.asarray(dJ_U)))
+            dJ_U = pool.map(dJdz_f, z_gals_interp)
+            np.savetxt(dir_DM+'dJdz_ULTRASAT' + reduced_label + '.dat', (z_gals_interp,np.asarray(dJ_U)))
         else:
            dJ_U = pool.map(dJdz_f, z_gals)
            np.savetxt(dir_DM+ 'dJdz_ULTRASAT' + reduced_label + '.dat', (z_gals,np.asarray(dJ_U)))
 
         print('Doing b ULTRASAT')
-        bJ_f =  partial(bJ_z_DM,detector='ULTRASAT',m_DM=m_DM, f_DM_decay_DM=f_DM_decay_DM,run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename=dir_DM+ 'bJ_ULTRASAT' + reduced_label + '.dat',run_compare=run_compare)
+        bJ_f =  partial(bJ_z_DM,detector='ULTRASAT',m_DM=m_DM, f_DM_decay_DM=f_DM_decay_DM,run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename=dir_DM+ 'bJ_ULTRASAT' + reduced_label + '.dat',run_compare=run_compare,mass_function =mass_function, alpha=alpha,m_0=m_0)
         if reduced_z:
-           bJ_U = pool.map(bJ_f, z_gals_interp)        
-           np.savetxt(dir_DM+ 'bJ_ULTRASAT' + reduced_label + '.dat', (z_gals_interp,np.asarray(bJ_U)))
+            bJ_U = pool.map(bJ_f, z_gals_interp)        
+            np.savetxt(dir_DM+ 'bJ_ULTRASAT' + reduced_label + '.dat', (z_gals_interp,np.asarray(bJ_U)))
         else:
            bJ_U = pool.map(bJ_f, z_gals)        
            np.savetxt(dir_DM+ 'bJ_ULTRASAT' + reduced_label + '.dat', (z_gals,np.asarray(bJ_U)))
@@ -412,166 +540,82 @@ def compute_vals_DM(m_DM, f_DM_decay_DM, reduced_z = False, vals_eps1500=False,v
 
 def plot_collective_DM():
 
-    m_DM_1 = 10
-    m_DM_2 = 20
+    m_DM_1 = 10.
+    m_DM_2 = 20.
     f_DM_decay_DM = 1e-23
     f_DM_decay_DM_low = 1e-25
     f_DM_decay_DM_high = 1e-21
 
+    plt.figure(figsize=(9,8))
     
-    dir_base = './results/EBL/'
-    dir_DM_1 = './results/EBL/DM_' + str(m_DM_1) + ',' + str(np.log10(f_DM_decay_DM))+'/'
-    dir_DM_2 = './results/EBL/DM_' + str(m_DM_2) + ',' + str(np.log10(f_DM_decay_DM))+'/'
-    dir_DM_low = './results/EBL/DM_' + str(m_DM_1) + ',' + str(np.log10(f_DM_decay_DM_low))+'/'
-    dir_DM_high = './results/EBL/DM_' + str(m_DM_1) + ',' + str(np.log10(f_DM_decay_DM_high))+'/'
+    dir_DM_1 = use_dir(m_DM_1,f_DM_decay_DM)
+    dir_DM_2 = use_dir(m_DM_2,f_DM_decay_DM)
+
+    dir_base = use_results_dir + 'EBL/'
+    dir_DM_low = use_results_dir + 'EBL_DM/DM_' + str(m_DM_1) + ',' + str(np.log10(f_DM_decay_DM_low))+'/'
+    dir_DM_low_2 = use_results_dir + 'EBL_DM/DM_' + str(m_DM_2) + ',' + str(np.log10(f_DM_decay_DM_low))+'/'
+    dir_DM_high = use_results_dir + 'EBL_DM/DM_' + str(m_DM_1) + ',' + str(np.log10(f_DM_decay_DM_high))+'/'
 
 ###########################
 ########################
     dJ_U_tot =  dJdz_DM(z_gals('DESI'),detector='ULTRASAT',m_DM=m_DM_1,f_DM_decay_DM=f_DM_decay_DM,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,filename=dir_DM_1 + 'dJdz_ULTRASAT_reduced.dat')
 
-    dJ_F_tot =  dJdz_DM(z_gals('SDSS'),detector='GALEX_FUV',m_DM=m_DM_1,f_DM_decay_DM=f_DM_decay_DM,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,filename=dir_DM_1 + 'dJdz_GALEX_FUV_reduced.dat')
-
-    dJ_N_tot =  dJdz_DM(z_gals('SDSS'),detector='GALEX_NUV',m_DM=m_DM_1,f_DM_decay_DM=f_DM_decay_DM,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,filename=dir_DM_1 + 'dJdz_GALEX_NUV_reduced.dat')
-
     bJ_U_tot = bJ_z_DM(z_gals('DESI'),detector='ULTRASAT',m_DM=m_DM_1,f_DM_decay_DM=f_DM_decay_DM,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=dir_DM_1 + 'bJ_ULTRASAT_reduced.dat')
-
-    bJ_F_tot = bJ_z_DM(z_gals('SDSS'),detector='GALEX_FUV',m_DM=m_DM_1,f_DM_decay_DM=f_DM_decay_DM,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=dir_DM_1 + 'bJ_GALEX_FUV_reduced.dat')
-
-    bJ_N_tot = bJ_z_DM(z_gals('SDSS'),detector='GALEX_NUV',m_DM=m_DM_1,f_DM_decay_DM=f_DM_decay_DM,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=dir_DM_1 + 'bJ_GALEX_NUV_reduced.dat')
 
     dJ_U =  dJdz(z_gals('DESI'),detector='ULTRASAT',run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,filename=dir_base + 'dJdz_ULTRASAT_reduced.dat')
 
-    dJ_F =  dJdz(z_gals('SDSS'),detector='GALEX_FUV',run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,filename=dir_base + 'dJdz_GALEX_FUV_reduced.dat')
-
-    dJ_N =  dJdz(z_gals('SDSS'),detector='GALEX_NUV',run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,filename=dir_base + 'dJdz_GALEX_NUV_reduced.dat')
-
     bJ_U = bJ_z(z_gals('DESI'),detector='ULTRASAT',run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=dir_base + 'bJ_ULTRASAT_reduced.dat')
-
-    bJ_F = bJ_z(z_gals('SDSS'),detector='GALEX_FUV',run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=dir_base + 'bJ_GALEX_FUV_reduced.dat')
-
-    bJ_N = bJ_z(z_gals('SDSS'),detector='GALEX_NUV',run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=dir_base + 'bJ_GALEX_NUV_reduced.dat')
-
 
     dJ_U_tot_m2 =  dJdz_DM(z_gals('DESI'),detector='ULTRASAT',m_DM=m_DM_2,f_DM_decay_DM=f_DM_decay_DM,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,filename=dir_DM_2 + 'dJdz_ULTRASAT_reduced.dat')
 
-    dJ_F_tot_m2 =  dJdz_DM(z_gals('SDSS'),detector='GALEX_FUV',m_DM=m_DM_2,f_DM_decay_DM=f_DM_decay_DM,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,filename=dir_DM_2 + 'dJdz_GALEX_FUV_reduced.dat')
-
-    dJ_N_tot_m2 =  dJdz_DM(z_gals('SDSS'),detector='GALEX_NUV',m_DM=m_DM_2,f_DM_decay_DM=f_DM_decay_DM,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,filename=dir_DM_2 + 'dJdz_GALEX_NUV_reduced.dat')
-
     bJ_U_tot_m2 = bJ_z_DM(z_gals('DESI'),detector='ULTRASAT',m_DM=m_DM_2,f_DM_decay_DM=f_DM_decay_DM,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=dir_DM_2 + 'bJ_ULTRASAT_reduced.dat')
-
-    bJ_F_tot_m2 = bJ_z_DM(z_gals('SDSS'),detector='GALEX_FUV',m_DM=m_DM_2,f_DM_decay_DM=f_DM_decay_DM,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=dir_DM_2 + 'bJ_GALEX_FUV_reduced.dat')
-
-    bJ_N_tot_m2 = bJ_z_DM(z_gals('SDSS'),detector='GALEX_NUV',m_DM=m_DM_2,f_DM_decay_DM=f_DM_decay_DM,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=dir_DM_2 + 'bJ_GALEX_NUV_reduced.dat')
-
 
     dJ_U_tot_low =  dJdz_DM(z_gals('DESI'),detector='ULTRASAT',m_DM=m_DM_1,f_DM_decay_DM=f_DM_decay_DM_low,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,filename=dir_DM_low + 'dJdz_ULTRASAT_reduced.dat')
 
-    dJ_F_tot_low =  dJdz_DM(z_gals('SDSS'),detector='GALEX_FUV',m_DM=m_DM_1,f_DM_decay_DM=f_DM_decay_DM_low,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,filename=dir_DM_low + 'dJdz_GALEX_FUV_reduced.dat')
-
-    dJ_N_tot_low =  dJdz_DM(z_gals('SDSS'),detector='GALEX_NUV',m_DM=m_DM_1,f_DM_decay_DM=f_DM_decay_DM_low,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,filename=dir_DM_low + 'dJdz_GALEX_NUV_reduced.dat')
-
     bJ_U_tot_low = bJ_z_DM(z_gals('DESI'),detector='ULTRASAT',m_DM=m_DM_1,f_DM_decay_DM=f_DM_decay_DM_low,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=dir_DM_low + 'bJ_ULTRASAT_reduced.dat')
 
-    bJ_F_tot_low = bJ_z_DM(z_gals('SDSS'),detector='GALEX_FUV',m_DM=m_DM_1,f_DM_decay_DM=f_DM_decay_DM_low,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=dir_DM_low + 'bJ_GALEX_FUV_reduced.dat')
+    dJ_U_tot_low_2 =  dJdz_DM(z_gals('DESI'),detector='ULTRASAT',m_DM=m_DM_2,f_DM_decay_DM=f_DM_decay_DM_low,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,filename=dir_DM_low_2 + 'dJdz_ULTRASAT_reduced.dat')
 
-    bJ_N_tot_low = bJ_z_DM(z_gals('SDSS'),detector='GALEX_NUV',m_DM=m_DM_1,f_DM_decay_DM=f_DM_decay_DM_low,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=dir_DM_low + 'bJ_GALEX_NUV_reduced.dat')
+    bJ_U_tot_low_2 = bJ_z_DM(z_gals('DESI'),detector='ULTRASAT',m_DM=m_DM_2,f_DM_decay_DM=f_DM_decay_DM_low,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=dir_DM_low_2 + 'bJ_ULTRASAT_reduced.dat')
 
 
     dJ_U_tot_high =  dJdz_DM(z_gals('DESI'),detector='ULTRASAT',m_DM=m_DM_1,f_DM_decay_DM=f_DM_decay_DM_high,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,filename=dir_DM_high + 'dJdz_ULTRASAT_reduced.dat')
 
-    dJ_F_tot_high =  dJdz_DM(z_gals('SDSS'),detector='GALEX_FUV',m_DM=m_DM_1,f_DM_decay_DM=f_DM_decay_DM_high,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,filename=dir_DM_high + 'dJdz_GALEX_FUV_reduced.dat')
-
-    dJ_N_tot_high =  dJdz_DM(z_gals('SDSS'),detector='GALEX_NUV',m_DM=m_DM_1,f_DM_decay_DM=f_DM_decay_DM_high,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,filename=dir_DM_high + 'dJdz_GALEX_NUV_reduced.dat')
-
     bJ_U_tot_high = bJ_z_DM(z_gals('DESI'),detector='ULTRASAT',m_DM=m_DM_1,f_DM_decay_DM=f_DM_decay_DM_high,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=dir_DM_high + 'bJ_ULTRASAT_reduced.dat')
 
-    bJ_F_tot_high = bJ_z_DM(z_gals('SDSS'),detector='GALEX_FUV',m_DM=m_DM_1,f_DM_decay_DM=f_DM_decay_DM_high,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=dir_DM_high + 'bJ_GALEX_FUV_reduced.dat')
 
-    bJ_N_tot_high = bJ_z_DM(z_gals('SDSS'),detector='GALEX_NUV',m_DM=m_DM_1,f_DM_decay_DM=f_DM_decay_DM_high,run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=dir_DM_high + 'bJ_GALEX_NUV_reduced.dat')
-
-
-
-    window_size = 70  # Adjust this value based on your preference
+    window_size = 70 # Adjust this value based on your preference
     bJU_smoothed = moving_average(dJ_U*bJ_U, window_size)
-    bJGF_smoothed = moving_average(dJ_F*bJ_F, window_size)
-    bJGN_smoothed = moving_average(dJ_N*bJ_N, window_size)
 # 
     bJU_tot_smoothed = moving_average(dJ_U_tot*bJ_U_tot, window_size)
-    bJGF_tot_smoothed = moving_average(dJ_F_tot*bJ_F_tot, window_size)
-    bJGN_tot_smoothed = moving_average(dJ_N_tot*bJ_N_tot, window_size)
 # 
     bJU_tot_smoothed_low = moving_average(dJ_U_tot_low*bJ_U_tot_low, window_size)
-    bJGF_tot_smoothed_low = moving_average(dJ_F_tot_low*bJ_F_tot_low, window_size)
-    bJGN_tot_smoothed_low = moving_average(dJ_N_tot_low*bJ_N_tot_low, window_size)
+    bJU_tot_smoothed_low_2 = moving_average(dJ_U_tot_low_2*bJ_U_tot_low_2, window_size)
 
     bJU_tot_smoothed_2 = moving_average(dJ_U_tot_m2*bJ_U_tot_m2, window_size)
-    bJGF_tot_smoothed_2 = moving_average(dJ_F_tot_m2*bJ_F_tot_m2, window_size)
-    bJGN_tot_smoothed_2 = moving_average(dJ_N_tot_m2*bJ_N_tot_m2, window_size)
 
     bJU_tot_smoothed_high = moving_average(dJ_U_tot_high*bJ_U_tot_high, window_size)
-    bJGF_tot_smoothed_high = moving_average(dJ_F_tot_high*bJ_F_tot_high, window_size)
-    bJGN_tot_smoothed_high = moving_average(dJ_N_tot_high*bJ_N_tot_high, window_size)
 
-    fontsize_label = 20
-    fontsize_legend = 18
-    fontsize_tick = 19
-
-    fig, axs = plt.subplots(1, 3, sharey=True, figsize=(13, 6))    
+    fontsize_label = 23
     
-    axs[0].plot(z_gals('SDSS')[:len(bJGF_smoothed)],bJGF_smoothed,color=color_FUV,)
-    axs[0].plot(z_gals('SDSS')[:len(bJGF_tot_smoothed)],bJGF_tot_smoothed,color='k',linestyle='--',label=r'$%g\,{\rm eV},\,$'%m_DM_1 + r'$10^{%g}{\rm s}^{-1}$'%np.log10(f_DM_decay_DM))
-    axs[0].plot(z_gals('SDSS')[:len(bJGF_tot_smoothed_low)],bJGF_tot_smoothed_low,color='k',linestyle=':',label=r'$%g\,{\rm eV},\,$'%m_DM_1 + r'$10^{%g}{\rm s}^{-1}$'%np.log10(f_DM_decay_DM_low))
-    axs[0].plot(z_gals('SDSS')[:len(bJGF_tot_smoothed_high)],bJGF_tot_smoothed_high,color='k',linestyle='-.',label=r'$%g\,{\rm eV},\,$'%m_DM_1 + r'$10^{%g}{\rm s}^{-1}$'%np.log10(f_DM_decay_DM_high))
-    axs[0].plot(z_gals('SDSS')[:len(bJGF_tot_smoothed_2)],bJGF_tot_smoothed_2,linestyle='-',alpha=0.3,color='k',label=r'$%g\,{\rm eV},\,$'%m_DM_2 + r'$10^{%g}{\rm s}^{-1}$'%np.log10(f_DM_decay_DM))
-    axs[0].set_xlabel(r'$z$',fontsize=fontsize_label)
-    axs[0].set_ylabel(r'$b_JdJ_{\nu_{\rm obs}}/dz\,[{\rm Jy/sr}]$',fontsize=fontsize_label)
-    axs[0].legend(fontsize=fontsize_legend,loc=2)
-
-    axs[0].tick_params(axis='y', labelsize=fontsize_tick) 
-    axs[0].tick_params(axis='x', labelsize=fontsize_tick) 
-
-    axs[0].set_title(label=r'$\rm GALEX\, FUV$',fontsize=fontsize_label)
-    axs[0].set_xlim(0.1,2.)
-    axs[0].set_ylim(10,9e3)
-    axs[0].set_yscale('log')
-
-    axs[1].plot(z_gals('SDSS')[:len(bJGN_smoothed)],bJGN_smoothed,color=color_NUV,)
-    axs[1].plot(z_gals('SDSS')[:len(bJGN_tot_smoothed)],bJGN_tot_smoothed,color='k',linestyle='--',label=r'$f_{\rm DM}\Gamma = 10^{%g}{\rm s}^{-1}$'%np.log10(f_DM_decay_DM))
-    axs[1].plot(z_gals('SDSS')[:len(bJGN_tot_smoothed_low)],bJGN_tot_smoothed_low,color='k',linestyle=':',label=r'$f_{\rm DM}\Gamma = 10^{%g}{\rm s}^{-1}$'%np.log10(f_DM_decay_DM_low))
-    axs[1].plot(z_gals('SDSS')[:len(bJGN_tot_smoothed_high)],bJGN_tot_smoothed_high,color='k',linestyle='-.',label=r'$f_{\rm DM}\Gamma = 10^{%g}{\rm s}^{-1}$'%np.log10(f_DM_decay_DM_high))
-    axs[1].plot(z_gals('SDSS')[:len(bJGN_tot_smoothed_2)],bJGN_tot_smoothed_2,linestyle='-',alpha=0.3,color='k',label=r'$m_{\rm DM}c^2 = %g\,{\rm eV}\,$'%m_DM_2 + r'$(10^{%g}{\rm s}^{-1})$'%np.log10(f_DM_decay_DM))
-    axs[1].set_xlabel(r'$z$',fontsize=fontsize_label)
-    #axs[1].ylabel(r'$b_JdJ_{\nu_{\rm obs}}/dz\,[{\rm Jy/sr}]$',fontsize=fontsize_label,)
-    #plt.legend(fontsize=fontsize_legend,loc=2)
-
-    axs[1].tick_params(axis='x', labelsize=fontsize_tick) 
-
-    axs[1].set_xlim(0.1,2.)
-    axs[1].set_ylim(10,9e3)
-    axs[1].set_yscale('log')
-    axs[1].set_title(label=r'$\rm GALEX\, NUV$',fontsize=fontsize_label)
-
-    axs[2].plot(z_gals('DESI')[:len(bJU_smoothed)],bJU_smoothed,color=color_ULTRASAT,)
-    axs[2].plot(z_gals('DESI')[:len(bJU_tot_smoothed)],bJU_tot_smoothed,color='k',linestyle='--',label=r'$f_{\rm DDM}\Gamma = 10^{%g}{\rm s}^{-1}$'%np.log10(f_DM_decay_DM))
-    axs[2].plot(z_gals('DESI')[:len(bJU_tot_smoothed_low)],bJU_tot_smoothed_low,color='k',linestyle=':',label=r'$f_{\rm DDM}\Gamma = 10^{%g}{\rm s}^{-1}$'%np.log10(f_DM_decay_DM_low))
-    axs[2].plot(z_gals('DESI')[:len(bJU_tot_smoothed_high)],bJU_tot_smoothed_high,color='k',linestyle='-.',label=r'$f_{\rm DDM}\Gamma = 10^{%g}{\rm s}^{-1}$'%np.log10(f_DM_decay_DM_high))
-    axs[2].plot(z_gals('DESI')[:len(bJU_tot_smoothed_2)],bJU_tot_smoothed_2,linestyle='-',color='k',alpha=0.3,label=r'$m_{\rm DDM}c^2 = %g\,{\rm eV}\,$'%m_DM_2 + r'$(10^{%g}{\rm s}^{-1})$'%np.log10(f_DM_decay_DM))
+    plt.plot(z_gals('DESI')[:len(bJU_smoothed)],bJU_smoothed,color=color_ULTRASAT,label=r'$\rm UV-EBL$')
+    plt.plot(z_gals('DESI')[:len(bJU_tot_smoothed)],bJU_tot_smoothed,color='k',linestyle='--',label=r'$\rm DDM.\, 10\,{\rm eV},\,10^{%g}{\rm s}^{-1}$'%np.log10(f_DM_decay_DM))
+    plt.plot(z_gals('DESI')[:len(bJU_tot_smoothed_2)],bJU_tot_smoothed_2,linestyle='--',color='k',alpha=0.3,label=r'$\rm DDM,\, 20\,{\rm eV},\,10^{%g}{\rm s}^{-1}$'%np.log10(f_DM_decay_DM))
+    plt.plot(z_gals('DESI')[:len(bJU_tot_smoothed_low)],bJU_tot_smoothed_low,color='k',linestyle=':',label=r'$\rm DDM,\, 10\,{\rm eV},\,10^{%g}{\rm s}^{-1}$'%np.log10(f_DM_decay_DM_low))
+    #plt.plot(z_gals('DESI')[:len(bJU_tot_smoothed_low_2)],bJU_tot_smoothed_low_2,color='k',linestyle=':',alpha=0.3,label=r'$\rm DDM,\, 20\,{\rm eV},\,10^{%g}{\rm s}^{-1}$'%np.log10(f_DM_decay_DM_low))
+    plt.plot(z_gals('DESI')[:len(bJU_tot_smoothed_high)],bJU_tot_smoothed_high,color='k',linestyle='-.',label=r'$\rm DDM,\, 10\,{\rm eV},\,10^{%g}{\rm s}^{-1}$'%np.log10(f_DM_decay_DM_high))
 #
-    axs[2].set_xlabel(r'$z$',fontsize=fontsize_label)
-    #axs[2].ylabel(r'$b_JdJ_{\nu_{\rm obs}}/dz\,[{\rm Jy/sr}]$',fontsize=fontsize_label)
-    #plt.legend(fontsize=fontsize_legend,loc=2)
-    axs[2].set_title(label=r'$\rm ULTRASAT$',fontsize=fontsize_label)
+    plt.xlabel(r'$z$',fontsize=fontsize_label)
+    plt.ylabel(r'$b_J(z)dJ_{\nu_{\rm obs}}/dz$',fontsize=fontsize_label)
 
-    axs[2].tick_params(axis='x', labelsize=fontsize_tick) 
+    plt.xlim(0.1,1.9)
+    plt.ylim(5,183)
+    #plt.yscale('log')
 
-    axs[2].set_xlim(0.1,2.)
-    axs[2].set_ylim(10,9e3)
-    axs[2].set_yscale('log')
-
+    plt.legend(loc=3,fontsize=fontsize_label*0.9)
     plt.tight_layout()
-    plt.subplots_adjust(wspace=0)
-    plt.savefig('results/PLOTS/EBL_DM/DM_summary.png',bbox_inches='tight')
+
+    plt.savefig(use_results_dir + 'PLOTS/EBL_DM/DM_summary.png',bbox_inches='tight')
 
     plt.show()
 
@@ -590,7 +634,8 @@ def wJgz_DM(z,detector,gal_survey,m_DM,f_DM_decay_DM,
             filename = '',
             filename_wm = '',
             filename_dJ = '',
-            filename_bJ = '',run_compare=False):
+            filename_bJ = '',run_compare=False,
+            mass_function =False, alpha=alpha_fid,m_0=m0_fid):
 
     if not run and os.path.exists(filename):
 
@@ -599,7 +644,7 @@ def wJgz_DM(z,detector,gal_survey,m_DM,f_DM_decay_DM,
 
     else:
 
-        bJdJdz = lambda zv: bJ_z_DM(zv, detector,m_DM,f_DM_decay_DM,False,vals_eps1500,vals_alpha1500,vals_alpha1100,val_EW,val_flyc,val_alpha900,val_bias,filename_bJ,run_compare=run_compare) * dJdz_DM(zv, detector, m_DM,f_DM_decay_DM,False, vals_eps1500,vals_alpha1500,vals_alpha1100,val_EW,val_flyc,val_alpha900,filename_dJ,False,run_compare=run_compare)#.value
+        bJdJdz = lambda zv: bJ_z_DM(zv, detector,m_DM,f_DM_decay_DM,False,vals_eps1500,vals_alpha1500,vals_alpha1100,val_EW,val_flyc,val_alpha900,val_bias,filename_bJ,run_compare=run_compare,mass_function =mass_function, alpha=alpha,m_0=m_0) * dJdz_DM(zv, detector, m_DM,f_DM_decay_DM,False, vals_eps1500,vals_alpha1500,vals_alpha1100,val_EW,val_flyc,val_alpha900,filename_dJ,False,run_compare=run_compare,mass_function =mass_function, alpha=alpha,m_0=m_0)#.value
 
         bar_wm = lambda zv: wz_m(zv,detector,False,filename_wm)
 
@@ -612,9 +657,12 @@ def wJgz_DM(z,detector,gal_survey,m_DM,f_DM_decay_DM,
     return bar_wJg
 
 
-def run_wJg_DM(m_DM, f_DM_decay_DM, reduced_z = True,):
+def run_wJg_DM(m_DM, f_DM_decay_DM, reduced_z = True, run_compare=False, mass_function =False, alpha=alpha_fid,m_0=m0_fid):
 
-    dir_DM = './results/EBL/DM_' + str(m_DM) + ',' + str(np.log10(f_DM_decay_DM))+'/'
+    dir_DM = use_dir(m_DM,f_DM_decay_DM)
+    #'./results/EBL/DM_' + str(m_DM) + ',' + str(np.log10(f_DM_decay_DM))+'/'
+    if run_compare:
+        dir_DM += 'new_compare_JLB/'
 
     if reduced_z:
         use_z = z_gals_interp
@@ -634,31 +682,65 @@ def run_wJg_DM(m_DM, f_DM_decay_DM, reduced_z = True,):
     for i in (range(len(use_z))):
        print('\nDoing z = ' + str(use_z[i]))
        print('NUV')
-       filename_wm = 'results/EBL/wmz_GALEX_NUV' + reduced_label + '.dat'
-       wn[i] = wJgz(use_z[i],'GALEX_NUV','DESI',True,
+       try:
+           filename_wm = use_dir_0(m_DM,f_DM_decay_DM) + 'wmz_GALEX_NUV' + reduced_label + '.dat'
+       except:
+           filename_wm = 'results/EBL/wmz_GALEX_NUV' + reduced_label + '.dat'
+       if mass_function:
+           wn[i] = wJgz(use_z[i],'GALEX_NUV','DESI',True,
+           filename_wm = filename_wm,
+           filename_dJ = dir_DM + 'spectrum_dJdz_GALEX_NUV' + reduced_label + '.dat',
+           filename_bJ = dir_DM + 'spectrum_bJ_GALEX_NUV' + reduced_label + '.dat')
+       else:
+           wn[i] = wJgz(use_z[i],'GALEX_NUV','DESI',True,
            filename_wm = filename_wm,
            filename_dJ = dir_DM + 'dJdz_GALEX_NUV' + reduced_label + '.dat',
            filename_bJ = dir_DM + 'bJ_GALEX_NUV' + reduced_label + '.dat')
        print('FUV')
-       filename_wm = 'results/EBL/wmz_GALEX_FUV' + reduced_label + '.dat'
-       wf[i] = wJgz(use_z[i],'GALEX_FUV','DESI',True,
+       try:
+           filename_wm = use_dir_0(m_DM,f_DM_decay_DM) + 'wmz_GALEX_FUV' + reduced_label + '.dat'
+       except:
+           filename_wm = 'results/EBL/wmz_GALEX_FUV' + reduced_label + '.dat'
+       if mass_function:
+           wf[i] = wJgz(use_z[i],'GALEX_FUV','DESI',True,
+           filename_wm = filename_wm,
+           filename_dJ = dir_DM + 'spectrum_dJdz_GALEX_FUV' + reduced_label + '.dat',
+           filename_bJ = dir_DM + 'spectrum_bJ_GALEX_FUV' + reduced_label + '.dat')
+       else:
+           wf[i] = wJgz(use_z[i],'GALEX_FUV','DESI',True,
            filename_wm = filename_wm,
            filename_dJ = dir_DM + 'dJdz_GALEX_FUV' + reduced_label + '.dat',
            filename_bJ = dir_DM + 'bJ_GALEX_FUV' + reduced_label + '.dat')
-#
     for i in (range(len(use_z_ultrasat))):
         print('ULTRASAT')
-        filename_wm = 'results/EBL/wmz_ULTRASAT' + reduced_label + '.dat'
-        wu[i] = wJgz(use_z_ultrasat[i],'ULTRASAT','DESI',True,
+        try:
+           filename_wm = use_dir_0(m_DM,f_DM_decay_DM) + 'wmz_ULTRASAT' + reduced_label + '.dat'
+        except:
+            filename_wm = 'results/EBL/wmz_ULTRASAT' + reduced_label + '.dat'
+        if mass_function:
+           wu[i] = wJgz(use_z_ultrasat[i],'ULTRASAT','DESI',True,
+           filename_wm = filename_wm,
+           filename_dJ = dir_DM + 'spectrum_dJdz_ULTRASAT' + reduced_label + '.dat',
+           filename_bJ = dir_DM + 'spectrum_bJ_ULTRASAT' + reduced_label + '.dat')    
+        else:
+           wu[i] = wJgz(use_z_ultrasat[i],'ULTRASAT','DESI',True,
            filename_wm = filename_wm,
            filename_dJ = dir_DM + 'dJdz_ULTRASAT' + reduced_label + '.dat',
            filename_bJ = dir_DM + 'bJ_ULTRASAT' + reduced_label + '.dat')
-        
-    np.savetxt(dir_DM + 'wJg_GALEX_NUV,DESI' + reduced_label + '.dat',(use_z, wn))
-    np.savetxt(dir_DM + 'wJg_GALEX_FUV,DESI' + reduced_label + '.dat',(use_z, wf))
-    filename_ULT = dir_DM + 'wJg_ULTRASAT,DESI' + reduced_label + '.dat'
 
-    np.savetxt(filename_ULT,(use_z_ultrasat, wu))
+    if mass_function:
+        np.savetxt(dir_DM + 'spectrum_wJg_GALEX_NUV,DESI' + reduced_label + '.dat',(use_z, wn))
+        np.savetxt(dir_DM + 'spectrum_wJg_GALEX_FUV,DESI' + reduced_label + '.dat',(use_z, wf))
+        filename_ULT = dir_DM + 'spectrum_wJg_ULTRASAT,DESI' + reduced_label + '.dat'
+
+        np.savetxt(filename_ULT,(use_z_ultrasat, wu))
+
+    else:
+        np.savetxt(dir_DM + 'wJg_GALEX_NUV,DESI' + reduced_label + '.dat',(use_z, wn))
+        np.savetxt(dir_DM + 'wJg_GALEX_FUV,DESI' + reduced_label + '.dat',(use_z, wf))
+        filename_ULT = dir_DM + 'wJg_ULTRASAT,DESI' + reduced_label + '.dat'
+
+        np.savetxt(filename_ULT,(use_z_ultrasat, wu))
     
     return 
 
@@ -683,31 +765,45 @@ fid_vals_det_DM = lambda detector, log10_f_DM_decay_DM: [fiducials['eps1500'][0]
         fiducials['alpha900'],
       log10_f_DM_decay_DM]
 
-def ders_DM(parameter,detector,gal_survey,m_DM,f_DM_decay_DM,reduced_z = False, run_compare=False):
+def ders_DM(parameter,detector,gal_survey,m_DM,f_DM_decay_DM,reduced_z = False, run_compare=False,mass_function =False, alpha=alpha_fid,m_0=m0_fid):
 
     reduced_label = '_reduced' if reduced_z else ''
 
     print('Doing der: ' + str(parameter))
 
-    dir_DM = './results/EBL/DM_' + str(m_DM) + ',' + str(np.log10(f_DM_decay_DM))+'/'
+    dir_DM = use_dir(m_DM,f_DM_decay_DM)
+    #'./results/EBL/DM_' + str(m_DM) + ',' + str(np.log10(f_DM_decay_DM))+'/'
     if run_compare:
-        dir_DM += 'compare_JLB/'
+        dir_DM += 'new_compare_JLB/'
 
     if not os.path.exists(dir_DM + 'der/'):
         os.makedirs(dir_DM+'der/')
 
-    filename = dir_DM + 'der/d' + parameter + '_' + detector + ',' + gal_survey + reduced_label + '.dat'
+    if mass_function:
+        filename = dir_DM + 'der/spectrum_d' + parameter + '_' + detector + ',' + gal_survey + reduced_label + '.dat'
+    else:
+        filename = dir_DM + 'der/d' + parameter + '_' + detector + ',' + gal_survey + reduced_label + '.dat'
 
     if detector == 'GALEX_NUV' or detector == 'GALEX_FUV' or detector == 'ULTRASAT':
-        filename_wm = 'results/EBL/wmz_' + detector + reduced_label + '.dat'
+        try:
+            filename_wm = use_dir_0 + 'wmz_' + detector + reduced_label + '.dat'
+        except:
+            filename_wm = 'results/EBL/wmz_' + detector + reduced_label + '.dat'
     else:
         filename_wm = -1
 
-    filename_dJ = dir_DM + 'der/dJ_d' + parameter + '_' + detector + ',' + gal_survey  + reduced_label +  '.dat'
-    filename_bJ = dir_DM + 'der/bJ_d' + parameter + '_' + detector + ',' + gal_survey  + reduced_label +  '.dat'
+    if mass_function:
+        filename_dJ = dir_DM + 'der/spectrum_dJ_d' + parameter + '_' + detector + ',' + gal_survey  + reduced_label +  '.dat'
+        filename_bJ = dir_DM + 'der/spectrum_bJ_d' + parameter + '_' + detector + ',' + gal_survey  + reduced_label +  '.dat'
 
-    filename_dJ_fid = dir_DM + 'dJdz_' + detector  + reduced_label +  '.dat'
-    filename_bJ_fid = dir_DM + 'bJ_' + detector  + reduced_label +  '.dat' 
+        filename_dJ_fid = dir_DM + 'spectrum_dJdz_' + detector  + reduced_label +  '.dat'
+        filename_bJ_fid = dir_DM + 'spectrum_bJ_' + detector  + reduced_label +  '.dat' 
+    else:
+        filename_dJ = dir_DM + 'der/dJ_d' + parameter + '_' + detector + ',' + gal_survey  + reduced_label +  '.dat'
+        filename_bJ = dir_DM + 'der/bJ_d' + parameter + '_' + detector + ',' + gal_survey  + reduced_label +  '.dat'
+
+        filename_dJ_fid = dir_DM + 'dJdz_' + detector  + reduced_label +  '.dat'
+        filename_bJ_fid = dir_DM + 'bJ_' + detector  + reduced_label +  '.dat' 
 
     fid_vals = fid_vals_det_DM(detector,np.log10(f_DM_decay_DM))
     if os.path.exists(filename):
@@ -747,7 +843,7 @@ def ders_DM(parameter,detector,gal_survey,m_DM,f_DM_decay_DM,reduced_z = False, 
                     val_EW=[use_pars_up[pars_fid_DM.index('EW_z1')],use_pars_up[pars_fid_DM.index('EW_z2')]],\
                     val_flyc=[use_pars_up[pars_fid_DM.index('log_fLyC_1')],use_pars_up[pars_fid_DM.index('log_fLyC_2')]],\
                     val_alpha900=use_pars_up[pars_fid_DM.index('alpha_900')],\
-                    filename=filename_dJ,run_compare=run_compare)
+                    filename=filename_dJ,run_compare=run_compare,mass_function =mass_function, alpha=alpha,m_0=m_0)
             
             dJ_up = pool.map(dJ_up_f, use_z)
 
@@ -763,7 +859,7 @@ def ders_DM(parameter,detector,gal_survey,m_DM,f_DM_decay_DM,reduced_z = False, 
                     val_flyc=[use_pars_up[pars_fid_DM.index('log_fLyC_1')],use_pars_up[pars_fid_DM.index('log_fLyC_2')]],\
                     val_alpha900=use_pars_up[pars_fid_DM.index('alpha_900')],\
                     val_bias=[use_pars_up[pars_fid_DM.index('bias_1500_0')],use_pars_up[pars_fid_DM.index('gamma_bv')],use_pars_up[pars_fid_DM.index('gamma_bz')]],\
-                    filename=filename_bJ,run_compare=run_compare)
+                    filename=filename_bJ,run_compare=run_compare,mass_function =mass_function, alpha=alpha,m_0=m_0)
             
             bJ_up = pool.map(bJ_up_f, use_z)
 
@@ -771,7 +867,10 @@ def ders_DM(parameter,detector,gal_survey,m_DM,f_DM_decay_DM,reduced_z = False, 
         np.savetxt(filename_bJ,(use_z,bJ_up))
 
 
-        filename_fid = dir_DM + 'wJg_' + detector + ',' + gal_survey + reduced_label + '.dat'
+        if mass_function:
+            filename_fid = dir_DM + 'spectrum_wJg_' + detector + ',' + gal_survey + reduced_label + '.dat'
+        else:
+            filename_fid = dir_DM + 'wJg_' + detector + ',' + gal_survey + reduced_label + '.dat'
        
         if os.path.exists(filename_fid):
                 run_fid = False 
@@ -821,30 +920,37 @@ def ders_DM(parameter,detector,gal_survey,m_DM,f_DM_decay_DM,reduced_z = False, 
     return der_wz
 
 
-def run_ders_DM(detector,gal_survey,m_DM,f_DM_decay_DM,reduced_z=False,run_compare=False):
+def run_ders_DM(detector,gal_survey,m_DM,f_DM_decay_DM,reduced_z=False,run_compare=False,mass_function =False, alpha=alpha_fid,m_0=m0_fid):
 
     for parameter in pars_fid_DM:
-        ders_DM(parameter,detector,gal_survey,m_DM,f_DM_decay_DM,reduced_z,run_compare=run_compare)
+        ders_DM(parameter,detector,gal_survey,m_DM,f_DM_decay_DM,reduced_z,run_compare=run_compare,mass_function =mass_function, alpha=alpha,m_0=m_0)
 
     return
 
 
-def Jnu_monopole_DM(detector,m_DM,f_DM_decay_DM, with_foreground = False, run_compare=False):
+def Jnu_monopole_DM(detector,m_DM,f_DM_decay_DM, with_foreground = False, run_compare=False,mass_function =False, alpha=alpha_fid,m_0=m0_fid):
 
-    dir_DM = './results/EBL/DM_' + str(m_DM) + ',' + str(np.log10(f_DM_decay_DM))+'/'
+    dir_DM = use_dir(m_DM,f_DM_decay_DM)
+    #'./results/EBL/DM_' + str(m_DM) + ',' + str(np.log10(f_DM_decay_DM))+'/'
+
+    if run_compare:
+        dir_DM += 'new_compare_JLB/'
 
     gal_survey = 'SPHEREx' if detector == 'ULTRASAT' else 'SDSS'
     use_z = z_gals(gal_survey) if detector == 'GALEX_NUV' or detector == 'GALEX_FUV' or detector == 'ULTRASAT' else -1
 
     reduced_label = '_reduced' #if reduced_z else ''
 
-    filename = dir_DM + 'dJdz_' + detector + reduced_label + '.dat'
+    if mass_function:
+        filename = dir_DM + 'spectrum_dJdz_' + detector + reduced_label + '.dat'
+    else:
+        filename = dir_DM + 'dJdz_' + detector + reduced_label + '.dat'
     
     J = np.zeros(len(use_z))
     for i in range(len(use_z)):
 
         J[i] = dJdz_DM(use_z[i], detector,m_DM,f_DM_decay_DM,run = False,\
-         vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,filename=filename,with_foreground=with_foreground,run_compare=run_compare)
+         vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,filename=filename,with_foreground=with_foreground,run_compare=run_compare,mass_function =mass_function, alpha=alpha,m_0=m_0)
 
     Jnu = np.trapz(J,use_z)
 
@@ -929,9 +1035,9 @@ def plot_monopole():
     
 
 
-def sigma_wz_DM(z, detector, gal_survey,m_DM,f_DM_decay_DM, group_vox,run_compare=False):
+def sigma_wz_DM(z, detector, gal_survey,m_DM,f_DM_decay_DM, group_vox,run_compare=False,mass_function =False, alpha=alpha_fid,m_0=m0_fid):
 
-    delta_zc = 1e-2
+    delta_zc = max(1e-3,H(z)*scale_physical_min/(cu.c).to(u.km/u.s) * (1+z))
 
     if detector == 'GALEX_NUV' or detector == 'GALEX_FUV':
         if not group_vox:
@@ -961,38 +1067,68 @@ def sigma_wz_DM(z, detector, gal_survey,m_DM,f_DM_decay_DM, group_vox,run_compar
         return 
 
     Avox = (((px_size)**2).to(u.steradian))
-    dzi = delta_zi(gal_survey)
+    #dzi = delta_zi(gal_survey)
+    dzi = max(delta_zi(gal_survey),delta_zc)
+
+    use_delta_zi = delta_zi_interp if gal_survey == 'SDSS' else delta_zi_interp if gal_survey == 'DESI' else -1
 
     angle_observed =  (np.pi*(theta_max(cosmo.angular_diameter_distance(z),detector))**2*u.steradian)
 
-    noise = (dzi) / delta_zc * np.sqrt(Avox  * (Jnu_monopole_DM(detector,m_DM,f_DM_decay_DM,True,run_compare=run_compare)**2 + sigma_N(detector, group_vox).value**2) / (dNgdz(z,gal_survey)*delta_zi_interp )  / angle_observed)
+    ratio_factors = dzi / delta_zc
+
+    noise = ratio_factors * np.sqrt(Avox  * (Jnu_monopole_DM(detector,m_DM,f_DM_decay_DM,True,run_compare=run_compare,mass_function =mass_function, alpha=alpha,m_0=m_0)**2 + sigma_N(detector, group_vox).value**2) / (dNgdz(z,gal_survey)*use_delta_zi )  / angle_observed)
 
 
     return noise
 
 
 
-def run_all_analysis(run_compare=False):
+def run_all_analysis(run_compare=False, m_DM_range = False, f_DM_decay_DM_range = False,):
 
-    m_DM_range = np.linspace(10,25,6)
-
-    f_DM_decay_DM_range = [1e-23,1e-25,1e-27,1e-29]
+    if not m_DM_range:
+        m_DM_range = np.concatenate((np.linspace(10,30,6),np.array((27.,30.))))
+    if not f_DM_decay_DM_range:
+        f_DM_decay_DM_range = [1e-23,1e-25,1e-26,1e-27,5e-27,1e-28,5e-28,1e-29]
 
     for m_DM in m_DM_range:
         print('Doing mass: ' + str(m_DM))
         for f_DM_decay_DM in tqdm(f_DM_decay_DM_range):
-            compute_vals_DM(m_DM, f_DM_decay_DM, reduced_z = True, vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,run_compare=run_compare)
-            run_wJg_DM(m_DM, f_DM_decay_DM, reduced_z = True,)
-            run_ders_DM('GALEX_FUV','DESI',m_DM,f_DM_decay_DM,reduced_z=True,run_compare=run_compare)                
-            run_ders_DM('GALEX_NUV','DESI',m_DM,f_DM_decay_DM,reduced_z=True,run_compare=run_compare)                
-            run_ders_DM('ULTRASAT','DESI',m_DM,f_DM_decay_DM,reduced_z=True,run_compare=run_compare)                
+            compute_vals_DM(m_DM, f_DM_decay_DM, reduced_z = True, vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,run_compare=run_compare,mass_function =False,)
+            run_wJg_DM(m_DM, f_DM_decay_DM, reduced_z = True,run_compare=run_compare,mass_function =False, )
+            run_ders_DM('GALEX_FUV','DESI',m_DM,f_DM_decay_DM,reduced_z=True,run_compare=run_compare,mass_function =False, )                
+            run_ders_DM('GALEX_NUV','DESI',m_DM,f_DM_decay_DM,reduced_z=True,run_compare=run_compare,mass_function =False, )                
+            run_ders_DM('ULTRASAT','DESI',m_DM,f_DM_decay_DM,reduced_z=True,run_compare=run_compare,mass_function =False,)
 
     return 
 
 
-def fisher_matrix_DM(pars,detector,gal_survey,m_DM,f_DM_decay_DM,group_vox,run = False,run_compare=False):
+def run_all_analysis_spectrum(run_compare=False, f_DM_decay_DM_range = False,):
+
+    if not f_DM_decay_DM_range:
+        f_DM_decay_DM_range = [1e-27,5e-28,1e-28] #1e-27,5e-28,1e-28 #1e-23,1e-25,1e-27,1e-28,1e-29]
+
+    m_DM = False
+    #print('Doing mass: ' + str(m_DM))
+    for f_DM_decay_DM in tqdm(f_DM_decay_DM_range):
+        compute_vals_DM(m_DM, f_DM_decay_DM, reduced_z = True, vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,run_compare=run_compare,mass_function =True,alpha=alpha_fid,m_0=m0_fid)
+        run_wJg_DM(m_DM, f_DM_decay_DM, reduced_z = True,run_compare=run_compare,mass_function =True,alpha=alpha_fid,m_0=m0_fid )
+        run_ders_DM('GALEX_FUV','DESI',m_DM,f_DM_decay_DM,reduced_z=True,run_compare=run_compare,mass_function =True,alpha=alpha_fid,m_0=m0_fid )                
+        run_ders_DM('GALEX_NUV','DESI',m_DM,f_DM_decay_DM,reduced_z=True,run_compare=run_compare,mass_function =True,alpha=alpha_fid,m_0=m0_fid )                
+        run_ders_DM('ULTRASAT','DESI',m_DM,f_DM_decay_DM,reduced_z=True,run_compare=run_compare,mass_function =True,alpha=alpha_fid,m_0=m0_fid)
+
+    return 
+
+
+def fisher_matrix_DM(pars,detector,gal_survey,m_DM,f_DM_decay_DM,group_vox,run = False,run_compare=False,mass_function =False, alpha=alpha_fid,m_0=m0_fid):
     
-    dir_DM = './results/EBL/DM_' + str(m_DM) + ',' + str(np.log10(f_DM_decay_DM))+'/'
+    dir_DM = use_dir(m_DM,f_DM_decay_DM)
+    print(dir_DM)
+    #'./results/EBL/DM_' + str(m_DM) + ',' + str(np.log10(f_DM_decay_DM))+'/'
+    if run_compare:
+        dir_DM += 'new_compare_JLB/'
+
+    if mass_function:
+        dir_DM += 'spectrum_'
 
     if group_vox: 
         filename = dir_DM + 'FISHER_' + detector + ',' + gal_survey + '.dat'
@@ -1019,7 +1155,7 @@ def fisher_matrix_DM(pars,detector,gal_survey,m_DM,f_DM_decay_DM,group_vox,run =
     for p in range(len(pars)):
         #temp = ders(pars[p],detector,gal_survey,reduced_z = True)
         #all_zbin_der = interp1d(use_z,temp)
-        all_zbin_der = ders_DM(pars[p],detector,gal_survey,m_DM,f_DM_decay_DM,reduced_z = True,run_compare=run_compare)
+        all_zbin_der = ders_DM(pars[p],detector,gal_survey,m_DM,f_DM_decay_DM,reduced_z = True,run_compare=run_compare,mass_function =mass_function, alpha=alpha,m_0=m_0)
 
         der_pars[pars[p]] = all_zbin_der 
 
@@ -1027,7 +1163,7 @@ def fisher_matrix_DM(pars,detector,gal_survey,m_DM,f_DM_decay_DM,group_vox,run =
     print('Doing sigma2')
     for zv in tqdm(range(len(use_z))):
 
-        sigma2[zv] = sigma_wz_DM(use_z[zv],detector,gal_survey,m_DM,f_DM_decay_DM,group_vox,run_compare=run_compare).value**2
+        sigma2[zv] = sigma_wz_DM(use_z[zv],detector,gal_survey,m_DM,f_DM_decay_DM,group_vox,run_compare=run_compare,mass_function =mass_function, alpha=alpha,m_0=m_0).value**2
 
     Fisher = np.zeros((len(pars),len(pars)))
     print('Doing Fisher')
@@ -1051,10 +1187,12 @@ def fisher_matrix_DM(pars,detector,gal_survey,m_DM,f_DM_decay_DM,group_vox,run =
     return Fisher
 
 
-def Fisher_change_var_DM(pars,detector,gal_survey,m_DM,f_DM_decay_DM,group_vox,run=False,run_compare=False):
+def Fisher_change_var_DM(pars,detector,gal_survey,m_DM,f_DM_decay_DM,group_vox,run=False,run_compare=False,mass_function=False,alpha_DDM=False,m_0_DDM=False):
 
-    F = fisher_matrix_DM(pars_fid_DM,detector,gal_survey,m_DM,f_DM_decay_DM,group_vox, run,run_compare=run_compare)
-
+    if (m_DM and not mass_function) or (not m_DM and mass_function) :
+        F = fisher_matrix_DM(pars_fid_DM,detector,gal_survey,m_DM,f_DM_decay_DM,group_vox, run, run_compare=run_compare,mass_function=mass_function,alpha=alpha_DDM,m_0=m_0_DDM)
+    else:
+        F = fisher_matrix_DM_massspectrum(pars,detector,gal_survey,f_DM_decay_DM,alpha_DDM,m_0_DDM,group_vox,run = False,run_compare=False)
 #    dlogeps_dP = 1 
     deps_dP = np.log(10) * fid_vals_det_DM(detector,np.log10(f_DM_decay_DM))[pars_fid_DM.index('eps_1500_0')]
     db_dP = np.log(10) * fid_vals_det_DM(detector,np.log10(f_DM_decay_DM))[pars_fid_DM.index('bias_1500_0')]
@@ -1088,31 +1226,31 @@ def Fisher_change_var_DM(pars,detector,gal_survey,m_DM,f_DM_decay_DM,group_vox,r
 pars_all_DM = ['log10_epsbias_1500_0','gamma_1500','alpha_1500_0','C_alpha_1500','alpha_1100_0','C_alpha_1100','EW_z1','EW_z2','log_fLyC_1','log_fLyC_2','gamma_bv','gamma_bz','alpha_900','log10_fGDM']
 
 
-def compare_surveys_DM(m_DM,f_DM_decay_DM, detector = 'GALEX_ULTRASAT', pars =pars_original_c18, prior = False, group_vox = True, run_compare=False):
+def compare_surveys_DM(m_DM,f_DM_decay_DM, detector = 'GALEX_ULTRASAT', pars =pars_original_c18, prior = False, group_vox = True, run_compare=False,mass_function=False,alpha_DDM=False,m_0_DDM=False):
 
     if detector == 'GALEX':
 
-       F_N = Fisher_change_var_DM(pars,'GALEX_NUV','SDSS',m_DM,f_DM_decay_DM,group_vox,False,run_compare=run_compare)
-       F_F = Fisher_change_var_DM(pars,'GALEX_FUV','SDSS',m_DM,f_DM_decay_DM,group_vox,False,run_compare=run_compare)
+       F_N = Fisher_change_var_DM(pars,'GALEX_NUV','SDSS',m_DM,f_DM_decay_DM,group_vox,False,run_compare=run_compare,mass_function=mass_function,alpha_DDM=alpha_DDM,m_0_DDM=m_0_DDM)
+       F_F = Fisher_change_var_DM(pars,'GALEX_FUV','SDSS',m_DM,f_DM_decay_DM,group_vox,False,run_compare=run_compare,mass_function=mass_function,alpha_DDM=alpha_DDM,m_0_DDM=m_0_DDM)
        temp = F_N + F_F
 
     elif detector == 'GALEX_DESI':
 
-        F_N = Fisher_change_var_DM(pars,'GALEX_NUV','DESI',m_DM,f_DM_decay_DM,group_vox,False,run_compare=run_compare)
-        F_F = Fisher_change_var_DM(pars,'GALEX_FUV','DESI',m_DM,f_DM_decay_DM,group_vox,False,run_compare=run_compare)
+        F_N = Fisher_change_var_DM(pars,'GALEX_NUV','DESI',m_DM,f_DM_decay_DM,group_vox,False,run_compare=run_compare,mass_function=mass_function,alpha_DDM=alpha_DDM,m_0_DDM=m_0_DDM)
+        F_F = Fisher_change_var_DM(pars,'GALEX_FUV','DESI',m_DM,f_DM_decay_DM,group_vox,False,run_compare=run_compare,mass_function=mass_function,alpha_DDM=alpha_DDM,m_0_DDM=m_0_DDM)
         temp = F_N + F_F
 
     elif detector == 'ULTRASAT_DESI':
 
-        F = Fisher_change_var_DM(pars,'ULTRASAT','DESI',m_DM,f_DM_decay_DM,group_vox,False,run_compare=run_compare)
+        F = Fisher_change_var_DM(pars,'ULTRASAT','DESI',m_DM,f_DM_decay_DM,group_vox,False,run_compare=run_compare,mass_function=mass_function,alpha_DDM=alpha_DDM,m_0_DDM=m_0_DDM)
         temp = F
 
     elif detector == 'GALEX_ULTRASAT_DESIDESI':
 
-        F_N = Fisher_change_var_DM(pars,'GALEX_NUV','DESI',m_DM,f_DM_decay_DM,group_vox,False,run_compare=run_compare)
-        F_F = Fisher_change_var_DM(pars,'GALEX_FUV','DESI',m_DM,f_DM_decay_DM,group_vox,False,run_compare=run_compare)
+        F_N = Fisher_change_var_DM(pars,'GALEX_NUV','DESI',m_DM,f_DM_decay_DM,group_vox,False,run_compare=run_compare,mass_function=mass_function,alpha_DDM=alpha_DDM,m_0_DDM=m_0_DDM)
+        F_F = Fisher_change_var_DM(pars,'GALEX_FUV','DESI',m_DM,f_DM_decay_DM,group_vox,False,run_compare=run_compare,mass_function=mass_function,alpha_DDM=alpha_DDM,m_0_DDM=m_0_DDM)
         F_GALEX = F_N + F_F
-        F_ULTRASAT = Fisher_change_var_DM(pars,'ULTRASAT','DESI',m_DM,f_DM_decay_DM,group_vox,False,run_compare=run_compare)
+        F_ULTRASAT = Fisher_change_var_DM(pars,'ULTRASAT','DESI',m_DM,f_DM_decay_DM,group_vox,False,run_compare=run_compare,mass_function=mass_function,alpha_DDM=alpha_DDM,m_0_DDM=m_0_DDM)
 
         F_both = np.zeros((len(pars)+1,len(pars)+1))
         for i in range(len(pars)):
@@ -1215,36 +1353,61 @@ def compare_surveys_DM(m_DM,f_DM_decay_DM, detector = 'GALEX_ULTRASAT', pars =pa
 #################################################
 #################################################
 
-def results_DDM():
+from shapely.geometry import LineString
 
-    m_DM_range = [10.,13.]#np.linspace(10,25,6)
+def results_DDM(get_theta_min = False):
 
-    f_DM_decay_DM_range = [1e-23,1e-25,1e-27,1e-29]
+    m_DM_range = [10., 13.,16., 18.,20.,25.] #np.linspace(10,25,6)
 
-    plt.figure(figsize=(10,9))
-    fontsize_label = 27
-    fontsize_legend = 23
-    fontsize_tick = 23
+    if get_theta_min:
+        f_DM_decay_DM_range = [1e-27,1e-28]
+    else:
+        f_DM_decay_DM_range = [1e-23,1e-25,1e-27,1e-28,1e-29]
+
+        colors= ['#9b2226','#ca6702','#eeb831','#7f9c5e','#0a9396','#005c63']
+        plt.figure(figsize=(9,8))
+        fontsize_label = 27
+        fontsize_legend = 23
+        fontsize_tick = 23
+
+    intersec = []
     for m_DM in m_DM_range:
         sigma = []
         fid = []
+        sigma_ne = []
+        fid_ne = []
         for f_DM_decay_DM in f_DM_decay_DM_range:
-            temp = compare_surveys_DM(m_DM,f_DM_decay_DM, detector = 'GALEX_ULTRASAT_DESIDESI', pars =pars_fid_DM, prior = True, group_vox = True,run_compare=False)
+            temp = compare_surveys_DM(m_DM,f_DM_decay_DM, detector = 'GALEX_ULTRASAT_DESIDESI', pars =pars_fid_DM, prior = True, group_vox = True,run_compare=get_theta_min,alpha_DDM=False,m_0_DDM=False)
             sigma.append(abs(temp[0]/temp[1]))
             fid.append(temp[1])
+            #temp_ne = compare_surveys_DM(m_DM,f_DM_decay_DM, detector = 'GALEX_ULTRASAT_DESIDESI', pars =pars_fid_DM, prior = True, group_vox = True,run_compare=True,alpha_DDM=False,m_0_DDM=False)
+            #sigma_ne.append(abs(temp_ne[0]/temp_ne[1]))
+            #fid_ne.append(temp_ne[1])
 
-        plt.plot(fid,sigma,label=r'$%g\,{\rm eV}$'%m_DM)
+        if get_theta_min:
+            first_line = LineString(np.column_stack((fid, np.log10(sigma))))
+            second_line = LineString(np.column_stack((fid, np.ones(len(fid))*np.log10(.5))))
+            intersection = first_line.intersection(second_line)
+            intersec.append(*intersection.xy[0])
 
-    plt.axhline(.5,-30,color='k',linewidth=1.5)
+        else:
+            plt.plot(fid,np.log10(sigma),'-',label=r'$%g\,{\rm eV}$'%m_DM, zorder=2,color=colors[list(m_DM_range).index(m_DM)])
+            #plt.plot(fid_ne,np.log10(sigma_ne),'o--',label=r'$%g\,{\rm eV}$'%m_DM, zorder=2,color=colors[list(m_DM_range).index(m_DM)])
 
-    plt.xlim(-29.9,-22.9)
-    plt.ylim(1e-4,1.9)
-    plt.yscale('log')
-    plt.legend(fontsize=fontsize_legend)
+    if get_theta_min:
+        return m_DM_range, intersec
+    
+    plt.axhline(np.log10(.5),-30,color='k',linewidth=1.5)
+    plt.fill_between(fid,np.log10(.5),2.9,color='k',alpha=0.25)
+
+    plt.xlim(-29,-23)
+    plt.ylim(-4.9,2.9)
+    #plt.yscale('log')
+    plt.legend(fontsize=fontsize_legend,ncol=2,loc=3)
     plt.xticks(fontsize=fontsize_tick)
     plt.yticks(fontsize=fontsize_tick)
     plt.xlabel(r'$\log_{10}\Theta_{\rm DDM}$',fontsize=fontsize_label)
-    plt.ylabel(r'$\sigma_{\log_{10}\Theta_{\rm DDM}}/\log_{10}\Theta_{\rm DDM}\,[\%]$',fontsize=fontsize_label)
+    plt.ylabel(r'$\log_{10}|\sigma_{\log_{10}\Theta_{\rm DDM}}^{\rm rel}|$',fontsize=fontsize_label)
 
     plt.tight_layout()
     plt.savefig('results/PLOTS/EBL_DM/sigma_theta_DDM.png',bbox_inches='tight')
@@ -1253,127 +1416,241 @@ def results_DDM():
     return
 
 
-def compare_results_DDM():
-
-    m_DM_range = np.linspace(10,25,6)
-
-    plt.figure(figsize=(13,9))
-    fontsize_label = 27
-    fontsize_legend = 23
-    fontsize_tick = 23
+use_masses_large = [9.5,10., 11., 12.,13.,14.,15., 16., 17.,18.,19.]
+def compare_results_DDM(m_DM_range = use_masses_large, plot_flag=True,alpha_DDM=False,m_0_DDM=False, with_run = False, including_ours = False):
 
     theta_min_arr = []
-    for m_DM in m_DM_range:
-        f_DM_decay_DM = 1e-23
-        temp = compare_surveys_DM(m_DM,f_DM_decay_DM, detector = 'GALEX_ULTRASAT_DESIDESI', pars =pars_fid_DM, prior = True, group_vox = True,run_compare=True)
-        while temp[0] > temp[1]/2:
-            f_DM_decay_DM /= 10
-            temp = compare_surveys_DM(m_DM,f_DM_decay_DM, detector = 'GALEX_ULTRASAT_DESIDESI', pars =pars_fid_DM, prior = True, group_vox = True,run_compare=True)
- 
-        theta_min_arr.append(f_DM_decay_DM)
- 
-    plt.fill_between(m_DM,theta_min_arr,1e-23,label=r'$\rm This work$',color=color_ULTRASAT)
+    if including_ours:
+        theta_min_arr_ours = []
 
-    hirax_vid = np.genfromtxt('DDM_compare/hirax_VID.dat').T
-    comap2_vid = np.genfromtxt('DDM_compare/comap2_VID.dat').T
-    ccat_vid = np.genfromtxt('DDM_compare/ccat_VID.dat').T
-    atlast_vid = np.genfromtxt('DDM_compare/atlast_VID.dat').T
-    spherex_vid = np.genfromtxt('DDM_compare/spherex_VID.dat').T
-    hetdex_vid = np.genfromtxt('DDM_compare/hetdex_VID.dat').T
+    if m_DM_range is not False:
+        for m_DM in m_DM_range:
+            f_DM_decay_DM = 1e-27
+            if with_run:
+                run_all_analysis(run_compare=True, m_DM_range = [m_DM], f_DM_decay_DM_range = [f_DM_decay_DM])
+            
+            temp = compare_surveys_DM(m_DM,f_DM_decay_DM, detector = 'GALEX_ULTRASAT_DESIDESI', pars =pars_fid_DM, prior = True, group_vox = True,run_compare=True,alpha_DDM=alpha_DDM,m_0_DDM=m_0_DDM)
+            done_run = False
+            while temp[0] < abs(temp[1]/2):
+                f_DM_decay_DM_old = f_DM_decay_DM
+                if m_DM in [9.5, 10., 13., 16., 19.]:
+                    f_DM_decay_DM /= 5
+                else:
+                    f_DM_decay_DM /= 2
+                if with_run:
+                    run_all_analysis(run_compare=True, m_DM_range = [m_DM], f_DM_decay_DM_range = [f_DM_decay_DM])
+                temp = compare_surveys_DM(m_DM,f_DM_decay_DM, detector = 'GALEX_ULTRASAT_DESIDESI', pars =pars_fid_DM, prior = True, group_vox = True,run_compare=True,alpha_DDM=alpha_DDM,m_0_DDM=m_0_DDM)
+                done_run = True
+            if not done_run:
+                f_DM_decay_DM_old = f_DM_decay_DM
 
-    plt.plot(hirax_vid[0],hirax_vid[1],color='navy',linestyle=':')
-    plt.plot(comap2_vid[0],comap2_vid[1],color='maroon',linestyle=':')
-    plt.plot(ccat_vid[0],ccat_vid[1],color='goldenrod',linestyle=':')
-    plt.plot(atlast_vid[0],atlast_vid[1],color='teal',linestyle=':')
-    plt.plot(spherex_vid[0],spherex_vid[1],color='yellowgreen',linestyle=':')
-    plt.plot(hetdex_vid[0],hetdex_vid[1],color='gray',linestyle=':')
+            theta_min_arr.append(f_DM_decay_DM_old)
+         
+        if including_ours:
 
-    hera_pk = np.genfromtxt('DDM_compare/HERA_pk.dat').T
-    hirax_pk = np.genfromtxt('DDM_compare/hirax_pk.dat').T
-    hirax_pk_2 = np.genfromtxt('DDM_compare/hirax_pk_2.dat').T
-    comap2_pk = np.genfromtxt('DDM_compare/comap2_pk.dat').T
-    comap2_pk_2 = np.genfromtxt('DDM_compare/comap2_pk_2.dat').T
-    ccat_pk = np.genfromtxt('DDM_compare/ccat_pk.dat').T
-    atlast_pk = np.genfromtxt('DDM_compare/atlast_pk.dat').T
-    atlast_pk_2 = np.genfromtxt('DDM_compare/atlast_pk_2.dat').T
-    spherex_pk = np.genfromtxt('DDM_compare/spherex_pk.dat').T
-    hetdex_pk = np.genfromtxt('DDM_compare/hetdex_pk.dat').T
+            m_DM_range_ours = use_masses_large + [20.,22.,25.]
+            for m_DM in m_DM_range_ours:
+                if m_DM >= 20.:
+                    f_DM_decay_DM_ours = 5e-27
+                else:
+                    f_DM_decay_DM_ours = 1e-27
+                
+                if with_run:
+                    run_all_analysis(run_compare=False, m_DM_range = [m_DM],    f_DM_decay_DM_range = [f_DM_decay_DM_ours])
+                 
+                temp_ours = compare_surveys_DM(m_DM,f_DM_decay_DM_ours, detector = 'GALEX_ULTRASAT_DESIDESI', pars =pars_fid_DM, prior = True, group_vox = True,run_compare=False,alpha_DDM=alpha_DDM,m_0_DDM=m_0_DDM)
+                print(m_DM, f_DM_decay_DM)
+                done_run_ours = False
+                while temp_ours[0] < abs(temp_ours[1]/2):
+                    f_DM_decay_DM_old_ours = f_DM_decay_DM_ours
+                    # if m_DM in [ 13., 16., 19.]:
+                        # f_DM_decay_DM_ours /= 5
+                    # else:
+                    f_DM_decay_DM_ours /= 2
+                    
+                    if with_run:
+                        run_all_analysis(run_compare=False, m_DM_range = [m_DM], f_DM_decay_DM_range = [f_DM_decay_DM_ours])
+                     
+                    temp_ours = compare_surveys_DM(m_DM,f_DM_decay_DM_ours,
+                     detector = 'GALEX_ULTRASAT_DESIDESI', pars =pars_fid_DM, prior = True, group_vox = True,run_compare=False,alpha_DDM=alpha_DDM,m_0_DDM=m_0_DDM)
+                    done_run_ours = True
+                if not done_run_ours:
+                    f_DM_decay_DM_old_ours = f_DM_decay_DM_ours
 
-    plt.plot(hera_pk[0],hera_pk[1],color='plum',linestyle='-',label=r'$\rm HERA$')
-    plt.plot(hirax_pk[0],hirax_pk[1],color='navy',linestyle='-',label=r'$\rm HIRAX+CHIME$')
-    plt.plot(hirax_pk_2[0],hirax_pk_2[1],color='navy',linestyle='-')
-    plt.plot(comap2_pk[0],comap2_pk[1],color='maroon',linestyle='-',label=r'$\rm COMAP2$')
-    plt.plot(comap2_pk_2[0],comap2_pk_2[1],color='maroon',linestyle='-')
-    plt.plot(ccat_pk[0],ccat_pk[1],color='goldenrod',linestyle='-',label=r'$\rm CCAT-prime$')
-    plt.plot(atlast_pk[0],atlast_pk[1],color='teal',linestyle='-',label=r'$\rm AtLAST$')
-    plt.plot(atlast_pk_2[0],atlast_pk_2[1],color='teal',linestyle='-')
-    plt.plot(spherex_pk[0],spherex_pk[1],color='yellowgreen',linestyle='-',label=r'$\rm SPHEREx$')
-    plt.plot(hetdex_pk[0],hetdex_pk[1],color='gray',linestyle='-',label=r'$\rm HETDEX$')
+                theta_min_arr_ours.append(f_DM_decay_DM_old_ours)
 
-    chime_cross = np.genfromtxt('DDM_compare/chime_cross.dat').T
-    comap_cross = np.genfromtxt('DDM_compare/comap_cross.dat').T
-    ccat_cross = np.genfromtxt('DDM_compare/ccat_cross.dat').T
-    starfire_cross = np.genfromtxt('DDM_compare/starfire_cross.dat').T
-    spherex_cross = np.genfromtxt('DDM_compare/spherex_cross.dat').T
+    else:
+        if not including_ours:
+            f_DM_decay_DM = 1e-26
+            temp = compare_surveys_DM(False,f_DM_decay_DM, detector = 'GALEX_ULTRASAT_DESIDESI', pars =pars_fid_DM, prior = True, group_vox = True,run_compare=True,mass_function=True,alpha_DDM=alpha_DDM,m_0_DDM=m_0_DDM)
+            done_run = False
+            while temp[0] < abs(temp[1]/2):
+                f_DM_decay_DM_old = f_DM_decay_DM
+                f_DM_decay_DM /= 5
+                if with_run:
+                    run_all_analysis_spectrum(run_compare=True, m_DM_range = [m_DM], f_DM_decay_DM_range = [f_DM_decay_DM])
+                temp = compare_surveys_DM(False,f_DM_decay_DM, detector = 'GALEX_ULTRASAT_DESIDESI', pars =pars_fid_DM, prior = True, group_vox = True,run_compare=True,mass_function=True,alpha_DDM=alpha_DDM,m_0_DDM=m_0_DDM)
+                done_run = True
+            if not done_run:
+                f_DM_decay_DM_old = f_DM_decay_DM
+            theta_min_arr = f_DM_decay_DM_old
+            m_DM_range = False
+        else:
+            f_DM_decay_DM_ours = 1e-26
+            temp_ours = compare_surveys_DM(False,f_DM_decay_DM_ours, detector = 'GALEX_ULTRASAT_DESIDESI', pars =pars_fid_DM, prior = True, group_vox = True,run_compare=False,mass_function=True,alpha_DDM=alpha_DDM,m_0_DDM=m_0_DDM)
+            done_run_ours = False
+            while temp_ours[0] < abs(temp_ours[1]/2):
+                f_DM_decay_DM_old_ours = f_DM_decay_DM_ours
+                f_DM_decay_DM_ours /= 2.
+                if with_run:
+                    run_all_analysis_spectrum(run_compare=False, m_DM_range = [m_DM], f_DM_decay_DM_range = [f_DM_decay_DM_ours])
+                temp_ours = compare_surveys_DM(False,f_DM_decay_DM_ours, detector = 'GALEX_ULTRASAT_DESIDESI', pars =pars_fid_DM, prior = True, group_vox = True,run_compare=False,mass_function=True,alpha_DDM=alpha_DDM,m_0_DDM=m_0_DDM)
+                done_run_ours = True
 
-    plt.plot(chime_cross[0],chime_cross[1]**-1,color='#fdb515',linestyle='--',label=r'$\rm CHIME\,(cross)$',alpha=0.5,zorder=0)
-    plt.plot(comap_cross[0],comap_cross[1]**-1,color='maroon',linestyle='--',label=r'$\rm COMAP\,(cross)$',alpha=0.5,zorder=0)
-    plt.plot(ccat_cross[0],ccat_cross[1]**-1,color='k',linestyle='--',label=r'$\rm CCAT\,(cross)$',alpha=0.5,zorder=0)
-    plt.plot(starfire_cross[0],starfire_cross[1]**-1,color='mediumseagreen',linestyle='--',label=r'$\rm STARFIRE\,(cross)$',alpha=0.5,zorder=0)
-    plt.plot(spherex_cross[0],spherex_cross[1]**-1,color='yellowgreen',linestyle='--',label=r'$\rm SPHEREx\,(cross)$',zorder=0)
+            if not done_run_ours:
+                f_DM_decay_DM_old_ours = f_DM_decay_DM_ours
+            theta_min_arr_ours = f_DM_decay_DM_old_ours
+            m_DM_range_ours = False
+           
 
-    # nu_CO = 26*u.GHz
-    # nu_CO_1 = 34*u.GHz
-    # m_DM = (nu_CO * (4*np.pi*cu.hbar)).to(u.eV)
-    # m_DM_1 = (nu_CO_1 * (4*np.pi*cu.hbar)).to(u.eV)
-    # plt.axvline(m_DM.value,color='k')
-    # plt.axvline(m_DM_1.value,color='k')
+    if plot_flag:
+        plt.figure(figsize=(13,9))
+        fontsize_label = 27
+        fontsize_legend = 23
+        fontsize_tick = 23
 
-    plt.xlim(7e-7,50)
-    plt.ylim(1e-40,5e-24)
-    plt.xscale('log')
-    plt.yscale('log')
-    plt.legend(ncol=2,fontsize=fontsize_legend)
-    plt.xticks(fontsize=fontsize_tick)
-    plt.yticks(fontsize=fontsize_tick)
-    plt.xlabel(r'$m_{\rm DDM}c^2\,[{\rm eV}]$',fontsize=fontsize_label)
-    plt.ylabel(r'$\rm min[\tilde{\Theta}_{\rm DDM}]$',fontsize=fontsize_label)
+        hirax_vid = np.genfromtxt('DDM_compare/hirax_VID.dat').T
+        comap2_vid = np.genfromtxt('DDM_compare/comap2_VID.dat').T
+        ccat_vid = np.genfromtxt('DDM_compare/ccat_VID.dat').T
+        atlast_vid = np.genfromtxt('DDM_compare/atlast_VID.dat').T
+        spherex_vid = np.genfromtxt('DDM_compare/spherex_VID.dat').T
+        hetdex_vid = np.genfromtxt('DDM_compare/hetdex_VID.dat').T
 
-    plt.tight_layout()
-    plt.savefig('results/PLOTS/EBL_DM/theta_DDM_compare_full.png',bbox_inches='tight')
+        plt.plot(hirax_vid[0],hirax_vid[1],color='navy',linestyle=':')
+        plt.plot(comap2_vid[0],comap2_vid[1],color='maroon',linestyle=':')
+        plt.plot(ccat_vid[0],ccat_vid[1],color='goldenrod',linestyle=':')
+        plt.plot(atlast_vid[0],atlast_vid[1],color='teal',linestyle=':')
+        plt.plot(spherex_vid[0],spherex_vid[1],color='yellowgreen',linestyle=':')
+        plt.plot(hetdex_vid[0],hetdex_vid[1],color='gray',linestyle=':')
 
-    plt.figure(figsize=(10,9))
-    fontsize_label = 27
-    fontsize_legend = 23
-    fontsize_tick = 23
+        hera_pk = np.genfromtxt('DDM_compare/HERA_pk.dat').T
+        hirax_pk = np.genfromtxt('DDM_compare/hirax_pk.dat').T
+        hirax_pk_2 = np.genfromtxt('DDM_compare/hirax_pk_2.dat').T
+        comap2_pk = np.genfromtxt('DDM_compare/comap2_pk.dat').T
+        comap2_pk_2 = np.genfromtxt('DDM_compare/comap2_pk_2.dat').T
+        ccat_pk = np.genfromtxt('DDM_compare/ccat_pk.dat').T
+        atlast_pk = np.genfromtxt('DDM_compare/atlast_pk.dat').T
+        atlast_pk_2 = np.genfromtxt('DDM_compare/atlast_pk_2.dat').T
+        spherex_pk = np.genfromtxt('DDM_compare/spherex_pk.dat').T
+        hetdex_pk = np.genfromtxt('DDM_compare/hetdex_pk.dat').T
 
-    plt.plot(atlast_pk[0],atlast_pk[1],color='teal',linestyle='-',label=r'${\rm AtLAST},\,P(k)$')
-    plt.plot(atlast_pk_2[0],atlast_pk_2[1],color='teal',linestyle='-')
-    plt.plot(spherex_pk[0],spherex_pk[1],color='yellowgreen',linestyle='-',label=r'${\rm SPHEREx},\,P(k)$')
-    plt.plot(hetdex_pk[0],hetdex_pk[1],color='gray',linestyle='-',label=r'${\rm HETDEX},\,P(k)$')
+        plt.plot(hera_pk[0],hera_pk[1],color='plum',linestyle='-',label=r'$\rm HERA$')
+        plt.plot(hirax_pk[0],hirax_pk[1],color='navy',linestyle='-',label=r'$\rm HIRAX+CHIME$')
+        plt.plot(hirax_pk_2[0],hirax_pk_2[1],color='navy',linestyle='-')
+        plt.plot(comap2_pk[0],comap2_pk[1],color='maroon',linestyle='-',label=r'$\rm COMAP2$')
+        plt.plot(comap2_pk_2[0],comap2_pk_2[1],color='maroon',linestyle='-')
+        plt.plot(ccat_pk[0],ccat_pk[1],color='goldenrod',linestyle='-',label=r'$\rm CCAT-prime$')
+        plt.plot(atlast_pk[0],atlast_pk[1],color='teal',linestyle='-',label=r'$\rm AtLAST$')
+        plt.plot(atlast_pk_2[0],atlast_pk_2[1],color='teal',linestyle='-')
+        plt.plot(spherex_pk[0],spherex_pk[1],color='yellowgreen',linestyle='-',label=r'$\rm SPHEREx$')
+        plt.plot(hetdex_pk[0],hetdex_pk[1],color='gray',linestyle='-',label=r'$\rm HETDEX$')
 
-    plt.plot(spherex_cross[0],spherex_cross[1]**-1,color='yellowgreen',linestyle='--',label=r'$\rm SPHEREx,\,cross$',zorder=0)
+        chime_cross = np.genfromtxt('DDM_compare/chime_cross.dat').T
+        comap_cross = np.genfromtxt('DDM_compare/comap_cross.dat').T
+        ccat_cross = np.genfromtxt('DDM_compare/ccat_cross.dat').T
+        starfire_cross = np.genfromtxt('DDM_compare/starfire_cross.dat').T
+        spherex_cross = np.genfromtxt('DDM_compare/spherex_cross.dat').T
 
-    plt.plot(atlast_vid[0],atlast_vid[1],color='teal',linestyle=':',label=r'$\rm AtLAST,\,VID$')
-    plt.plot(spherex_vid[0],spherex_vid[1],color='yellowgreen',linestyle=':',label=r'$\rm SPHEREx,\,VID$')
-    plt.plot(hetdex_vid[0],hetdex_vid[1],color='gray',linestyle=':',label=r'$\rm HETDEX,\,VID$')
+        plt.plot(chime_cross[0],chime_cross[1]**-1,color='#fdb515',linestyle='--',label=r'$\rm CHIME\,(cross)$',alpha=0.5,zorder=0)
+        plt.plot(comap_cross[0],comap_cross[1]**-1,color='maroon',linestyle='--',label=r'$\rm COMAP\,(cross)$',alpha=0.5,zorder=0)
+        plt.plot(ccat_cross[0],ccat_cross[1]**-1,color='k',linestyle='--',label=r'$\rm CCAT\,(cross)$',alpha=0.5,zorder=0)
+        plt.plot(starfire_cross[0],starfire_cross[1]**-1,color='mediumseagreen',linestyle='--',label=r'$\rm STARFIRE\,(cross)$',alpha=0.5,zorder=0)
+        plt.plot(spherex_cross[0],spherex_cross[1]**-1,color='yellowgreen',linestyle='--',label=r'$\rm SPHEREx\,(cross)$',zorder=0)
 
 
-    plt.fill_between(m_DM,theta_min_arr,1e-23,label=r'$\rm This\, work,\,CBR$',color=color_ULTRASAT,alpha=0.4)
+        window_size = 7  # Adjust this value based on your preference
 
-    plt.xlim(1e-2,50)
-    plt.ylim(1e-36,5e-24)
-    plt.xscale('log')
-    plt.yscale('log')
-    plt.legend(ncol=2,fontsize=fontsize_legend,loc=4)
-    plt.xticks(fontsize=fontsize_tick)
-    plt.yticks(fontsize=fontsize_tick)
-    plt.xlabel(r'$m_{\rm DDM}c^2\,[{\rm eV}]$',fontsize=fontsize_label)
-    plt.ylabel(r'$\rm min[\tilde{\Theta}_{\rm DDM}]$',fontsize=fontsize_label)
+        this_work = interp1d(m_DM_range,theta_min_arr)
+        this_work_ours = interp1d(m_DM_range_ours,theta_min_arr_ours)
+        long_masses = np.linspace(m_DM_range[0],m_DM_range[-1],100)
+        long_masses_ours = np.linspace(m_DM_range_ours[0],m_DM_range_ours[-1],100)
+        theta_smoothed = moving_average(this_work(long_masses), window_size)
+        theta_smoothed_ours = moving_average(this_work_ours(long_masses_ours), window_size)
 
-    plt.tight_layout()
-    plt.savefig('results/PLOTS/EBL_DM/theta_DDM_compare.png',bbox_inches='tight')
+        plt.fill_between(long_masses[:len(theta_smoothed)],theta_smoothed,1e-23,label=r'$\rm This\, work$',color=color_ULTRASAT,alpha=0.5)
+        
+        if including_ours:
+            plt.plot(m_DM_range_ours,theta_min_arr_ours,linestyle = '--', color=color_ULTRASAT,)
 
-    plt.show()
+        # nu_CO = 26*u.GHz
+        # nu_CO_1 = 34*u.GHz
+        # m_DM = (nu_CO * (4*np.pi*cu.hbar)).to(u.eV)
+        # m_DM_1 = (nu_CO_1 * (4*np.pi*cu.hbar)).to(u.eV)
+        # plt.axvline(m_DM.value,color='k')
+        # plt.axvline(m_DM_1.value,color='k')
 
-    return
+        plt.xlim(7e-7,30)
+        plt.ylim(1e-40,5e-24)
+        plt.xscale('log')
+        plt.yscale('log')
+        plt.legend(ncol=2,fontsize=fontsize_legend)
+        plt.xticks(fontsize=fontsize_tick)
+        plt.yticks(fontsize=fontsize_tick)
+        plt.xlabel(r'$m_{\rm DDM}c^2\,[{\rm eV}]$',fontsize=fontsize_label)
+        plt.ylabel(r'$\rm min[\tilde{\Theta}_{\rm DDM}]$',fontsize=fontsize_label)
+
+        plt.tight_layout()
+        plt.savefig('results/PLOTS/EBL_DM/theta_DDM_compare_full.png',bbox_inches='tight')
+
+#########################################
+#########################################
+#########################################
+#########################################
+#########################################
+#########################################
+        plt.figure(figsize=(9,9))
+        fontsize_label = 27
+        fontsize_legend = 23
+        fontsize_tick = 23
+
+        
+        plt.plot((spherex_pk[0]),np.log10(spherex_pk[1]),color='yellowgreen',linestyle='-',label=r'${\rm SPHEREx},\,P(k)$')
+        plt.plot((hetdex_pk[0]),np.log10(hetdex_pk[1]),color='teal',linestyle='-',label=r'${\rm HETDEX},\,P(k)$')
+
+        plt.plot((spherex_vid[0]),np.log10(spherex_vid[1]),color='yellowgreen',linestyle=':',label=r'$\rm SPHEREx,\,VID$')
+        plt.plot((hetdex_vid[0]),np.log10(hetdex_vid[1]),color='teal',linestyle=':',label=r'$\rm HETDEX,\,VID$')
+
+        #plt.fill_between(m_DM_range,np.log10(theta_min_arr),np.log10(1e-23),label=r'$\rm This\, work,\,\tilde{ \Theta}_{\rm DDM}$',color=color_ULTRASAT,alpha=0.5)
+        plt.fill_between((long_masses[:len(theta_smoothed)]),np.log10(theta_smoothed),np.log10(1e-23),label=r'$\rm This\, work,\,\tilde{ \Theta}_{\rm DDM}$',color=color_ULTRASAT,alpha=0.5)
+
+        if including_ours:
+            plt.fill_between((long_masses_ours[:len(theta_smoothed_ours)]),np.log10(theta_smoothed_ours),np.log10(1e-23),linestyle = '--', facecolor='none',edgecolor=color_ULTRASAT,label=r'$\rm This\, work,\, \Theta_{\rm DDM}$', linewidth=2, zorder=100)
+            #plt.fill_between((m_DM_range_ours),np.log10(theta_min_arr_ours),np.log10(1e-23),linestyle = '--', facecolor='none',edgecolor=color_ULTRASAT,label=r'$\rm This\, work,\, \Theta_{\rm DDM}$', linewidth=2, zorder=100)
+    
+        plt.xlim(1,30)
+        plt.ylim(-33,np.log10(5e-24))
+        #plt.xscale('log')
+        #plt.yscale('log')
+        plt.legend(ncol=2,fontsize=fontsize_legend,loc=8)
+        plt.xticks(fontsize=fontsize_tick)
+        plt.yticks(fontsize=fontsize_tick)
+        plt.xlabel(r'$m_{\rm DDM}c^2\,[{\rm eV}]$',fontsize=fontsize_label)
+        plt.ylabel(r'$\log_{10}{\rm min}[\tilde{\Theta}_{\rm DDM}]$',fontsize=fontsize_label)
+
+        plt.tight_layout()
+        plt.savefig('results/PLOTS/EBL_DM/theta_DDM_compare.png',bbox_inches='tight')
+
+        plt.show()
+
+    if not including_ours:
+
+        return theta_min_arr, m_DM_range
+    else:
+        return theta_min_arr_ours, m_DM_range_ours
+
+
+
+####################################################
+####################################################
+####################################################
+

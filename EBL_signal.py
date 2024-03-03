@@ -29,6 +29,10 @@ color_hetdex = '#ffb703'
 color_spherex = '#da2c38'
 colors = ['k',color_FUV, color_NUV, color_ULTRASAT, color_hetdex, color_spherex]
 
+
+use_results_dir = './test_results/' #'./results/'
+
+
 ############################################################
 
 cosmo_input = dict(f_NL=0, H0=67.67,cosmomc_theta=None,
@@ -96,9 +100,9 @@ k_arr =  (k_edge[0:Nedge-1]+k_edge[1:Nedge])/2.
 zmin_gal = 0.1
 zmax_gal = 2
 
-R_SDSS = 350
+R_SDSS = 500 #350
 
-R_DESI = 2000 # 2306.06307 sec 2.2.2
+R_DESI = 1000 # 2306.06307 sec 2.2.2
 
 delta_zi = lambda gal_survey: 1/R_SDSS if gal_survey == 'SDSS' else 0.01 if  gal_survey == 'SPHEREx' else 1/R_DESI if gal_survey == 'DESI' else -1
 
@@ -217,7 +221,7 @@ def plot_bias():
     plt.ylim(0,3.5)
 
     plt.tight_layout()
-    plt.savefig('results/PLOTS/EBL/bias_nuz.png',bbox_inches='tight')
+    plt.savefig(use_results_dir + 'PLOTS/EBL/bias_nuz.png',bbox_inches='tight')
 
     plt.show()
 
@@ -325,7 +329,10 @@ def Lya_line(nu,z, detector, vals_alpha1100 = False, val_EW = False, to_plot = F
     delta_val = 0.005
     EW = EW_val(z, detector, val_EW) 
     # Lya emission line with equivalent width
-    eps_line = nu**2 / (cu.c.to(u.AA/u.s)) * (EW / (nu_from_lambda(1216*u.AA)*delta_val) )
+    if to_plot:
+        eps_line = nu**2 / (cu.c.to(u.AA/u.s)) * (EW / (nu_from_lambda(1216*u.AA)*delta_val))
+    else:
+        eps_line = nu**2 / (cu.c.to(u.AA/u.s)) * (EW / (nu_from_lambda(1216*u.AA)*delta_val)) 
 
     line =  eps_line  if nu_from_lambda(1216*u.AA)*(1-delta_val)  < nu < nu_from_lambda(1216*u.AA)*(1+delta_val) else 0. 
 
@@ -402,7 +409,7 @@ def plot_parameters():
     plt.xlabel(r'$z$',fontsize=fontsize)
     plt.xlim(z[0],z[-1])
     plt.tight_layout()
-    plt.savefig('results/PLOTS/EBL/eps_1500.png',bbox_inches='tight')
+    plt.savefig(use_results_dir + 'PLOTS/EBL/eps_1500.png',bbox_inches='tight')
     plt.show()
 
     alpha_1500 = alpha1500(z)
@@ -413,7 +420,7 @@ def plot_parameters():
     plt.xlabel(r'$z$',fontsize=fontsize)
     plt.xlim(z[0],z[-1])
     plt.tight_layout()
-    plt.savefig('results/PLOTS/EBL/alpha_1500.png',bbox_inches='tight')
+    plt.savefig(use_results_dir + 'PLOTS/EBL/alpha_1500.png',bbox_inches='tight')
 
     plt.show()
 
@@ -425,7 +432,7 @@ def plot_parameters():
     plt.xlabel(r'$z$',fontsize=fontsize)
     plt.xlim(z[0],z[-1])
     plt.tight_layout()
-    plt.savefig('results/PLOTS/EBL/alpha_1100.png',bbox_inches='tight')
+    plt.savefig(use_results_dir + 'PLOTS/EBL/alpha_1100.png',bbox_inches='tight')
 
     plt.show()
 
@@ -439,7 +446,7 @@ def plot_parameters():
     plt.xlabel(r'$z$',fontsize=fontsize)
     plt.xlim(z[0],z[-1])
     plt.tight_layout()
-    plt.savefig('results/PLOTS/EBL/EW.png',bbox_inches='tight')
+    plt.savefig(use_results_dir + 'PLOTS/EBL/EW.png',bbox_inches='tight')
 
     plt.show()
 
@@ -452,7 +459,7 @@ def plot_parameters():
     plt.xlabel(r'$z$',fontsize=fontsize)
     plt.xlim(z[0],z[-1])
     plt.tight_layout()
-    plt.savefig('results/PLOTS/EBL/fLyC.png',bbox_inches='tight')
+    plt.savefig(use_results_dir + 'PLOTS/EBL/fLyC.png',bbox_inches='tight')
 
     plt.show()
 
@@ -468,7 +475,7 @@ def plot_rest_signal(detector='GALEX_NUV',vals_eps1500=False,vals_alpha1500=Fals
     wave = np.linspace(700,30000)
     s = np.zeros(len(wave))
     for i in range(len(wave)):
-        s[i] = signal(wave[i]*u.AA,z,detector,vals_eps1500,vals_alpha1500,vals_alpha1100,val_EW,val_flyc,val_alpha900).value
+        s[i] = signal(wave[i]*u.AA,z,detector,vals_eps1500,vals_alpha1500,vals_alpha1100,val_EW,val_flyc,val_alpha900,to_plot=True).value
         #s[i] = signal(wave[i]*u.AA,z,detector,vals_eps1500,vals_alpha1500,vals_alpha1100,val_EW,val_flyc,val_alpha900).value
 
     plt.loglog(wave, s, label=r'$z = %g$'%z, color='k')
@@ -695,7 +702,7 @@ def plot_tau():
 
     plt.legend(ncol=2,loc=1)
     plt.tight_layout()
-    plt.savefig('results/PLOTS/EBL/tau.png',bbox_inches='tight')
+    plt.savefig(use_results_dir + 'PLOTS/EBL/tau.png',bbox_inches='tight')
 
     plt.show()
 
@@ -722,11 +729,11 @@ def dJdz(z, detector,run = False,\
             print('Check detector!')
             return 
 
-        unit = (Response(lambda_from_nu(1.*u.Hz), detector) *signal(lambda_from_nu(1*u.Hz),0.,detector,vals_eps1500,vals_alpha1500,vals_alpha1100,val_EW,val_flyc,val_alpha900) * np.exp(-tau_Lya(lambda_from_nu(1*u.Hz),0.))/(1*u.Hz)).unit
+        unit = (Response(lambda_from_nu(1.*u.Hz), detector) *signal(lambda_from_nu(1*u.Hz),0.,detector,vals_eps1500,vals_alpha1500,vals_alpha1100,val_EW,val_flyc,val_alpha900,to_plot=False) * np.exp(-tau_Lya(lambda_from_nu(1*u.Hz),0.))/(1*u.Hz)).unit
 
-        intg = lambda nu_obs: Response(lambda_from_nu(nu_obs*u.Hz), detector) * signal(lambda_from_nu(nu_obs*u.Hz*(1+z)),z,detector,vals_eps1500,vals_alpha1500,vals_alpha1100,val_EW,val_flyc,val_alpha900).value * np.exp(-tau_Lya(lambda_from_nu(nu_obs*u.Hz),z))/nu_obs 
+        intg = lambda nu_obs: Response(lambda_from_nu(nu_obs*u.Hz), detector) * signal(lambda_from_nu(nu_obs*u.Hz*(1+z)),z,detector,vals_eps1500,vals_alpha1500,vals_alpha1100,val_EW,val_flyc,val_alpha900,to_plot=False).value * np.exp(-tau_Lya(lambda_from_nu(nu_obs*u.Hz),z))/nu_obs 
 
-        rest_wave = np.linspace(lambda_from_nu(nu_min).value,lambda_from_nu(nu_max).value,500)
+        rest_wave = np.linspace(lambda_from_nu(nu_min).value,lambda_from_nu(nu_max).value,1000)
 
         nu_obs_arr = np.zeros(len(rest_wave))
         intg_arr = np.zeros(len(rest_wave))
@@ -764,11 +771,11 @@ def bJ_z(z, detector, run = False, vals_eps1500=False,vals_alpha1500=False,vals_
             print('Check detector!')
             return 
 #
-        intg_num = lambda nu_obs: bias(nu_obs*u.Hz*(1+z),z,val_bias) * Response(lambda_from_nu(nu_obs*u.Hz), detector) * signal(lambda_from_nu(nu_obs*u.Hz*(1+z)),z,detector,vals_eps1500,vals_alpha1500,vals_alpha1100,val_EW,val_flyc,val_alpha900).value * np.exp(-tau_Lya(lambda_from_nu(nu_obs*u.Hz),z))/nu_obs 
+        intg_num = lambda nu_obs: bias(nu_obs*u.Hz*(1+z),z,val_bias) * Response(lambda_from_nu(nu_obs*u.Hz), detector) * signal(lambda_from_nu(nu_obs*u.Hz*(1+z)),z,detector,vals_eps1500,vals_alpha1500,vals_alpha1100,val_EW,val_flyc,val_alpha900,to_plot=False).value * np.exp(-tau_Lya(lambda_from_nu(nu_obs*u.Hz),z))/nu_obs 
 #
-        intg_den = lambda nu_obs: Response(lambda_from_nu(nu_obs*u.Hz), detector) * signal(lambda_from_nu(nu_obs*u.Hz*(1+z)),z,detector,vals_eps1500,vals_alpha1500,vals_alpha1100,val_EW,val_flyc,val_alpha900).value * np.exp(-tau_Lya(lambda_from_nu(nu_obs*u.Hz),z))/nu_obs 
+        intg_den = lambda nu_obs: Response(lambda_from_nu(nu_obs*u.Hz), detector) * signal(lambda_from_nu(nu_obs*u.Hz*(1+z)),z,detector,vals_eps1500,vals_alpha1500,vals_alpha1100,val_EW,val_flyc,val_alpha900,to_plot=False).value * np.exp(-tau_Lya(lambda_from_nu(nu_obs*u.Hz),z))/nu_obs 
 
-        rest_wave = np.linspace(lambda_from_nu(nu_min).value,lambda_from_nu(nu_max).value,500)
+        rest_wave = np.linspace(lambda_from_nu(nu_min).value,lambda_from_nu(nu_max).value,1000)
 
         nu_obs_arr = np.zeros(len(rest_wave))
         intg_arr = np.zeros(len(rest_wave))
@@ -799,62 +806,62 @@ def compute_vals(reduced_z = False, vals_eps1500=False,vals_alpha1500=False,vals
     with Pool(6) as pool:
         
         print('Doing NUV')
-        dJdz_NUV = partial(dJdz,detector='GALEX_NUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900, filename='./results/EBL/dJdz_GALEX_NUV' + reduced_label + '.dat')
+        dJdz_NUV = partial(dJdz,detector='GALEX_NUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900, filename=use_results_dir + 'EBL/dJdz_GALEX_NUV' + reduced_label + '.dat')
         if reduced_z:
             dJ_nuv = pool.map(dJdz_NUV, z_gals_interp)
-            np.savetxt('./results/EBL/dJdz_GALEX_NUV' + reduced_label + '.dat', (z_gals_interp,np.asarray(dJ_nuv)))
+            np.savetxt(use_results_dir + 'EBL/dJdz_GALEX_NUV' + reduced_label + '.dat', (z_gals_interp,np.asarray(dJ_nuv)))
         else:
             dJ_nuv = pool.map(dJdz_NUV, z_gals('SDSS'))
-            np.savetxt('./results/EBL/dJdz_GALEX_NUV' + reduced_label + '.dat', (z_gals('SDSS'),np.asarray(dJ_nuv)))
+            np.savetxt(use_results_dir + 'EBL/dJdz_GALEX_NUV' + reduced_label + '.dat', (z_gals('SDSS'),np.asarray(dJ_nuv)))
 
         print('Doing FUV')
-        dJdz_FUV = partial(dJdz,detector='GALEX_FUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,filename='results/EBL/dJdz_GALEX_FUV' + reduced_label + '.dat')
+        dJdz_FUV = partial(dJdz,detector='GALEX_FUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,filename=use_results_dir + 'EBL/dJdz_GALEX_FUV' + reduced_label + '.dat')
 
         if reduced_z:
             dJ_fuv = pool.map(dJdz_FUV, z_gals_interp)
-            np.savetxt('./results/EBL/dJdz_GALEX_FUV' + reduced_label + '.dat', (z_gals_interp,np.asarray(dJ_fuv)))
+            np.savetxt(use_results_dir + 'EBL/dJdz_GALEX_FUV' + reduced_label + '.dat', (z_gals_interp,np.asarray(dJ_fuv)))
         else:
             dJ_fuv = pool.map(dJdz_FUV, z_gals('SDSS'))
-            np.savetxt('./results/EBL/dJdz_GALEX_FUV' + reduced_label + '.dat', (z_gals('SDSS'),np.asarray(dJ_fuv)))
+            np.savetxt(use_results_dir + 'EBL/dJdz_GALEX_FUV' + reduced_label + '.dat', (z_gals('SDSS'),np.asarray(dJ_fuv)))
     
         print('Doing b NUV')
-        bJ_nuv_f =  partial(bJ_z,detector='GALEX_NUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename='results/EBL/bJ_GALEX_NUV' + reduced_label + '.dat')
+        bJ_nuv_f =  partial(bJ_z,detector='GALEX_NUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename=use_results_dir + 'EBL/bJ_GALEX_NUV' + reduced_label + '.dat')
 
         if reduced_z:
             bJ_nuv = pool.map(bJ_nuv_f, z_gals_interp)
-            np.savetxt('./results/EBL/bJ_GALEX_NUV' + reduced_label + '.dat', (z_gals_interp,np.asarray(bJ_nuv)))
+            np.savetxt(use_results_dir + 'EBL/bJ_GALEX_NUV' + reduced_label + '.dat', (z_gals_interp,np.asarray(bJ_nuv)))
         else:
             bJ_nuv = pool.map(bJ_nuv_f, z_gals('SDSS'))
-            np.savetxt('./results/EBL/bJ_GALEX_NUV' + reduced_label + '.dat', (z_gals('SDSS'),np.asarray(bJ_nuv)))
+            np.savetxt(use_results_dir + 'EBL/bJ_GALEX_NUV' + reduced_label + '.dat', (z_gals('SDSS'),np.asarray(bJ_nuv)))
 
         print('Doing b FUV')
-        bJ_fuv_f =  partial(bJ_z,detector='GALEX_FUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename='results/EBL/bJ_GALEX_FUV' + reduced_label + '.dat')
+        bJ_fuv_f =  partial(bJ_z,detector='GALEX_FUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename=use_results_dir+'EBL/bJ_GALEX_FUV' + reduced_label + '.dat')
 
         if reduced_z:
             bJ_fuv = pool.map(bJ_fuv_f, z_gals_interp)
-            np.savetxt('./results/EBL/bJ_GALEX_FUV' + reduced_label + '.dat', (z_gals_interp,np.asarray(bJ_fuv)))
+            np.savetxt(use_results_dir + 'EBL/bJ_GALEX_FUV' + reduced_label + '.dat', (z_gals_interp,np.asarray(bJ_fuv)))
         else:
             bJ_fuv = pool.map(bJ_fuv_f, z_gals('SDSS'))
-            np.savetxt('./results/EBL/bJ_GALEX_FUV' + reduced_label + '.dat', (z_gals('SDSS'),np.asarray(bJ_fuv)))
+            np.savetxt(use_results_dir + 'EBL/bJ_GALEX_FUV' + reduced_label + '.dat', (z_gals('SDSS'),np.asarray(bJ_fuv)))
      
         print('Doing ULTRASAT')
-        dJdz_f = partial(dJdz,detector='ULTRASAT',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,filename='results/EBL/dJdz_ULTRASAT' + reduced_label + '.dat')
+        dJdz_f = partial(dJdz,detector='ULTRASAT',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,filename=use_results_dir +'EBL/dJdz_ULTRASAT' + reduced_label + '.dat')
 
         if reduced_z:
             dJ_U = pool.map(dJdz_f, z_gals_interp)
-            np.savetxt('./results/EBL/dJdz_ULTRASAT' + reduced_label + '.dat', (z_gals_interp,np.asarray(dJ_U)))
+            np.savetxt(use_results_dir + 'EBL/dJdz_ULTRASAT' + reduced_label + '.dat', (z_gals_interp,np.asarray(dJ_U)))
         else:
             dJ_U = pool.map(dJdz_f, z_gals)
-            np.savetxt('./results/EBL/dJdz_ULTRASAT' + reduced_label + '.dat', (z_gals,np.asarray(dJ_U)))
+            np.savetxt(use_results_dir + 'EBL/dJdz_ULTRASAT' + reduced_label + '.dat', (z_gals,np.asarray(dJ_U)))
 
         print('Doing b ULTRASAT')
-        bJ_f =  partial(bJ_z,detector='ULTRASAT',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename='results/EBL/bJ_ULTRASAT' + reduced_label + '.dat')
+        bJ_f =  partial(bJ_z,detector='ULTRASAT',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename=use_results_dir + 'EBL/bJ_ULTRASAT' + reduced_label + '.dat')
         if reduced_z:
             bJ_U = pool.map(bJ_f, z_gals_interp)        
-            np.savetxt('./results/EBL/bJ_ULTRASAT' + reduced_label + '.dat', (z_gals_interp,np.asarray(bJ_U)))
+            np.savetxt(use_results_dir + 'EBL/bJ_ULTRASAT' + reduced_label + '.dat', (z_gals_interp,np.asarray(bJ_U)))
         else:
             bJ_U = pool.map(bJ_f, z_gals)        
-            np.savetxt('./results/EBL/bJ_ULTRASAT' + reduced_label + '.dat', (z_gals,np.asarray(bJ_U)))
+            np.savetxt(use_results_dir + 'EBL/bJ_ULTRASAT' + reduced_label + '.dat', (z_gals,np.asarray(bJ_U)))
     return
 
 
@@ -898,11 +905,11 @@ def plot_bdJdz_multi():
     #         dJ_fuv = pool.map(dJdz_FUV, z_gals_interp)
     
     #         print('Doing bias NUV')
-    #         bJ_nuv_f =  partial(bJ_z,detector='GALEX_NUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename='results/EBL/dJdz_GALEX_NUV.dat')
+    #         bJ_nuv_f =  partial(bJ_z,detector='GALEX_NUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename=use_results_dir + 'EBL/dJdz_GALEX_NUV.dat')
     #         bJ_nuv = pool.map(bJ_nuv_f, z_gals_interp)
  
     #         print('Doing bias FUV')
-    #         bJ_fuv_f =  partial(bJ_z,detector='GALEX_FUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename='results/EBL/dJdz_GALEX_FUV.dat')
+    #         bJ_fuv_f =  partial(bJ_z,detector='GALEX_FUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename=use_results_dir + 'EBL/dJdz_GALEX_FUV.dat')
     #         bJ_fuv = pool.map(bJ_fuv_f, z_gals_interp)
 
     #         bdJ_nuv = np.asarray(dJ_nuv) * np.asarray(bJ_nuv)
@@ -956,11 +963,11 @@ def plot_bdJdz_multi():
             dJdz_FUV = partial(dJdz,detector='GALEX_FUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,)
             dJ_fuv = pool.map(dJdz_FUV, z_gals_interp)
     
-            bJ_nuv_f =  partial(bJ_z,detector='GALEX_NUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename='results/EBL/dJdz_GALEX_NUV.dat')
+            bJ_nuv_f =  partial(bJ_z,detector='GALEX_NUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename=use_results_dir + 'EBL/dJdz_GALEX_NUV.dat')
             bJ_nuv = pool.map(bJ_nuv_f, z_gals_interp)
  
             print('Doing b FUV')
-            bJ_fuv_f =  partial(bJ_z,detector='GALEX_FUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename='results/EBL/dJdz_GALEX_FUV.dat')
+            bJ_fuv_f =  partial(bJ_z,detector='GALEX_FUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename=use_results_dir + 'EBL/dJdz_GALEX_FUV.dat')
             bJ_fuv = pool.map(bJ_fuv_f, z_gals_interp)
 
             bdJ_nuv = np.asarray(dJ_nuv) * np.asarray(bJ_nuv)
@@ -1012,11 +1019,11 @@ def plot_bdJdz_multi():
 #             dJdz_FUV = partial(dJdz,detector='GALEX_FUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,)
 #             dJ_fuv = pool.map(dJdz_FUV, z_gals_interp)
     
-#             bJ_nuv_f =  partial(bJ_z,detector='GALEX_NUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename='results/EBL/dJdz_GALEX_NUV.dat')
+#             bJ_nuv_f =  partial(bJ_z,detector='GALEX_NUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename=use_results_dir + 'EBL/dJdz_GALEX_NUV.dat')
 #             bJ_nuv = pool.map(bJ_nuv_f, z_gals_interp)
  
 #             print('Doing b FUV')
-#             bJ_fuv_f =  partial(bJ_z,detector='GALEX_FUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename='results/EBL/dJdz_GALEX_FUV.dat')
+#             bJ_fuv_f =  partial(bJ_z,detector='GALEX_FUV',run=True,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = False,filename=use_results_dir + 'EBL/dJdz_GALEX_FUV.dat')
 #             bJ_fuv = pool.map(bJ_fuv_f, z_gals_interp)
 
 #             bdJ_nuv = np.asarray(dJ_nuv) * np.asarray(bJ_nuv)
@@ -1089,17 +1096,17 @@ def plot_bdJdz_epsbias():
 
 
         print('Doing bias NUV')
-        #bJ_nuv_f_fid =  partial(bJ_z,detector='GALEX_NUV',run=True,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename='results/EBL/dJdz_GALEX_NUV.dat')
+        #bJ_nuv_f_fid =  partial(bJ_z,detector='GALEX_NUV',run=True,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=use_results_dir + 'EBL/dJdz_GALEX_NUV.dat')
         #bJ_nuv = pool.map(bJ_nuv_f_fid,z_gals_interp)
 #
-        #bJ_nuv_f_2eps =  partial(bJ_z,detector='GALEX_NUV',run=True,vals_eps1500=vals_eps1500_mod,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename='results/EBL/dJdz_GALEX_NUV.dat')
+        #bJ_nuv_f_2eps =  partial(bJ_z,detector='GALEX_NUV',run=True,vals_eps1500=vals_eps1500_mod,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=use_results_dir + 'EBL/dJdz_GALEX_NUV.dat')
         #bJ_nuv_2eps = pool.map(bJ_nuv_f_2eps,z_gals_interp)
 
-        #bJ_nuv_f_2bias =  partial(bJ_z,detector='GALEX_NUV',run=True,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = vals_bias_mod,filename='results/EBL/dJdz_GALEX_NUV.dat')
+        #bJ_nuv_f_2bias =  partial(bJ_z,detector='GALEX_NUV',run=True,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = vals_bias_mod,filename=use_results_dir + 'EBL/dJdz_GALEX_NUV.dat')
         #bJ_nuv_2bias = pool.map(bJ_nuv_f_2bias, z_gals_interp)
 #
         print('Doing bias FUV')
-        #bJ_fuv_f_fid =  partial(bJ_z,detector='GALEX_FUV',run=True,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename='results/EBL/dJdz_GALEX_FUV.dat')
+        #bJ_fuv_f_fid =  partial(bJ_z,detector='GALEX_FUV',run=True,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=use_results_dir + 'EBL/dJdz_GALEX_FUV.dat')
         #bJ_fuv = pool.map(bJ_fuv_f_fid, z_gals_interp)
 #
         #bJ_fuv_f_2eps =  partial(bJ_z,detector='GALEX_FUV',run=True,vals_eps1500=vals_eps1500_mod,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename='...')
@@ -1167,15 +1174,15 @@ def plot_bdJdz_epsbias():
 
 # def plot_signal_withDM(vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias=False):
 
-#     dJ_U =  dJdz(z_gals,detector='ULTRASAT',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,filename='results/EBL/dJdz_ULTRASAT_TESTGAUS.dat')
+#     dJ_U =  dJdz(z_gals,detector='ULTRASAT',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,filename=use_results_dir + 'EBL/dJdz_ULTRASAT_TESTGAUS.dat')
 
     
-#     dJ_U_DM =  dJdz(z_gals,detector='ULTRASAT',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,filename='results/EBL/dJdz_ULTRASAT_withDM.dat')
+#     dJ_U_DM =  dJdz(z_gals,detector='ULTRASAT',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,filename=use_results_dir + 'EBL/dJdz_ULTRASAT_withDM.dat')
 
 
-#     bJ_U = bJ_z(z_gals,detector='ULTRASAT',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = val_bias,filename='results/EBL/bJ_ULTRASAT_TESTGAUS.dat')
+#     bJ_U = bJ_z(z_gals,detector='ULTRASAT',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = val_bias,filename=use_results_dir + 'EBL/bJ_ULTRASAT_TESTGAUS.dat')
 
-#     bJ_U_DM = bJ_z(z_gals,detector='ULTRASAT',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha11000=vals_alpha11000,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = val_bias,filename='results/EBL/bJ_ULTRASAT_withDM.dat')
+#     bJ_U_DM = bJ_z(z_gals,detector='ULTRASAT',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha11000=vals_alpha11000,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = val_bias,filename=use_results_dir + 'EBL/bJ_ULTRASAT_withDM.dat')
 
 #     # figure 10 
 #     plt.figure()
@@ -1187,7 +1194,7 @@ def plot_bdJdz_epsbias():
 #     plt.legend(loc=4, ncol=2)
     
 #     plt.tight_layout()
-#     plt.savefig('results/PLOTS/EBL/dJdz_withDM.png',bbox_inches='tight')
+#     plt.savefig(use_results_dir + 'PLOTS/EBL/dJdz_withDM.png',bbox_inches='tight')
 
 #     plt.figure()
 #     plt.plot(z_gals,bJ_U,label=r'$\rm ULTRASAT$',color=color_ULTRASAT)
@@ -1198,7 +1205,7 @@ def plot_bdJdz_epsbias():
 #     plt.legend(loc=4, ncol=2)
     
 #     plt.tight_layout()
-#     plt.savefig('results/PLOTS/EBL/bJz_withDM.png',bbox_inches='tight')
+#     plt.savefig(use_results_dir + 'PLOTS/EBL/bJz_withDM.png',bbox_inches='tight')
 
 #     plt.figure()
 #     plt.plot(z_gals,dJ_U*bJ_U,label=r'$\rm ULTRASAT$',color=color_ULTRASAT)
@@ -1209,7 +1216,7 @@ def plot_bdJdz_epsbias():
 #     plt.legend(loc=4, ncol=2)
     
 #     plt.tight_layout()
-#     plt.savefig('results/PLOTS/EBL/bJdJdz_withDM.png',bbox_inches='tight')
+#     plt.savefig(use_results_dir + 'PLOTS/EBL/bJdJdz_withDM.png',bbox_inches='tight')
 
 
 #     plt.show()

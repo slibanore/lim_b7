@@ -16,7 +16,7 @@ def plot_collective():
 
     colors_z = ['k','#0a9396','#ca6702','#9b2226']
 
-    rest_wave = np.linspace(700,3500,400)
+    rest_wave = np.linspace(700,3500,1000)
     for zv in range(len(z)):
         s = np.zeros(len(rest_wave))
         wave = np.zeros((len(rest_wave)))
@@ -74,9 +74,9 @@ def plot_collective():
 ###########################
 
     #plt.subplot(312)
-    wavelenght_F = np.linspace(wavelenght_min('GALEX_FUV'),wavelenght_max('GALEX_FUV'))
-    wavelenght_N = np.linspace(wavelenght_min('GALEX_NUV'),wavelenght_max('GALEX_NUV'))
-    wavelenght = np.linspace(wavelenght_min('ULTRASAT'),wavelenght_max('ULTRASAT'))
+    wavelenght_F = np.linspace(wavelenght_min('GALEX_FUV'),wavelenght_max('GALEX_FUV'),1000)
+    wavelenght_N = np.linspace(wavelenght_min('GALEX_NUV'),wavelenght_max('GALEX_NUV'),1000)
+    wavelenght = np.linspace(wavelenght_min('ULTRASAT'),wavelenght_max('ULTRASAT'),1000)
 
     R = np.zeros(len(wavelenght))
     RN = np.zeros(len(wavelenght))
@@ -107,17 +107,17 @@ def plot_collective():
     ax[2].set_ylabel(r'$R(\lambda_{\rm obs})$',fontsize=fontsize_label)
 ########################
 
-    dJ_U =  dJdz(z_gals('DESI'),detector='ULTRASAT',run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,filename='results/EBL/dJdz_ULTRASAT_reduced.dat')
+    dJ_U =  dJdz(z_gals('DESI'),detector='ULTRASAT',run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,filename=use_results_dir + 'EBL/dJdz_ULTRASAT_reduced.dat')
 
-    dJ_N =  dJdz(z_gals('SDSS'),detector='GALEX_NUV',run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,filename='results/EBL/dJdz_GALEX_NUV_reduced.dat')
+    dJ_N =  dJdz(z_gals('SDSS'),detector='GALEX_NUV',run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,filename=use_results_dir + 'EBL/dJdz_GALEX_NUV_reduced.dat')
 
-    dJ_F =  dJdz(z_gals('SDSS'),detector='GALEX_FUV',run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,filename='results/EBL/dJdz_GALEX_FUV_reduced.dat')
+    dJ_F =  dJdz(z_gals('SDSS'),detector='GALEX_FUV',run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,filename=use_results_dir + 'EBL/dJdz_GALEX_FUV_reduced.dat')
 
-    bJ_U = bJ_z(z_gals('DESI'),detector='ULTRASAT',run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename='results/EBL/bJ_ULTRASAT_reduced.dat')
+    bJ_U = bJ_z(z_gals('DESI'),detector='ULTRASAT',run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=use_results_dir + 'EBL/bJ_ULTRASAT_reduced.dat')
 
-    bJ_N = bJ_z(z_gals('SDSS'),detector='GALEX_NUV',run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename='results/EBL/bJ_GALEX_NUV_reduced.dat')
+    bJ_N = bJ_z(z_gals('SDSS'),detector='GALEX_NUV',run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=use_results_dir + 'EBL/bJ_GALEX_NUV_reduced.dat')
 
-    bJ_F = bJ_z(z_gals('SDSS'),detector='GALEX_FUV',run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename='results/EBL/bJ_GALEX_FUV_reduced.dat')
+    bJ_F = bJ_z(z_gals('SDSS'),detector='GALEX_FUV',run=False,vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias = False,filename=use_results_dir + 'EBL/bJ_GALEX_FUV_reduced.dat')
 
 
     window_size = 70  # Adjust this value based on your preference
@@ -139,6 +139,7 @@ def plot_collective():
     ax[3].set_title(r'$\rm CBR\,Reconstruction$',fontsize=fontsize_label,y=1.01)
 
     ax[3].set_xlim(0,2.3)
+
 ###############################
 
 
@@ -150,7 +151,7 @@ def plot_collective():
 
     plt.tight_layout()
     plt.subplots_adjust(hspace=.37)
-    plt.savefig('results/PLOTS/EBL/collective_plot.png',bbox_inches='tight')
+    plt.savefig(use_results_dir + 'PLOTS/EBL/rev_collective_plot.png',bbox_inches='tight')
 
     plt.show()
 
@@ -196,7 +197,7 @@ def plot_dNgdz():
 
     plt.xlim(min(z_gals_interp),min(max(z_gals_interp),z_desi[:len(Ndesi_smoothed)][-1]))
 
-    plt.savefig('results/PLOTS/EBL/Ng.png',bbox_inches='tight')
+    plt.savefig(use_results_dir + 'PLOTS/EBL/Ng.png',bbox_inches='tight')
     plt.show()
 
     return 
@@ -246,7 +247,7 @@ def plot_noise_grouped():
     plt.ylabel(r'$\mathcal{N}_{\rm CBR}$',fontsize=fontsize_label)
     plt.legend(loc=1,ncol=1,fontsize=fontsize_legend)
 
-    filename = 'results/PLOTS/EBL/noise_voxgroup.png'
+    filename = use_results_dir + 'PLOTS/EBL/rev_noise_voxgroup.png'
 
     plt.tick_params(axis='y', labelsize=fontsize_tick) 
     plt.tick_params(axis='x', labelsize=fontsize_tick) 
@@ -265,31 +266,32 @@ def plot_noise():
     fontsize_legend = 24
     fontsize_tick = 23
 
-    use_z = z_gals_interp
-    use_z_ultrasat_desi = z_gals_interp
+    use_z = z_gals_interp_FISHER('SDSS')
+    use_z_ultrasat_desi = z_gals_interp_FISHER('DESI')
     reduced_label = '_reduced'
 
     sn = np.zeros(len(use_z))
     sf = np.zeros(len(use_z))
-    snD = np.zeros(len(use_z))
-    sfD = np.zeros(len(use_z))
+    snD = np.zeros(len(use_z_ultrasat_desi))
+    sfD = np.zeros(len(use_z_ultrasat_desi))
     sUD = np.zeros(len(use_z_ultrasat_desi))
     nG = np.zeros(len(use_z))
-    nGD = np.zeros(len(use_z))
+    nGD = np.zeros(len(use_z_ultrasat_desi))
     nUD = np.zeros(len(use_z_ultrasat_desi))
 
-    filename_ULTDESI = 'results/EBL/wJg_ULTRASAT,DESI' + reduced_label + '.dat'
+    use_results_dir_here = './test_results/'
+    filename_ULTDESI = use_results_dir_here + 'EBL/wJg_ULTRASAT,DESI' + reduced_label + '.dat'
         
     for i in tqdm(range(len(use_z))):
-        sn[i] = abs(wJgz(use_z[i],'GALEX_NUV','SDSS',False,filename='results/EBL/wJg_GALEX_NUV,SDSS' + reduced_label + '.dat'))
-        sf[i] = abs(wJgz(use_z[i],'GALEX_FUV','SDSS',False,filename='results/EBL/wJg_GALEX_FUV,SDSS'+ reduced_label+'.dat'))
+        sn[i] = abs(wJgz(use_z[i],'GALEX_NUV','SDSS',False,filename=use_results_dir_here + 'EBL/wJg_GALEX_NUV,SDSS' + reduced_label + '.dat'))
+        sf[i] = abs(wJgz(use_z[i],'GALEX_FUV','SDSS',False,filename=use_results_dir_here + 'EBL/wJg_GALEX_FUV,SDSS'+ reduced_label+'.dat'))
         nG[i] = sigma_wz(use_z[i],'GALEX_NUV','SDSS',True).value
-        snD[i] = abs(wJgz(use_z[i],'GALEX_NUV','DESI',False,filename='results/EBL/wJg_GALEX_NUV,DESI' + reduced_label + '.dat'))
-        sfD[i] = abs(wJgz(use_z[i],'GALEX_FUV','DESI',False,filename='results/EBL/wJg_GALEX_FUV,DESI'+ reduced_label+'.dat'))
-        nGD[i] = sigma_wz(use_z[i],'GALEX_NUV','DESI',True).value
     for i in tqdm(range(len(use_z_ultrasat_desi))):
         sUD[i] = abs(wJgz(use_z_ultrasat_desi[i],'ULTRASAT','DESI',False,filename=filename_ULTDESI))
         nUD[i] = sigma_wz(use_z_ultrasat_desi[i],'ULTRASAT','DESI',True).value
+        snD[i] = abs(wJgz(use_z_ultrasat_desi[i],'GALEX_NUV','DESI',False,filename=use_results_dir_here + 'EBL/wJg_GALEX_NUV,DESI' + reduced_label + '.dat'))
+        sfD[i] = abs(wJgz(use_z_ultrasat_desi[i],'GALEX_FUV','DESI',False,filename=use_results_dir_here + 'EBL/wJg_GALEX_FUV,DESI'+ reduced_label+'.dat'))
+        nGD[i] = sigma_wz(use_z_ultrasat_desi[i],'GALEX_NUV','DESI',True).value
 
     window_size = 2  # Adjust this value based on your preference
     U_smoothed = moving_average(sUD/nUD, window_size)
@@ -300,24 +302,24 @@ def plot_noise():
     #
 
     plt.plot(use_z[:len(GF_smoothed)],GF_smoothed,label=r'$\rm GALEX\,FUV\times SDSS$',color=color_FUV,linestyle='--')
-    plt.plot(use_z[:len(GFD_smoothed)],GFD_smoothed,label=r'$\rm GALEX\,FUV\times DESI$',color=color_FUV)
+    plt.plot(use_z_ultrasat_desi[:len(GFD_smoothed)],GFD_smoothed,label=r'$\rm GALEX\,FUV\times DESI$',color=color_FUV)
     plt.plot(use_z[:len(GN_smoothed)],GN_smoothed,label=r'$\rm GALEX\,NUV\times SDSS$',color=color_NUV,linestyle='--')
-    plt.plot(use_z[:len(GND_smoothed)],GND_smoothed,label=r'$\rm GALEX\,NUV\times DESI$',color=color_NUV)
+    plt.plot(use_z_ultrasat_desi[:len(GND_smoothed)],GND_smoothed,label=r'$\rm GALEX\,NUV\times DESI$',color=color_NUV)
 
     plt.plot(use_z_ultrasat_desi[:len(U_smoothed)],U_smoothed,label=r'$\rm ULTRASAT\times DESI$',color=color_ULTRASAT)
     plt.yscale('log')
     plt.xlabel(r'$z$',fontsize=fontsize_label)
     plt.ylabel(r'${\bar{\omega}_{\tilde{J}{\rm g}}(z)}/\mathcal{N}_{\rm CBR}$',fontsize=fontsize_label)
-    plt.legend(loc=1,ncol=1,fontsize=fontsize_legend)
+    plt.legend(loc=1,ncol=1,fontsize=fontsize_legend*0.95)
 
-    plt.ylim(1,1e6)
+    plt.ylim(0.5,9e3)
     plt.xlim(use_z[0],min(use_z[-1],use_z_ultrasat_desi[:len(U_smoothed)][-1]))
     plt.tight_layout()
 
     plt.tick_params(axis='y', labelsize=fontsize_tick) 
     plt.tick_params(axis='x', labelsize=fontsize_tick) 
 
-    filename = 'results/PLOTS/EBL/wJg_noise' + reduced_label + '.png'
+    filename = use_results_dir + 'PLOTS/EBL/rev_wJg_noise' + reduced_label + '.png'
     plt.tight_layout()
     plt.savefig(filename,bbox_inches='tight')
     plt.show()
@@ -325,7 +327,7 @@ def plot_noise():
     return 
 
 
-def plot_multi_line_PAPER():
+def plot_multi_line_PAPER(correlated=False):
 
     plt.figure(figsize = (11, 10))
     fontsize_label = 27
@@ -334,10 +336,10 @@ def plot_multi_line_PAPER():
 
     z = np.linspace(zmin_gal,zmax_gal+.5,200)
 
-    sigmas_nonion, fid_nonion = plot_err_noninonizing_cont_wb(z, 1500, use_pars_fid = pars_original_c18_fid,group_vox=True,run=False,galex_detector='SDSS',prior='conservative')
+    sigmas_nonion, fid_nonion = plot_err_noninonizing_cont_wb(z, 1500, use_pars_fid = pars_original_c18_fid,group_vox=True,run=False,galex_detector='SDSS',prior='conservative',correlated=correlated)
 
-    sigmas_nonion_both = plot_err_noninonizing_cont_wb(z, 1500, use_pars_fid = pars_fid,prior = 'conservative',group_vox=True,run=False,galex_detector='DESI')[0]
-    sigmas_nonion_both_opt = plot_err_noninonizing_cont_wb(z, 1500, use_pars_fid = pars_fid,prior = 'optimistic',group_vox=True,run=False,galex_detector='DESI')[0]
+    sigmas_nonion_both = plot_err_noninonizing_cont_wb(z, 1500, use_pars_fid = pars_fid,prior = 'conservative',group_vox=True,run=False,galex_detector='DESI',correlated=correlated)[0]
+    sigmas_nonion_both_opt = plot_err_noninonizing_cont_wb(z, 1500, use_pars_fid = pars_fid,prior = 'optimistic',group_vox=True,run=False,galex_detector='DESI',correlated=correlated)[0]
 
     s_g = sigmas_nonion[0] * (70/67.67)**3
     s_b = sigmas_nonion_both[2] * (70/67.67)**3
@@ -410,10 +412,10 @@ def plot_multi_line_PAPER():
     plt.tick_params(axis='y', labelsize=fontsize_tick) 
     plt.tick_params(axis='x', labelsize=fontsize_tick) 
 
-    filename = 'results/PLOTS/EBL/eps_err_multiwave_PAPER.png'
+    filename = use_results_dir + 'PLOTS/EBL/rev_eps_err_multiwave_PAPER.png'
  
     plt.tight_layout()
-    plt.savefig(filename,bbox_inches='tight')
+    #plt.savefig(filename,bbox_inches='tight')
     plt.show()
 
 
@@ -438,7 +440,7 @@ def plot_err_emissivity_PAPER():
         sigma_both_opt = np.zeros(len(wave))
         for w in range(len(wave)):
 
-            signal_val[w] =  signal(wave[w]*u.AA,zi,'ULTRASAT',vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False).value
+            signal_val[w] =  signal(wave[w]*u.AA,zi,'ULTRASAT',vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,to_plot=True).value
 
             if wave[w] <= 912:
                 sigma_galex[w] = plot_err_ioncont_wb([zi],wave[w], use_pars_fid = pars_original_c18_fid,group_vox=True,run=False, prior='conservative',galex_detector='SDSS')[0][0][0]
@@ -503,7 +505,7 @@ def plot_err_emissivity_PAPER():
         plt.title(r'$z=%g$'%zi,fontsize=fontsize_label,y=1.01)
         plt.xlabel(r'$\lambda_{\rm obs}/(1+z)\,[{\rm \AA}]$',fontsize=fontsize_label)
 
-        filename = 'results/PLOTS/EBL/err_final_emissivity_z' + str(zi) + '.png'
+        filename = use_results_dir + 'PLOTS/EBL/rev_err_final_emissivity_z' + str(zi) + '.png'
         
         plt.tight_layout()
         plt.savefig(filename,bbox_inches='tight')
@@ -513,7 +515,7 @@ def plot_err_emissivity_PAPER():
     return 
 
 
-def plot_err_escape(group_vox=True,run=False,plot_flag = True):
+def plot_err_escape(group_vox=True,run=False,plot_flag = True,correlated=False):
 
     plt.figure(figsize = (11, 10))
     fontsize_label = 27
@@ -525,14 +527,14 @@ def plot_err_escape(group_vox=True,run=False,plot_flag = True):
     required_pars = ['log_fLyC_1','log_fLyC_2']
 
     use_pars_fid = pars_fid
-    F_N_c18 = Fisher_change_var(use_pars_fid,'GALEX_NUV','SDSS',group_vox,run)
-    F_F_c18 = Fisher_change_var(use_pars_fid,'GALEX_FUV','SDSS',group_vox,run)
-    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV','DESI',group_vox,run)
-    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV','DESI',group_vox,run)
-    F_U = Fisher_change_var(use_pars_fid,'ULTRASAT','DESI',group_vox,run)
-    F_N_opt = Fisher_change_var(use_pars_fid,'GALEX_NUV','DESI',group_vox,run)
-    F_F_opt = Fisher_change_var(use_pars_fid,'GALEX_FUV','DESI',group_vox,run)
-    F_U_opt = Fisher_change_var(use_pars_fid,'ULTRASAT','DESI',group_vox,run)
+    F_N_c18 = Fisher_change_var(use_pars_fid,'GALEX_NUV','SDSS',group_vox,run,correlated=correlated)
+    F_F_c18 = Fisher_change_var(use_pars_fid,'GALEX_FUV','SDSS',group_vox,run,correlated=correlated)
+    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV','DESI',group_vox,run,correlated=correlated)
+    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV','DESI',group_vox,run,correlated=correlated)
+    F_U = Fisher_change_var(use_pars_fid,'ULTRASAT','DESI',group_vox,run,correlated=correlated)
+    F_N_opt = Fisher_change_var(use_pars_fid,'GALEX_NUV','DESI',group_vox,run,correlated=correlated)
+    F_F_opt = Fisher_change_var(use_pars_fid,'GALEX_FUV','DESI',group_vox,run,correlated=correlated)
+    F_U_opt = Fisher_change_var(use_pars_fid,'ULTRASAT','DESI',group_vox,run,correlated=correlated)
 
     sigma_b1500_opt = 0.01
     sigma_gammabnu_opt = 0.3
@@ -640,7 +642,7 @@ def plot_err_escape(group_vox=True,run=False,plot_flag = True):
     print(max(sigma_eps_b/fid_fLy))
     print(max(sigma_eps_b_opt/fid_fLy))
 
-    filename = 'results/PLOTS/EBL/errfLyC.png'
+    filename = use_results_dir + 'PLOTS/EBL/rev_errfLyC.png'
 
     plt.savefig(filename,bbox_inches='tight')
     plt.show()
@@ -669,7 +671,7 @@ def plot_response():
     plt.ylabel(r'$\rm QE$',fontsize=fontsize)
 
     plt.tight_layout()
-    plt.savefig('results/PLOTS/EBL/QE_ultrasat.png',bbox_inches='tight')
+    plt.savefig(use_results_dir + 'PLOTS/EBL/QE_ultrasat.png',bbox_inches='tight')
 
     wavelenght_F = np.linspace(wavelenght_min('GALEX_FUV'),wavelenght_max('GALEX_FUV'))
     wavelenght_N = np.linspace(wavelenght_min('GALEX_NUV'),wavelenght_max('GALEX_NUV'))
@@ -696,7 +698,7 @@ def plot_response():
     plt.ylabel(r'$R(\lambda_{\rm obs})$',fontsize=fontsize)
 
     plt.tight_layout()
-    plt.savefig('results/PLOTS/EBL/response.png',bbox_inches='tight')
+    plt.savefig(use_results_dir + 'PLOTS/EBL/response.png',bbox_inches='tight')
 
     plt.show()
 
@@ -719,7 +721,7 @@ def plot_z_signal(vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,v
                 detector = 'GALEX_NUV' # same for galex_fuv in EW
             else:
                 detector = 'ULTRASAT' # same for hetdex and spherex
-            s[i] = signal(rest_wave[i]*u.AA,z[zv],detector,vals_eps1500,vals_alpha1500,vals_alpha1100,val_EW,val_flyc,val_alpha900,True).value 
+            s[i] = signal(rest_wave[i]*u.AA,z[zv],detector,vals_eps1500,vals_alpha1500,vals_alpha1100,val_EW,val_flyc,val_alpha900,to_plot=True).value 
 
         plt.plot(wave, s, color= colors[zv], label=r'$z = %g$'%z[zv])
 
@@ -731,7 +733,7 @@ def plot_z_signal(vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,v
     plt.ylim(3e24,2e28)
 
     plt.tight_layout()
-    plt.savefig('results/PLOTS/EBL/emissivity.png',bbox_inches='tight')
+    plt.savefig(use_results_dir + 'PLOTS/EBL/emissivity.png',bbox_inches='tight')
     plt.show()
 
     return 
@@ -740,17 +742,17 @@ def plot_z_signal(vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,v
 
 def plot_signal(vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val_EW=False,val_flyc=False,val_alpha900=False,val_bias=False):
 
-    dJ_U =  dJdz(z_gals('DESI'),detector='ULTRASAT',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,filename='results/EBL/dJdz_ULTRASAT_reduced.dat')
+    dJ_U =  dJdz(z_gals('DESI'),detector='ULTRASAT',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,filename=use_results_dir + 'EBL/dJdz_ULTRASAT_reduced.dat')
 
-    dJ_N =  dJdz(z_gals('SDSS'),detector='GALEX_NUV',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,filename='results/EBL/dJdz_GALEX_NUV_reduced.dat')
+    dJ_N =  dJdz(z_gals('SDSS'),detector='GALEX_NUV',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,filename=use_results_dir + 'EBL/dJdz_GALEX_NUV_reduced.dat')
 
-    dJ_F =  dJdz(z_gals('SDSS'),detector='GALEX_FUV',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,filename='results/EBL/dJdz_GALEX_FUV_reduced.dat')
+    dJ_F =  dJdz(z_gals('SDSS'),detector='GALEX_FUV',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,filename=use_results_dir + 'EBL/dJdz_GALEX_FUV_reduced.dat')
 
-    bJ_U = bJ_z(z_gals('DESI'),detector='ULTRASAT',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = val_bias,filename='results/EBL/bJ_ULTRASAT_reduced.dat')
+    bJ_U = bJ_z(z_gals('DESI'),detector='ULTRASAT',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = val_bias,filename=use_results_dir + 'EBL/bJ_ULTRASAT_reduced.dat')
 
-    bJ_N = bJ_z(z_gals('SDSS'),detector='GALEX_NUV',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = val_bias,filename='results/EBL/bJ_GALEX_NUV_reduced.dat')
+    bJ_N = bJ_z(z_gals('SDSS'),detector='GALEX_NUV',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = val_bias,filename=use_results_dir + 'EBL/bJ_GALEX_NUV_reduced.dat')
 
-    bJ_F = bJ_z(z_gals('SDSS'),detector='GALEX_FUV',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = val_bias,filename='results/EBL/bJ_GALEX_FUV_reduced.dat')
+    bJ_F = bJ_z(z_gals('SDSS'),detector='GALEX_FUV',run=False,vals_eps1500=vals_eps1500,vals_alpha1500=vals_alpha1500,vals_alpha1100=vals_alpha1100,val_EW=val_EW,val_flyc=val_flyc,val_alpha900=val_alpha900,val_bias = val_bias,filename=use_results_dir + 'EBL/bJ_GALEX_FUV_reduced.dat')
 
 
     window_size = 70  # Adjust this value based on your preference
@@ -772,7 +774,7 @@ def plot_signal(vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val
     plt.xlim(0,2.3)
 
     plt.tight_layout()
-    plt.savefig('results/PLOTS/EBL/bJdJdz.png',bbox_inches='tight')
+    plt.savefig(use_results_dir + 'PLOTS/EBL/bJdJdz.png',bbox_inches='tight')
 
 
     plt.show()
@@ -780,7 +782,7 @@ def plot_signal(vals_eps1500=False,vals_alpha1500=False,vals_alpha1100=False,val
 
 
 
-def plot_err_ioncont_wb(z, lambda_val, use_pars_fid = pars_all,group_vox=True,run=False, prior=False,galex_detector='SDSS'):
+def plot_err_ioncont_wb(z, lambda_val, use_pars_fid = pars_all,group_vox=True,run=False, prior=False,galex_detector='SDSS',correlated=False):
 
     use_nu = nu_from_lambda(lambda_val*u.AA)
     nu_1500 = nu_from_lambda(1500*u.AA)
@@ -801,9 +803,9 @@ def plot_err_ioncont_wb(z, lambda_val, use_pars_fid = pars_all,group_vox=True,ru
     fid_C1100 = fiducials['alpha1100'][1]
     fid_alpha900 = fiducials['alpha900']
 
-    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV',galex_detector,group_vox,run)
-    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV',galex_detector,group_vox,run)
-    F_U = Fisher_change_var(use_pars_fid,'ULTRASAT','DESI',group_vox,run)
+    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV',galex_detector,group_vox,run,correlated=correlated)
+    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV',galex_detector,group_vox,run,correlated=correlated)
+    F_U = Fisher_change_var(use_pars_fid,'ULTRASAT','DESI',group_vox,run,correlated=correlated)
 
     if prior == 'optimistic':
         sigma_b1500 = 0.01
@@ -897,7 +899,7 @@ def plot_err_ioncont_wb(z, lambda_val, use_pars_fid = pars_all,group_vox=True,ru
 
 
 
-def plot_err_line_surrounding_wb(z, lambda_val, use_pars_fid = pars_original_c18,group_vox=True,run=False,prior=False,galex_detector='SDSS'):
+def plot_err_line_surrounding_wb(z, lambda_val, use_pars_fid = pars_original_c18,group_vox=True,run=False,prior=False,galex_detector='SDSS',correlated=False):
 
     use_nu = nu_from_lambda(lambda_val*u.AA)
     nu_1500 = nu_from_lambda(1500*u.AA)
@@ -913,9 +915,9 @@ def plot_err_line_surrounding_wb(z, lambda_val, use_pars_fid = pars_original_c18
     fid_alpha1100_0 = fiducials['alpha1100'][0]
     fid_C1100 = fiducials['alpha1100'][1]
 
-    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV',galex_detector,group_vox,run)
-    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV',galex_detector,group_vox,run)
-    F_U = Fisher_change_var(use_pars_fid,'ULTRASAT','DESI',group_vox,run)
+    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV',galex_detector,group_vox,run,correlated=correlated)
+    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV',galex_detector,group_vox,run,correlated=correlated)
+    F_U = Fisher_change_var(use_pars_fid,'ULTRASAT','DESI',group_vox,run,correlated=correlated)
 
 
     if prior == 'optimistic':
@@ -1042,7 +1044,7 @@ def plot_err_line_surrounding_wb(z, lambda_val, use_pars_fid = pars_original_c18
 
 
 
-def plot_err_line_wb(z, lambda_val, use_pars_fid = pars_original_c18,group_vox=True,run=False,prior=False,galex_detector='SDSS'):
+def plot_err_line_wb(z, lambda_val, use_pars_fid = pars_original_c18,group_vox=True,run=False,prior=False,galex_detector='SDSS',correlated=False):
 
     use_nu = nu_from_lambda(lambda_val*u.AA)
     nu_1500 = nu_from_lambda(1500*u.AA)
@@ -1058,9 +1060,9 @@ def plot_err_line_wb(z, lambda_val, use_pars_fid = pars_original_c18,group_vox=T
     fid_alpha1100_0 = fiducials['alpha1100'][0]
     fid_C1100 = fiducials['alpha1100'][1]
 
-    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV',galex_detector,group_vox,run)
-    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV',galex_detector,group_vox,run)
-    F_U = Fisher_change_var(use_pars_fid,'ULTRASAT','DESI',group_vox,run)
+    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV',galex_detector,group_vox,run,correlated=correlated)
+    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV',galex_detector,group_vox,run,correlated=correlated)
+    F_U = Fisher_change_var(use_pars_fid,'ULTRASAT','DESI',group_vox,run,correlated=correlated)
 
 
     if prior == 'optimistic':
@@ -1148,14 +1150,14 @@ def plot_err_line_wb(z, lambda_val, use_pars_fid = pars_original_c18,group_vox=T
 
     for i in range(len(z)):
 
-        A_galex =  EW_val(z[i],'GALEX_NUV', False) / (0.005*nu_1216) * (use_nu**2 / cu.c.to(u.AA/u.s))
+        A_galex =  EW_val(z[i],'GALEX_NUV', False) * (use_nu**2 / cu.c.to(u.AA/u.s))  / (0.005*nu_1216)
         B =  (use_nu / nu_1216)**(fid_alpha1100_0 + fid_C1100*np.log10(1+z[i]))
 
         C = fid_eps_1500* (1+z[i])**fid_gamma1500 * (nu_1216 / nu_1500)**(fid_alpha1500_0 + fid_C1500*np.log10(1+z[i]))
 
         temp_galex = C * ( A_galex + B )
 
-        A_ultrasat =  EW_val(z[i],'ULTRASAT', False) / (0.005*nu_1216) * (use_nu**2 / cu.c.to(u.AA/u.s))
+        A_ultrasat =  EW_val(z[i],'ULTRASAT', False) * (use_nu**2 / cu.c.to(u.AA/u.s)) / (0.005*nu_1216)
         temp_ultrasat = C * ( A_ultrasat + B )
 
         fid_eps_galex[i] = temp_galex
@@ -1195,7 +1197,7 @@ def plot_err_line_wb(z, lambda_val, use_pars_fid = pars_original_c18,group_vox=T
 
 
 
-def plot_err_noninonizing_cont_wb(z, lambda_val, use_pars_fid = pars_original_c18,group_vox=True,run=False, prior=False,galex_detector='SDSS'):
+def plot_err_noninonizing_cont_wb(z, lambda_val, use_pars_fid = pars_original_c18,group_vox=True,run=False, prior=False,galex_detector='SDSS',correlated=False):
 
     use_nu = nu_from_lambda(lambda_val*u.AA)
     nu_1500 = nu_from_lambda(1500*u.AA)
@@ -1210,9 +1212,9 @@ def plot_err_noninonizing_cont_wb(z, lambda_val, use_pars_fid = pars_original_c1
     fid_alpha1500_0 = fiducials['alpha1500'][0]
     fid_C1500 = fiducials['alpha1500'][1]
 
-    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV',galex_detector,group_vox,run)
-    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV',galex_detector,group_vox,run)
-    F_U = Fisher_change_var(use_pars_fid,'ULTRASAT','DESI',group_vox,run)
+    F_N = Fisher_change_var(use_pars_fid,'GALEX_NUV',galex_detector,group_vox,run,correlated=correlated)
+    F_F = Fisher_change_var(use_pars_fid,'GALEX_FUV',galex_detector,group_vox,run,correlated=correlated)
+    F_U = Fisher_change_var(use_pars_fid,'ULTRASAT','DESI',group_vox,run,correlated=correlated)
     
 
     if prior == 'optimistic':
